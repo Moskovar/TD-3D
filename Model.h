@@ -18,6 +18,9 @@
 #include "Mesh.h"
 //#include "Texture.h"
 
+#define ANIMATION_SPEED_RATE 10.0
+#define ANIMATION_ID		 0
+
 struct Node
 {
 	std::string name;
@@ -31,7 +34,7 @@ class Model
 		Model(const std::string& filePath);
 
 		void loadModel(const std::string& fileName);
-		void renderModel(const GLuint& modelLoc, glm::mat4 model);
+		void renderModel();
 		void clearModel();
 		void animate(double animationTime, Animation animation);
 

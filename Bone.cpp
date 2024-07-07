@@ -1,8 +1,27 @@
 #include "Bone.h"
 
-Bone::Bone(std::vector<std::tuple<float, Vertex*>> vertices)
+
+#include <iostream>
+void printMatrix(const glm::mat4& matrix) {
+    std::cout << "Matrix:" << std::endl;
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            std::cout << matrix[j][i] << " "; // Notez la transposition: matrix[j][i] au lieu de matrix[i][j]
+        }
+        std::cout << std::endl;
+    }
+}
+
+
+
+
+Bone::Bone(std::string name, std::vector<std::tuple<float, Vertex*>> vertices)
 {
+    this->name = name;
 	this->vertices = vertices;
+
+    for (auto vTuple : vertices)
+        printf("Vertex id: %d ... poids: %f\n", std::get<1>(vTuple)->id, std::get<0>(vTuple));
 }
 
 Bone::~Bone()
@@ -21,6 +40,8 @@ glm::mat4 Bone::interpolateTransform(double animationTime, Animation animation)
         return glm::mat4(1.0f);
     }
 
+    //if (name == "UpperBone") { printf("UPPERBONE\n"); return glm::mat4(1.0f); }
+
     // Trouver les keyframes qui entourent le temps d'animation donné
     auto nextKeyFrame = keyFrames.lower_bound(animationTime);
 
@@ -29,7 +50,7 @@ glm::mat4 Bone::interpolateTransform(double animationTime, Animation animation)
         // Si aucune keyframe suivante n'est trouvée, utiliser la dernière keyframe
         return glm::translate(keyFrames.rbegin()->second.position) * glm::mat4_cast(keyFrames.rbegin()->second.rotation) * glm::scale(keyFrames.rbegin()->second.scale);
         //return glm::mat4_cast(keyFrames.rbegin()->second.rotation);
-        return glm::translate(keyFrames.rbegin()->second.position);
+        //return glm::translate(keyFrames.rbegin()->second.position);
     }
 
     if (nextKeyFrame == keyFrames.begin()) 
@@ -37,7 +58,7 @@ glm::mat4 Bone::interpolateTransform(double animationTime, Animation animation)
         // Si aucune keyframe précédente n'est trouvée, utiliser la première keyframe
         return glm::translate(keyFrames.begin()->second.position) * glm::mat4_cast(keyFrames.begin()->second.rotation) * glm::scale(keyFrames.begin()->second.scale);
         //return glm::mat4_cast(keyFrames.begin()->second.rotation);
-        return glm::translate(keyFrames.begin()->second.position);
+        //return glm::translate(keyFrames.begin()->second.position);
     }
 
     auto prevKeyFrame = std::prev(nextKeyFrame);
@@ -59,8 +80,12 @@ glm::mat4 Bone::interpolateTransform(double animationTime, Animation animation)
     //return glm::translate(glm::mat4(1.0f), position);
 }
 
-void Bone::applyTransformations(glm::mat4 transformMatrix)
+void Bone::applyTransformations(glm::mat4 localTransform, glm::mat4 parentTransform, double animationTime, Animation animation)
 {
+    //printf("Applaying transformations to bone: %s\n", name.c_str());
+    //printMatrix(localTransform);
+    glm::mat4 globalTransform = localTransform * parentTransform;
+
     for (auto vertexTuple : vertices)
     {
         float   weight = std::get<0>(vertexTuple);
@@ -69,12 +94,20 @@ void Bone::applyTransformations(glm::mat4 transformMatrix)
         if (weight > 0 && vertex)
         {
             // Appliquer la transformation à la position avec le poids
-            glm::vec4 transformedPosition = transformMatrix * glm::vec4(vertex->position, 1.0f);
+            glm::vec4 transformedPosition = globalTransform * glm::vec4(vertex->position, 1.0f);
             vertex->position = glm::vec3(glm::mix(glm::vec4(vertex->position, 1.0f), transformedPosition, weight));
 
             // Appliquer la transformation à la normale avec le poids (sans translation)
-            glm::vec4 transformedNormal = transformMatrix * glm::vec4(vertex->normal, 0.0f);
+            glm::vec4 transformedNormal = globalTransform * glm::vec4(vertex->normal, 0.0f);
             vertex->normal = glm::normalize(glm::mix(glm::vec4(vertex->normal, 0.0f), transformedNormal, weight));
+        }
+    }
+
+    for (Bone* child : children)
+    {
+        if (child)
+        {
+            child->applyTransformations(child->interpolateTransform(animationTime, animation), globalTransform, animationTime, animation);
         }
     }
 }

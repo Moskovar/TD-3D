@@ -68,10 +68,8 @@ void Mesh::updateMesh()
 	resetMesh();
 }
 
-void Mesh::RenderMesh(const GLuint& modelLoc, glm::mat4 model)
+void Mesh::RenderMesh()
 {
-	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);

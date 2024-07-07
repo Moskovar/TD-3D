@@ -119,7 +119,7 @@ int main()
         return -1;
     }
 
-    Model character("models/fbx/cube.fbx");
+    Model character("models/fbx/cubeman.fbx");
 
     //--- Création des shaders ---//
     GLuint shaderProgram = 0;
@@ -132,18 +132,18 @@ int main()
         shaderProgram = shaders.getShaderProgram();
         ColorLoc = glGetUniformLocation(shaderProgram, "color");
         modelLoc = glGetUniformLocation(shaderProgram, "model");
-        viewLoc = glGetUniformLocation(shaderProgram, "view");
-        projLoc = glGetUniformLocation(shaderProgram, "projection");
+        viewLoc  = glGetUniformLocation(shaderProgram, "view");
+        projLoc  = glGetUniformLocation(shaderProgram, "projection");
     }
 
     glm::vec3 pos(x, y, z);
     glm::vec3 color(r, g, b);
 
-    // Définir la fonction de rappel pour les entr├®es clavier
+    // Définir la fonction de rappel pour les entrées clavier
     glfwSetKeyCallback(window, keyCallback);
 
     //Position de la caméra
-    glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, -10.0f);
+    glm::vec3 cameraPos = glm::vec3(0.0f, 1.0f, -20.0f);
     glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
     glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -151,42 +151,36 @@ int main()
     glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
 
     //Matrice du model
-    glm::mat4 model = glm::mat4(1.0f); // Matrice de mod├¿le d'identit├®
-
-    //glm::vec3 scale(0.1f, 0.1f, 0.1f); // Echelle de 1x en x, 2x en y, et 1x en z
-    //model = glm::scale(model, scale);
-
-    //model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
-    //model = glm::translate(model, glm::vec3(0.0f, 0.0f, 3.0f));
+    glm::mat4 model = glm::mat4(1.0f); // Matrice de modèle d'identité
 
     //Matrice de vue
     glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
 
     //Matrice de projection
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 800.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 1000.0f);
+
+    model = glm::translate(model, glm::vec3(0.0f, -5.0f, 0.0f));
+    //model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    //model = glm::scale(model, glm::vec3(0.01, 0.01, 0.01));
+    //Exemples transformations
+    {
+        //glm::vec3 scale(0.1f, 0.1f, 0.1f); // Echelle de 1x en x, 2x en y, et 1x en z
+        //model = glm::scale(model, scale);
+
+        //model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+        //model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+    }
 
     auto bones = character.getBones();
 
-    //Boucle de rendu
     auto startTime = std::chrono::high_resolution_clock::now();
-    float ticksPerSecond = bones["Bone"]->getAnimations().begin()->first.ticksPerSecond / 4.0;
-    float duration = 201.0/ticksPerSecond;
-    double deltaTime = 0;
-    //for (auto bone : character.getBones())
-    //{
-    //    if (bone.second)
-    //    {
-    //        duration = bone.second->getAnimations().begin()->first.duration;
-    //        break;
-    //    }
-    //}
-
-    printf("Duration is %f (seconds??)\n", duration);
+    float ticksPerSecond = 24;
+    ticksPerSecond = bones["LowerBone"]->getAnimations().begin()->first.ticksPerSecond / ANIMATION_SPEED_RATE;
+    float duration = 21 / ticksPerSecond;
 
     int c = 0;//debug
+    //Boucle de rendu
     while (!glfwWindowShouldClose(window))
     {
         c++;//debug
@@ -205,41 +199,17 @@ int main()
         auto currentTime = std::chrono::high_resolution_clock::now();
         float timeElapsed = std::chrono::duration<float>(currentTime - startTime).count();
         float animationTime = fmod(timeElapsed * ticksPerSecond, duration);
-        //printf("%f\n", animationTime);
-        //bones["Bone"]->interpolateTransform(animationTime, bones["Bone"]->getAnimations().begin()->first);
-        character.animate(animationTime, bones["Bone"]->getAnimations().begin()->first);
-        //if (c == 1)
-        //    for (auto it = bones.begin(); it != bones.end(); ++it)
-        //    {
-        //        Bone bone = it->second; // Assurez-vous que getAnimations() est une méthode constante
-        //        std::map<std::string, std::map<double, KeyFrame>> animations = bone.getAnimations();
-        //        for (auto it2 = animations.begin(); it2 != animations.end(); ++it2) 
-        //        {
-        //            printf("Os: %s ... Animation: %s ... KeyFrames: %d\n", it->first.c_str(), it2->first.c_str(), it2->second.size());
-        //            for (auto it3 = it2->second.begin(); it3 != it2->second.end(); ++it3)
-        //            {
-        //                printf("... R: %f, %f, %f, %f\n", it3->second.rotation.w, it3->second.rotation.x, it3->second.rotation.y, it3->second.rotation.z);
-        //                //it->second.interpolateTransform(current time)
-        //            }
-        //            printf("\n\n\n");
-        //        }
-        //    }
-                 
-            //for (auto it = bones.begin(); it != bones.end(); it++) printf("Bones: %s ... nombre de vertices: %d\n", it->first.c_str(), it->second.getVertices().size());
-            //for (auto it = nodes.begin(); it != nodes.end(); it++) if (it->first == "Os.011") model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-            //for (auto it = nodes.begin(); it != nodes.end(); it++) printf("Key: %s : Value: %s ... le noeud a %d meshes\n", it->first.c_str(), it->second.getName().c_str(), it->second.getMeshes().size());
-
+        character.animate(animationTime, bones["LowerBone"]->getAnimations().begin()->first);
 
         //--- Caméra ---//
 
         //Passer les matrices de vue et de projection aux shaders
-        /*glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));*/
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
 
-        character.renderModel(modelLoc, model);
+        character.renderModel();
 
         //Swap buffers
         glfwSwapBuffers(window);

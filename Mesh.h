@@ -23,7 +23,7 @@ class Mesh
 		Mesh(std::vector<Vertex*> v_vertices, std::vector<unsigned int> indices);
 
 		void updateMesh();
-		void RenderMesh(const GLuint& modelLoc, glm::mat4 model);
+		void RenderMesh();
 		void ClearMesh();
 		void resetMesh();
 

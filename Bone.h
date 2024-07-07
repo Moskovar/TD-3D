@@ -42,19 +42,21 @@ class Bone
 {
 	public:
 		Bone() {};
-		Bone(std::vector<std::tuple<float, Vertex*>> vertices);
+		Bone(std::string name, std::vector<std::tuple<float, Vertex*>> vertices);
 		~Bone();
 
 		auto getVertices() { return vertices; }
 		auto getAnimations() { return animations; }
+		std::string getName() { return name; }
 		void setKeyFrames(Animation animation, std::map<double, KeyFrame> keyFrames) { this->animations[animation] = keyFrames; }
 		void addChildren(Bone* bone) { children.push_back(bone); }
 		std::vector<Bone*> getChildren() { return children; }
         // Fonction pour interpoler les transformations d'une animation
 		glm::mat4 interpolateTransform(double animationTime, Animation animation);
-		void applyTransformations(glm::mat4 transformations);
+		void applyTransformations(glm::mat4 localTransform, glm::mat4 parentTransform, double animationTime, Animation animation);
 		
 	private:
+		std::string name;
 		std::vector<std::tuple<float, Vertex*>> vertices;//poids vertex
 		std::map<Animation, std::map<double, KeyFrame>> animations;
 		std::vector<Bone*> children;
