@@ -12,10 +12,6 @@ Animation::Animation(std::string name, float duration, float ticksPerSecond, Bon
 
 void Animation::animate(double animationTime)
 {
-	//printf("Animation name: %s\n", animation.name.c_str());
 	glm::mat4 parentTransform(1.0f);
 	rootBone->applyTransformations(rootBone->interpolateTransform(animationTime), parentTransform, animationTime);
-
-	//if(bones["Bone"])
-	//	bones["Bone"]->applyTransformations(bones["Bone"]->interpolateTransform(animationTime, animation));
 }

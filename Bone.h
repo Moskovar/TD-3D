@@ -22,7 +22,7 @@ class Bone
 {
 	public:
 		Bone() {};
-		Bone(std::string name, std::vector<std::tuple<float, Vertex*>> vertices);
+		Bone(int id, std::string name, std::vector<std::tuple<float, Vertex*>> vertices);
 		~Bone();
 
 		auto getVertices() { return vertices; }
@@ -36,6 +36,7 @@ class Bone
 		void applyTransformations(glm::mat4 localTransform, glm::mat4 parentTransform, double animationTime);
 		
 	private:
+		int id = 0;
 		std::string name;
 		std::vector<std::tuple<float, Vertex*>> vertices;//poids vertex
 		std::map<double, KeyFrame> keyFrames;

@@ -6,7 +6,7 @@ Mesh::Mesh(std::vector<Vertex*> v_vertices, std::vector<unsigned int> v_indices)
 {
 	for (Vertex* vertex : v_vertices)
 	{
-		v_vertices_default.push_back({ vertex->id, vertex->position, vertex->normal, vertex->texCoords });
+		v_vertices_default.push_back({ vertex->id, vertex->position, vertex->normal, vertex->texCoords , vertex->bonesID, vertex->weights});
 	}
 	this->v_vertices = v_vertices;
 	this->v_indices  = v_indices;
@@ -35,8 +35,14 @@ void Mesh::updateMesh()
 		vertices2.push_back(vertex->texCoords.y);
 	}
 
-	GLfloat* vertices = &vertices2[0];
-	unsigned int numOfVertices = vertices2.size();
+	std::vector<Vertex> v_vertices;//a changer en modifiant this->v_vertices avec des Vertex et pas des pointeurs
+	for (Vertex* vertex : this->v_vertices)
+	{
+		v_vertices.push_back({ vertex->id, vertex->position, vertex->normal, vertex->texCoords, vertex->bonesID, vertex->weights });
+		printf("ID: %d ... weight: %f\n", v_vertices[v_vertices.size() - 1].bonesID.x, v_vertices[v_vertices.size() - 1].weights.x);
+	}
+
+	unsigned int numOfVertices = v_vertices.size();
 
 	unsigned int* indices = &v_indices[0];
 	unsigned int numOfIndices= v_indices.size();
@@ -47,18 +53,16 @@ void Mesh::updateMesh()
 
 	glGenBuffers(1, &IBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * numOfIndices, indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numOfIndices * sizeof(unsigned int), v_indices.data(), GL_STATIC_DRAW);
 
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * numOfVertices, vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * v_vertices.size(), &v_vertices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, numOfVertices * sizeof(Vertex), v_vertices.data(), GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertices[0]) * 8, 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertices[0]) * 8, (void*)(sizeof(vertices[0]) * 3));
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(vertices[0]) * 8, (void*)(sizeof(vertices[0]) * 5));
-	glEnableVertexAttribArray(2);
+
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

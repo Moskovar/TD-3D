@@ -1,22 +1,8 @@
 #include "Bone.h"
 
-
-#include <iostream>
-void printMatrix(const glm::mat4& matrix) {
-    std::cout << "Matrix:" << std::endl;
-    for (int i = 0; i < 4; ++i) {
-        for (int j = 0; j < 4; ++j) {
-            std::cout << matrix[j][i] << " "; // Notez la transposition: matrix[j][i] au lieu de matrix[i][j]
-        }
-        std::cout << std::endl;
-    }
-}
-
-
-
-
-Bone::Bone(std::string name, std::vector<std::tuple<float, Vertex*>> vertices)
+Bone::Bone(int id, std::string name, std::vector<std::tuple<float, Vertex*>> vertices)
 {
+    this->id = id;
     this->name = name;
 	this->vertices = vertices;
 
@@ -80,8 +66,6 @@ glm::mat4 Bone::interpolateTransform(double animationTime)
 
 void Bone::applyTransformations(glm::mat4 localTransform, glm::mat4 parentTransform, double animationTime)
 {
-    //printf("Applaying transformations to bone: %s\n", name.c_str());
-    //printMatrix(localTransform);
     glm::mat4 globalTransform = localTransform * parentTransform;
 
     for (auto vertexTuple : vertices)

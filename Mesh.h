@@ -6,10 +6,23 @@
 struct Vertex
 {
 	unsigned int id = 0;
-	//float weight    = 0.0f;
 	glm::vec3 position;
 	glm::vec3 normal;
 	glm::vec2 texCoords;
+	glm::ivec4 bonesID;
+	glm::vec4 weights;
+
+	Vertex() : bonesID(-1, -1, -1, -1) {};
+
+	Vertex(unsigned int id, glm::vec3 position, glm::vec3 normal, glm::vec2 texCoords, glm::ivec4 bonesID, glm::vec4 weights) 
+	{
+		this->id = id;
+		this->position = position;
+		this->normal = normal;
+		this->texCoords = texCoords;
+		this->bonesID = bonesID;
+		this->weights = weights;
+	}
 
 	bool operator==(const Vertex& other) const
 	{
