@@ -60,7 +60,6 @@ void Model::loadModel(const std::string& fileName)
 	if (scene->mNumAnimations > 0) 
 	{
 		const aiAnimation* animation = scene->mAnimations[ANIMATION_ID]; // Récupère la première animation
-		Animation str_animation = { std::string(animation->mName.C_Str()), animation->mDuration, animation->mTicksPerSecond };
 		printf("Nombre d'animation pour: %s -> %d\n", fileName.c_str(), scene->mNumAnimations);
 		// Vous pouvez maintenant travailler avec l'animation
 		// Variables pour gérer le temps
@@ -108,8 +107,8 @@ void Model::loadModel(const std::string& fileName)
 				//printf(" ... scal : %f\n" , bone->mScalingKeys[j].mTime);
 			}
 
-			//printf("\n\n\n");
-			if (bones[std::string(bone->mNodeName.C_Str())]) bones[std::string(bone->mNodeName.C_Str())]->setKeyFrames(str_animation, keyFrames);
+			animations[animations.size()] = Animation(std::string(animation->mName.C_Str()), animation->mDuration, ticksPerSecond, bones["Bone"]);
+			if (bones[std::string(bone->mNodeName.C_Str())]) bones[std::string(bone->mNodeName.C_Str())]->setKeyFrames(keyFrames);
 			//else printf("%s is not set \n", bone->mNodeName.C_Str());
 		}
 	}
@@ -124,7 +123,11 @@ void Model::loadModel(const std::string& fileName)
 
 void Model::renderModel()
 {
-	//std::vector<Vertex*> vertices = bones["Os.011"].getVertices()
+	//for (Mesh* mesh : meshList)
+	//{
+	//	
+	//}
+
 	for (size_t i = 0; i < meshList.size(); i++)
 	{
 		unsigned int materialIndex = meshToTex[i];
@@ -134,6 +137,7 @@ void Model::renderModel()
 		//	textureList[materialIndex]->UseTexture();
 		//}
 
+		meshList[i]->updateMesh();
 		meshList[i]->RenderMesh();
 	}
 }
@@ -159,26 +163,20 @@ void Model::clearModel()
 	//}
 }
 
-void Model::animate(double animationTime, Animation animation)
-{
-	//for (auto bone : bones)
-	//{
-	//	glm::mat4 parentTransform(1.0f);
-	//	if (bone.second) bone.second->applyTransformations(bone.second->interpolateTransform(animationTime, animation), parentTransform, animationTime, animation);
-	//}
-
-	//printf("Animation name: %s\n", animation.name.c_str());
-	glm::mat4 parentTransform(1.0f);
-	bones["LowerBone"]->applyTransformations(bones["LowerBone"]->interpolateTransform(animationTime, animation), parentTransform, animationTime, animation);
-
-	//if(bones["Bone"])
-	//	bones["Bone"]->applyTransformations(bones["Bone"]->interpolateTransform(animationTime, animation));
-
-	for (Mesh* mesh : meshList)
-	{
-		mesh->updateMesh();
-	}
-}
+//void Model::animate(double animationTime)
+//{
+//	//printf("Animation name: %s\n", animation.name.c_str());
+//	glm::mat4 parentTransform(1.0f);
+//	bones["Bone"]->applyTransformations(bones["Bone"]->interpolateTransform(animationTime), parentTransform, animationTime);
+//
+//	//if(bones["Bone"])
+//	//	bones["Bone"]->applyTransformations(bones["Bone"]->interpolateTransform(animationTime, animation));
+//
+//	for (Mesh* mesh : meshList)
+//	{
+//		mesh->updateMesh();
+//	}
+//}
 
 Model::~Model()
 {

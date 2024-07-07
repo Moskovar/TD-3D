@@ -18,26 +18,6 @@ struct KeyFrame
 	//double time;
 };
 
-struct Animation
-{
-	std::string name;
-	double duration;
-	double ticksPerSecond;
-
-	bool operator==(const Animation& other) const
-	{
-		return name == other.name && duration == other.duration;
-	}
-
-	// Surcharge de l'opérateur < pour comparer deux MyStruct
-	bool operator<(const Animation& other) const {
-		if (duration != other.duration) {
-			return duration < other.duration;
-		}
-		return name < other.name;
-	}
-};
-
 class Bone
 {
 	public:
@@ -46,19 +26,19 @@ class Bone
 		~Bone();
 
 		auto getVertices() { return vertices; }
-		auto getAnimations() { return animations; }
+		auto getAnimations() { return keyFrames; }
 		std::string getName() { return name; }
-		void setKeyFrames(Animation animation, std::map<double, KeyFrame> keyFrames) { this->animations[animation] = keyFrames; }
+		void setKeyFrames(std::map<double, KeyFrame> keyFrames) { this->keyFrames = keyFrames; }
 		void addChildren(Bone* bone) { children.push_back(bone); }
 		std::vector<Bone*> getChildren() { return children; }
         // Fonction pour interpoler les transformations d'une animation
-		glm::mat4 interpolateTransform(double animationTime, Animation animation);
-		void applyTransformations(glm::mat4 localTransform, glm::mat4 parentTransform, double animationTime, Animation animation);
+		glm::mat4 interpolateTransform(double animationTime);
+		void applyTransformations(glm::mat4 localTransform, glm::mat4 parentTransform, double animationTime);
 		
 	private:
 		std::string name;
 		std::vector<std::tuple<float, Vertex*>> vertices;//poids vertex
-		std::map<Animation, std::map<double, KeyFrame>> animations;
+		std::map<double, KeyFrame> keyFrames;
 		std::vector<Bone*> children;
 
 		// Fonction pour interpoler entre deux valeurs

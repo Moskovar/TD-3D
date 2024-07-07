@@ -29,9 +29,9 @@ Bone::~Bone()
 
 }
 
-glm::mat4 Bone::interpolateTransform(double animationTime, Animation animation)
+glm::mat4 Bone::interpolateTransform(double animationTime)
 {
-    const std::map<double, KeyFrame> keyFrames = animations[animation];
+    //const std::map<double, KeyFrame> keyFrames = keyFrames[animation];
     //printf("KeyFrame SIZE: %d\n", keyFrames.size());
 
     // Si aucune keyframe n'est disponible, retourner une matrice identité
@@ -39,8 +39,6 @@ glm::mat4 Bone::interpolateTransform(double animationTime, Animation animation)
     {
         return glm::mat4(1.0f);
     }
-
-    //if (name == "UpperBone") { printf("UPPERBONE\n"); return glm::mat4(1.0f); }
 
     // Trouver les keyframes qui entourent le temps d'animation donné
     auto nextKeyFrame = keyFrames.lower_bound(animationTime);
@@ -80,7 +78,7 @@ glm::mat4 Bone::interpolateTransform(double animationTime, Animation animation)
     //return glm::translate(glm::mat4(1.0f), position);
 }
 
-void Bone::applyTransformations(glm::mat4 localTransform, glm::mat4 parentTransform, double animationTime, Animation animation)
+void Bone::applyTransformations(glm::mat4 localTransform, glm::mat4 parentTransform, double animationTime)
 {
     //printf("Applaying transformations to bone: %s\n", name.c_str());
     //printMatrix(localTransform);
@@ -107,7 +105,7 @@ void Bone::applyTransformations(glm::mat4 localTransform, glm::mat4 parentTransf
     {
         if (child)
         {
-            child->applyTransformations(child->interpolateTransform(animationTime, animation), globalTransform, animationTime, animation);
+            child->applyTransformations(child->interpolateTransform(animationTime), globalTransform, animationTime);
         }
     }
 }

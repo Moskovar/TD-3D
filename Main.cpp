@@ -119,7 +119,7 @@ int main()
         return -1;
     }
 
-    Model character("models/fbx/cubeman.fbx");
+    Model character("models/fbx/triangles.fbx");
 
     //--- Création des shaders ---//
     GLuint shaderProgram = 0;
@@ -174,10 +174,11 @@ int main()
 
     auto bones = character.getBones();
 
+    Animation* animation = character.getAnimation(0);
     auto startTime = std::chrono::high_resolution_clock::now();
     float ticksPerSecond = 24;
-    ticksPerSecond = bones["LowerBone"]->getAnimations().begin()->first.ticksPerSecond / ANIMATION_SPEED_RATE;
-    float duration = 21 / ticksPerSecond;
+    if (animation) ticksPerSecond = animation->getTicksPerSecond();
+    float duration = animation->getDuration() / ticksPerSecond;
 
     int c = 0;//debug
     //Boucle de rendu
@@ -199,7 +200,7 @@ int main()
         auto currentTime = std::chrono::high_resolution_clock::now();
         float timeElapsed = std::chrono::duration<float>(currentTime - startTime).count();
         float animationTime = fmod(timeElapsed * ticksPerSecond, duration);
-        character.animate(animationTime, bones["LowerBone"]->getAnimations().begin()->first);
+        if (animation) animation->animate(animationTime);
 
         //--- Caméra ---//
 

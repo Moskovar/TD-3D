@@ -16,6 +16,7 @@
 
 #include "Bone.h"
 #include "Mesh.h"
+#include "Animation.h"
 //#include "Texture.h"
 
 #define ANIMATION_SPEED_RATE 10.0
@@ -36,9 +37,11 @@ class Model
 		void loadModel(const std::string& fileName);
 		void renderModel();
 		void clearModel();
-		void animate(double animationTime, Animation animation);
+		//void animate(double animationTime);
 
 		const std::map<std::string, Bone*> getBones() { return bones; }
+		const auto getAnimations() { return animations; }
+		Animation* getAnimation(unsigned short id) { return &animations[id]; }
 
 		~Model();
 
@@ -55,6 +58,6 @@ class Model
 		std::vector<Node*> nodes;
 
 		//--- Animations ---//
-
+		std::map<unsigned short, Animation> animations;
 };
 
