@@ -1,6 +1,7 @@
 #pragma once
 #include <GLM/glm.hpp>             // Pour les types de base (vec3, mat4, etc.)
 #include <GLM/gtc/quaternion.hpp> //  Pour les quaternions (quat)
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 #include <GLM/gtc/type_ptr.hpp>
 #include <vector>
@@ -22,7 +23,7 @@ class Bone
 {
 	public:
 		Bone() {};
-		Bone(int id, std::string name, std::vector<std::tuple<float, Vertex*>> vertices);
+		Bone(int id, std::string name, std::vector<std::tuple<float, Vertex>> vertices);
 		~Bone();
 
 		auto getVertices() { return vertices; }
@@ -32,21 +33,17 @@ class Bone
 		void addChildren(Bone* bone) { children.push_back(bone); }
 		std::vector<Bone*> getChildren() { return children; }
         // Fonction pour interpoler les transformations d'une animation
-		glm::mat4 interpolateTransform(double animationTime);
+		void interpolateTransform(double animationTime, glm::mat4* bonesTransform, glm::mat4& parentTransforms);
 		void applyTransformations(glm::mat4 localTransform, glm::mat4 parentTransform, double animationTime);
 		
 	private:
 		int id = 0;
 		std::string name;
-		std::vector<std::tuple<float, Vertex*>> vertices;//poids vertex
+		std::vector<std::tuple<float, Vertex>> vertices;//poids vertex
 		std::map<double, KeyFrame> keyFrames;
 		std::vector<Bone*> children;
 
 		// Fonction pour interpoler entre deux valeurs
-		template <typename T>
-		T interpolate(const T& start, const T& end, float factor);
-};
-
-template<typename T>
-inline T Bone::interpolate(const T& start, const T& end, float factor) { return start + factor * (end - start); }
+		glm::vec3 interpolate(const glm::vec3& start, const glm::vec3& end, float factor) { return start + factor * (end - start); }
+}; 
 

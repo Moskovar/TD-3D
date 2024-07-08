@@ -214,33 +214,33 @@ void Model::loadNode(aiNode* node, const aiScene* scene, Node* parentNode)
 
 void Model::loadMesh(aiMesh* mesh, const aiScene* scene, std::vector<Mesh*>& meshes)
 {
-	std::vector<Vertex*>	  v_vertices;
+	std::vector<Vertex>	  v_vertices;
 	std::vector<unsigned int> v_indices;
 
 	for (size_t i = 0; i < mesh->mNumVertices; i++)
 	{
-		Vertex* vertex = new Vertex();
-		vertex->id = i;
+		Vertex vertex;
+		vertex.id = i;
 
-		vertex->position.x = mesh->mVertices[i].x;
-		vertex->position.y = mesh->mVertices[i].y;
-		vertex->position.z = mesh->mVertices[i].z;
+		vertex.position.x = mesh->mVertices[i].x;
+		vertex.position.y = mesh->mVertices[i].y;
+		vertex.position.z = mesh->mVertices[i].z;
 
 		// Récupérer les normales
 		if (mesh->HasNormals())
 		{
-			vertex->normal.x = mesh->mNormals[i].x;
-			vertex->normal.y = mesh->mNormals[i].y;
-			vertex->normal.z = mesh->mNormals[i].z;
+			vertex.normal.x = mesh->mNormals[i].x;
+			vertex.normal.y = mesh->mNormals[i].y;
+			vertex.normal.z = mesh->mNormals[i].z;
 		}
 
 		// Récupérer les coordonnées de texture
 		if (mesh->mTextureCoords[0])
 		{
-			vertex->texCoords.x = mesh->mTextureCoords[0][i].x;
-			vertex->texCoords.y = mesh->mTextureCoords[0][i].y;
+			vertex.texCoords.x = mesh->mTextureCoords[0][i].x;
+			vertex.texCoords.y = mesh->mTextureCoords[0][i].y;
 		}
-		else vertex->texCoords = glm::vec2(0.0f, 0.0f);
+		else vertex.texCoords = glm::vec2(0.0f, 0.0f);
 
 		v_vertices.push_back(vertex);
 	}
@@ -251,19 +251,19 @@ void Model::loadMesh(aiMesh* mesh, const aiScene* scene, std::vector<Mesh*>& mes
 		{
 			aiBone* bone = mesh->mBones[i];
 			printf("Bone: %s has %d vertices\n", bone->mName.C_Str(), bone->mNumWeights);
-			std::vector<std::tuple<float, Vertex*>> v_vertices2;//enlever l'autre vecteur pointeur?
+			std::vector<std::tuple<float, Vertex>> v_vertices2;//enlever l'autre vecteur pointeur?
 			for (size_t j = 0; j < bone->mNumWeights; j++)
 			{
-				for (Vertex* vertex : v_vertices)//on cherche le vertex correspondant dans le vecteur qu'on vient de remplir et quand on trouve on le met dans le vecteur pour l'os
-					if (vertex->id == bone->mWeights[j].mVertexId)
+				for (Vertex& vertex : v_vertices)//on cherche le vertex correspondant dans le vecteur qu'on vient de remplir et quand on trouve on le met dans le vecteur pour l'os
+					if (vertex.id == bone->mWeights[j].mVertexId)
 					{
 						//vertex->weight = bone->mWeights[j].mWeight;
+						if		(vertex.bonesID.x == -1) { vertex.bonesID.x = i; vertex.weights.x = bone->mWeights[i].mWeight; }
+						else if (vertex.bonesID.y == -1) { vertex.bonesID.y = i; vertex.weights.y = bone->mWeights[i].mWeight; }
+						else if (vertex.bonesID.z == -1) { vertex.bonesID.z = i; vertex.weights.z = bone->mWeights[i].mWeight; }
+						else if (vertex.bonesID.w == -1) { vertex.bonesID.w = i; vertex.weights.w = bone->mWeights[i].mWeight; }
+						printf("ID: %d, poids: %f\n", vertex.bonesID.x, vertex.weights.x);
 						v_vertices2.push_back(std::make_tuple(bone->mWeights[j].mWeight, vertex));
-						printf("ID: %d, poids: %f\n", vertex->bonesID.x, vertex->weights.x);
-						if		(vertex->bonesID.x == -1) { vertex->bonesID.x = i; vertex->weights.x = i; }
-						else if (vertex->bonesID.y == -1) { vertex->bonesID.y = i; vertex->weights.y = i; }
-						else if (vertex->bonesID.z == -1) { vertex->bonesID.z = i; vertex->weights.z = i; }
-						else if (vertex->bonesID.w == -1) { vertex->bonesID.w = i; vertex->weights.w = i; }
 					}
 			}
 			bones[std::string(bone->mName.C_Str())] = new Bone(i, std::string(bone->mName.C_Str()), v_vertices2);

@@ -2,12 +2,9 @@
 #include <GLM/gtc/type_ptr.hpp>
 
 
-Mesh::Mesh(std::vector<Vertex*> v_vertices, std::vector<unsigned int> v_indices)
+Mesh::Mesh(std::vector<Vertex> v_vertices, std::vector<unsigned int> v_indices)
 {
-	for (Vertex* vertex : v_vertices)
-	{
-		v_vertices_default.push_back({ vertex->id, vertex->position, vertex->normal, vertex->texCoords , vertex->bonesID, vertex->weights});
-	}
+	printf("Total vertices: %d\n", v_vertices.size());
 	this->v_vertices = v_vertices;
 	this->v_indices  = v_indices;
 	VAO = 0;
@@ -15,35 +12,17 @@ Mesh::Mesh(std::vector<Vertex*> v_vertices, std::vector<unsigned int> v_indices)
 	IBO = 0;
 	indexCount = 0;
 
+	for (Vertex v : this->v_vertices)
+	{
+		printf("OFFICIAL: VertexID: %d ... BoneID: %d ... Weight: %f\n", v.id, v.bonesID.x, v.weights.x);
+	}
+
 	updateMesh();
 }
 
 void Mesh::updateMesh()
 {
-	std::vector<GLfloat> vertices2;
-	for (Vertex* vertex : this->v_vertices)
-	{
-		vertices2.push_back(vertex->position.x);
-		vertices2.push_back(vertex->position.y);
-		vertices2.push_back(vertex->position.z);
-								  
-		vertices2.push_back(vertex->normal.x);
-		vertices2.push_back(vertex->normal.y);
-		vertices2.push_back(vertex->normal.z);
-								  
-		vertices2.push_back(vertex->texCoords.x);
-		vertices2.push_back(vertex->texCoords.y);
-	}
-
-	std::vector<Vertex> v_vertices;//a changer en modifiant this->v_vertices avec des Vertex et pas des pointeurs
-	for (Vertex* vertex : this->v_vertices)
-	{
-		v_vertices.push_back({ vertex->id, vertex->position, vertex->normal, vertex->texCoords, vertex->bonesID, vertex->weights });
-		printf("ID: %d ... weight: %f\n", v_vertices[v_vertices.size() - 1].bonesID.x, v_vertices[v_vertices.size() - 1].weights.x);
-	}
-
 	unsigned int numOfVertices = v_vertices.size();
-
 	unsigned int* indices = &v_indices[0];
 	unsigned int numOfIndices= v_indices.size();
 	indexCount = numOfIndices;
@@ -63,13 +42,17 @@ void Mesh::updateMesh()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
 	glEnableVertexAttribArray(0);
 
+	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, bonesID));
+	glEnableVertexAttribArray(5);
+
+	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, weights));
+	glEnableVertexAttribArray(6);
+
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0);
-
-	resetMesh();
 }
 
 void Mesh::RenderMesh()
@@ -102,27 +85,7 @@ void Mesh::ClearMesh()
 	}
 
 	indexCount = 0;
-
-	for (Vertex* vertex : v_vertices)
-	{
-		if (vertex)
-		{
-			delete vertex;
-			vertex = nullptr;
-		}
-	}
 }
-
-void Mesh::resetMesh()
-{
-	for (int i = 0; i < v_vertices.size(); ++i)
-	{
-		v_vertices[i]->position  = v_vertices_default[i].position;
-		v_vertices[i]->normal    = v_vertices_default[i].normal;
-		v_vertices[i]->texCoords = v_vertices_default[i].texCoords;
-	}
-}
-
 
 Mesh::~Mesh()
 {

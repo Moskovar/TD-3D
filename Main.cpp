@@ -16,6 +16,8 @@
 
 #include "Shader.h"
 
+#define NUM_BONES 100
+
 using namespace std;
 
 GLFWwindow* window = nullptr;
@@ -119,12 +121,12 @@ int main()
         return -1;
     }
 
-    Model character("models/fbx/triangles.fbx");
+    Model character("models/fbx/doublecube.fbx");
 
     //--- Création des shaders ---//
     GLuint shaderProgram = 0;
     // Obtenir l'emplacement des uniforms
-    GLint ColorLoc = 0, viewLoc = 0, projLoc = 0, modelLoc = 0;
+    GLint ColorLoc = 0, viewLoc = 0, projLoc = 0, modelLoc = 0, bonesTransformsLoc = 0;
     {
         string vertexCode = "shaders/vertex_shader.glsl";// Lire le code du vertex shader ├á partir du fichier vertex_shader.glsl
         string fragmentCode = "shaders/fragment_shader.glsl";// Lire le code du fragment shader ├á partir du fichier fragment_shader.glsl
@@ -134,6 +136,7 @@ int main()
         modelLoc = glGetUniformLocation(shaderProgram, "model");
         viewLoc  = glGetUniformLocation(shaderProgram, "view");
         projLoc  = glGetUniformLocation(shaderProgram, "projection");
+        bonesTransformsLoc = glGetUniformLocation(shaderProgram, "bonesTransform");
     }
 
     glm::vec3 pos(x, y, z);
@@ -200,14 +203,24 @@ int main()
         auto currentTime = std::chrono::high_resolution_clock::now();
         float timeElapsed = std::chrono::duration<float>(currentTime - startTime).count();
         float animationTime = fmod(timeElapsed * ticksPerSecond, duration);
-        if (animation) animation->animate(animationTime);
+        //if (animation) animation->animate(animationTime);
 
         //--- Caméra ---//
+        //printf("Bones size... %d\n", character.getBones().size());
+        //for (auto bone : character.getBones())
+        //{
+        //    if (bone.second) printf("BoneName: %s\n", bone.first.c_str());
+        //}
+
+        glm::mat4 bonesTransform[NUM_BONES] = {};
+        glm::mat4 mtx = glm::mat4(1.0f);
+        character.getBone("Bone")->interpolateTransform(animationTime, bonesTransform, mtx);
 
         //Passer les matrices de vue et de projection aux shaders
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+        glUniformMatrix4fv(bonesTransformsLoc, NUM_BONES, GL_FALSE, &bonesTransform[0][0][0]);
 
 
         character.renderModel();

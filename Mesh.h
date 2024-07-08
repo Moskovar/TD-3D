@@ -33,20 +33,18 @@ struct Vertex
 class Mesh
 {
 	public:
-		Mesh(std::vector<Vertex*> v_vertices, std::vector<unsigned int> indices);
+		Mesh(std::vector<Vertex> v_vertices, std::vector<unsigned int> indices);
 
 		void updateMesh();
 		void RenderMesh();
 		void ClearMesh();
-		void resetMesh();
 
 		~Mesh();
 
 	private:
 		GLuint VAO, VBO, IBO;
 		GLsizei indexCount;
-		std::vector<Vertex*> v_vertices;//contient tous les vertices de la mesh -> attribué dans createMesh
-		std::vector<Vertex>  v_vertices_default;//contient tous les vertices de la mesh -> attribué dans createMesh
+		std::vector<Vertex>  v_vertices;//contient tous les vertices de la mesh -> attribué dans createMesh
 		std::vector<unsigned int> v_indices;//à voir à quoi ça correspond
 
 };

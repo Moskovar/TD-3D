@@ -13,5 +13,5 @@ Animation::Animation(std::string name, float duration, float ticksPerSecond, Bon
 void Animation::animate(double animationTime)
 {
 	glm::mat4 parentTransform(1.0f);
-	rootBone->applyTransformations(rootBone->interpolateTransform(animationTime), parentTransform, animationTime);
+	//if(rootBone) rootBone->applyTransformations(rootBone->interpolateTransform(animationTime), parentTransform, animationTime);
 }
