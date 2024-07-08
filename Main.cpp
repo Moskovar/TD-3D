@@ -121,7 +121,7 @@ int main()
         return -1;
     }
 
-    Model character("models/fbx/doublecube.fbx");
+    Model character("models/fbx/cubeman.fbx");
 
     //--- Création des shaders ---//
     GLuint shaderProgram = 0;

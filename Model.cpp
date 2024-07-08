@@ -262,11 +262,12 @@ void Model::loadMesh(aiMesh* mesh, const aiScene* scene, std::vector<Mesh*>& mes
 						else if (vertex.bonesID.y == -1) { vertex.bonesID.y = i; vertex.weights.y = bone->mWeights[i].mWeight; }
 						else if (vertex.bonesID.z == -1) { vertex.bonesID.z = i; vertex.weights.z = bone->mWeights[i].mWeight; }
 						else if (vertex.bonesID.w == -1) { vertex.bonesID.w = i; vertex.weights.w = bone->mWeights[i].mWeight; }
-						printf("ID: %d, poids: %f\n", vertex.bonesID.x, vertex.weights.x);
+						printf("Bone x: %f ... y: %f ... z: %f !!!!\n", bone->mOffsetMatrix[3]);
+						//printf("ID: %d, poids: %f\n", vertex.bonesID.x, vertex.weights.x);
 						v_vertices2.push_back(std::make_tuple(bone->mWeights[j].mWeight, vertex));
 					}
 			}
-			bones[std::string(bone->mName.C_Str())] = new Bone(i, std::string(bone->mName.C_Str()), v_vertices2);
+			bones[std::string(bone->mName.C_Str())] = new Bone(i, std::string(bone->mName.C_Str()), bone->mOffsetMatrix, v_vertices2);
 			//printf("Bone: %s has %d vertices\n", bone->mName.C_Str(), bones[std::string(bone->mName.C_Str())].getVertices().size());
 		}
 	}

@@ -19,7 +19,7 @@
 #include "Animation.h"
 //#include "Texture.h"
 
-#define ANIMATION_SPEED_RATE 10.0
+#define ANIMATION_SPEED_RATE 5
 #define ANIMATION_ID		 0
 
 struct Node

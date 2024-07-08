@@ -14,7 +14,7 @@ Mesh::Mesh(std::vector<Vertex> v_vertices, std::vector<unsigned int> v_indices)
 
 	for (Vertex v : this->v_vertices)
 	{
-		printf("OFFICIAL: VertexID: %d ... BoneID: %d ... Weight: %f\n", v.id, v.bonesID.x, v.weights.x);
+		//printf("OFFICIAL: VertexID: %d ... BoneID: %d ... Weight: %f\n", v.id, v.bonesID.x, v.weights.x);
 	}
 
 	updateMesh();

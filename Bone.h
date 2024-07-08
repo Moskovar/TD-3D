@@ -1,9 +1,9 @@
 #pragma once
 #include <GLM/glm.hpp>             // Pour les types de base (vec3, mat4, etc.)
 #include <GLM/gtc/quaternion.hpp> //  Pour les quaternions (quat)
-#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 #include <GLM/gtc/type_ptr.hpp>
+#include <assimp/scene.h>
 #include <vector>
 #include <map>
 #include <string>
@@ -23,12 +23,13 @@ class Bone
 {
 	public:
 		Bone() {};
-		Bone(int id, std::string name, std::vector<std::tuple<float, Vertex>> vertices);
+		Bone(int id, std::string name, aiMatrix4x4 offsetMatrix, std::vector<std::tuple<float, Vertex>> vertices);
 		~Bone();
 
 		auto getVertices() { return vertices; }
 		auto getAnimations() { return keyFrames; }
 		std::string getName() { return name; }
+		glm::mat4 getOffsetMatrix() { return offetMatrix; }
 		void setKeyFrames(std::map<double, KeyFrame> keyFrames) { this->keyFrames = keyFrames; }
 		void addChildren(Bone* bone) { children.push_back(bone); }
 		std::vector<Bone*> getChildren() { return children; }
@@ -42,6 +43,7 @@ class Bone
 		std::vector<std::tuple<float, Vertex>> vertices;//poids vertex
 		std::map<double, KeyFrame> keyFrames;
 		std::vector<Bone*> children;
+		glm::mat4 offetMatrix;
 
 		// Fonction pour interpoler entre deux valeurs
 		glm::vec3 interpolate(const glm::vec3& start, const glm::vec3& end, float factor) { return start + factor * (end - start); }

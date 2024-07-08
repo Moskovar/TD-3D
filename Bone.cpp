@@ -1,9 +1,17 @@
 #include "Bone.h"
 
-Bone::Bone(int id, std::string name, std::vector<std::tuple<float, Vertex>> vertices)
+Bone::Bone(int id, std::string name, aiMatrix4x4 offsetMatrix, std::vector<std::tuple<float, Vertex>> vertices)
 {
     this->id = id;
     this->name = name;
+    this->offetMatrix = glm::mat4
+    {
+        offsetMatrix.a1, offsetMatrix.b1, offsetMatrix.c1, offsetMatrix.d1,
+        offsetMatrix.a2, offsetMatrix.b2, offsetMatrix.c2, offsetMatrix.d2,
+        offsetMatrix.a3, offsetMatrix.b3, offsetMatrix.c3, offsetMatrix.d3,
+        offsetMatrix.a4, offsetMatrix.b4, offsetMatrix.c4, offsetMatrix.d4
+    };
+
 	this->vertices = vertices;
 
     for (auto& vTuple : vertices)
@@ -26,8 +34,9 @@ void Bone::interpolateTransform(double animationTime, glm::mat4* bonesTransform,
     // Si aucune keyframe n'est disponible, retourner une matrice identité
     if (keyFrames.empty()) 
     {
-        bonesTransform[id] = res;
-        //interpolateTransform(animationTime, bonesTransform, res);
+        bonesTransform[id] = res * offetMatrix;
+        for (Bone* child : children)
+            child->interpolateTransform(animationTime, bonesTransform, res);
         return;
     }
 
@@ -37,7 +46,7 @@ void Bone::interpolateTransform(double animationTime, glm::mat4* bonesTransform,
     if (nextKeyFrame == keyFrames.end()) // Si aucune keyframe suivante n'est trouvée, utiliser la dernière keyframe
     {
         res *= glm::translate(keyFrames.rbegin()->second.position) * glm::mat4_cast(keyFrames.rbegin()->second.rotation) * glm::scale(keyFrames.rbegin()->second.scale);
-        bonesTransform[id] = res;
+        bonesTransform[id] = res * offetMatrix;
         for(Bone* child : children)
             child->interpolateTransform(animationTime, bonesTransform, res);
         return;
@@ -58,13 +67,12 @@ void Bone::interpolateTransform(double animationTime, glm::mat4* bonesTransform,
     // Calculer le facteur d'interpolation
     float factor = static_cast<float>((animationTime - prevKeyFrame->first) / (nextKeyFrame->first - prevKeyFrame->first));
     // Interpoler les positions, rotations et échelles
-    glm::vec3 position = interpolate(prevKeyFrame->second.position, nextKeyFrame->second.position, factor);
-    //printf("Factor: %f ... x: %f ... y: %f ... z: %f\n", factor, position.x, position.y, position.z);
+    glm::vec3 position = glm::mix(prevKeyFrame->second.position, nextKeyFrame->second.position, factor);
     glm::quat rotation = glm::slerp(prevKeyFrame->second.rotation, nextKeyFrame->second.rotation, factor);
     glm::vec3 scale    = interpolate(prevKeyFrame->second.scale, nextKeyFrame->second.scale, factor);
 
     res *= glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(rotation) * glm::scale(glm::mat4(1.0f), scale);
-    bonesTransform[id] = res;
+    bonesTransform[id] = res * offetMatrix;
     for (Bone* child : children)
         child->interpolateTransform(animationTime, bonesTransform, res);
     return;
