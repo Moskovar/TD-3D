@@ -1,6 +1,7 @@
 #pragma once
 #include <GLM/glm.hpp>             // Pour les types de base (vec3, mat4, etc.)
 #include <GLM/gtc/quaternion.hpp> //  Pour les quaternions (quat)
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 #include <GLM/gtc/type_ptr.hpp>
 #include <assimp/scene.h>

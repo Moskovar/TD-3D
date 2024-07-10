@@ -3,17 +3,13 @@
 #include <GLM/glm.hpp>
 #include <GLM/gtc/type_ptr.hpp>
 #include <GLM/gtc/matrix_transform.hpp>
-//#include <assimp/Importer.hpp>
-//#include <assimp/scene.h>
-//#include <assimp/postprocess.h>
-//#include "stb_image.h"
 
 #include <iostream>
 #include <vector>
 #include <chrono>
 
 #include "Model.h"
-
+#include "Camera.h"
 #include "Shader.h"
 
 #define NUM_BONES 100
@@ -22,7 +18,7 @@ using namespace std;
 
 GLFWwindow* window = nullptr;
 float r = 0.5f, g = 0.5f, b = 0.5f,
-x = 0.0f, y = 0.0f, z = 0.0f;
+camX = 0.0f, camY = 0.0f, camZ = -10.0f;
 
 // Fonction de rappel pour les erreurs GLFW
 void glfwErrorCallback(int error, const char* description)
@@ -33,10 +29,10 @@ void glfwErrorCallback(int error, const char* description)
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (action == GLFW_PRESS) {
         switch (key) {
-        case GLFW_KEY_W:      z += 0.1f;                                 break;
-        case GLFW_KEY_S:      z -= 0.1f;                                 break;
-        case GLFW_KEY_A:      x += 0.1f;                                 break;
-        case GLFW_KEY_D:      x -= 0.1f;                                 break;
+        case GLFW_KEY_W:      camZ += 1.0f;                                 break;
+        case GLFW_KEY_S:      camZ -= 1.0f;                                 break;
+        case GLFW_KEY_A:      camX += 0.1f;                                 break;
+        case GLFW_KEY_D:      camX -= 0.1f;                                 break;
         case GLFW_KEY_ESCAPE: glfwSetWindowShouldClose(window, true);    break;
         case GLFW_KEY_F1:     r = (r < 1.0f) ? r + 0.1 : 1.0;            break;
         case GLFW_KEY_F2:     g = (g < 1.0f) ? g + 0.1 : 1.0;            break;
@@ -121,7 +117,8 @@ int main()
         return -1;
     }
 
-    Model character("models/fbx/cubeman.fbx");
+    Model character("models/fbx/doublecube.fbx");
+    Camera camera(glm::vec3(camX, camY, camZ), glm::vec3(0.0f, 0.0f, 0.0f));
 
     //--- Création des shaders ---//
     GLuint shaderProgram = 0;
@@ -139,25 +136,16 @@ int main()
         bonesTransformsLoc = glGetUniformLocation(shaderProgram, "bonesTransform");
     }
 
-    glm::vec3 pos(x, y, z);
     glm::vec3 color(r, g, b);
 
     // Définir la fonction de rappel pour les entrées clavier
     glfwSetKeyCallback(window, keyCallback);
 
-    //Position de la caméra
-    glm::vec3 cameraPos = glm::vec3(0.0f, 1.0f, -20.0f);
-    glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
-    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
-    glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
-
     //Matrice du model
     glm::mat4 model = glm::mat4(1.0f); // Matrice de modèle d'identité
 
-    //Matrice de vue
-    glm::mat4 view = glm::lookAt(cameraPos, cameraTarget, cameraUp);
+    //Matrice de la caméra
+    glm::mat4 view;
 
     //Matrice de projection
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 1000.0f);
@@ -215,6 +203,9 @@ int main()
         glm::mat4 bonesTransform[NUM_BONES] = {};
         glm::mat4 mtx = glm::mat4(1.0f);
         character.getBone("Bone")->interpolateTransform(animationTime, bonesTransform, mtx);
+
+        //Matrice de vue
+        view = camera.getViewMatrix();
 
         //Passer les matrices de vue et de projection aux shaders
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
