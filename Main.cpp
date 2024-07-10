@@ -1,38 +1,24 @@
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include <GLM/glm.hpp>
-#include <GLM/gtc/type_ptr.hpp>
-#include <GLM/gtc/matrix_transform.hpp>
-
-#include <iostream>
+#pragma once
 #include <vector>
 #include <chrono>
 
+#include "Window.h"
 #include "Model.h"
 #include "Camera.h"
 #include "Shader.h"
 
 #define NUM_BONES 100
 
-using namespace std;
-
-GLFWwindow* window = nullptr;
-float r = 0.5f, g = 0.5f, b = 0.5f,
-camX = 0.0f, camY = 0.0f, camZ = -10.0f;
-
-// Fonction de rappel pour les erreurs GLFW
-void glfwErrorCallback(int error, const char* description)
-{
-    std::cerr << "GLFW Error (" << error << "): " << description << std::endl;
-}
+Window* window = nullptr;
+float r = 0.5f, g = 0.5f, b = 0.5f;
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (action == GLFW_PRESS) {
         switch (key) {
-        case GLFW_KEY_W:      camZ += 1.0f;                                 break;
-        case GLFW_KEY_S:      camZ -= 1.0f;                                 break;
-        case GLFW_KEY_A:      camX += 0.1f;                                 break;
-        case GLFW_KEY_D:      camX -= 0.1f;                                 break;
+        case GLFW_KEY_W:                                    break;
+        case GLFW_KEY_S:                                    break;
+        case GLFW_KEY_A:                                    break;
+        case GLFW_KEY_D:                                    break;
         case GLFW_KEY_ESCAPE: glfwSetWindowShouldClose(window, true);    break;
         case GLFW_KEY_F1:     r = (r < 1.0f) ? r + 0.1 : 1.0;            break;
         case GLFW_KEY_F2:     g = (g < 1.0f) ? g + 0.1 : 1.0;            break;
@@ -44,81 +30,12 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
 }
 
-GLFWwindow* initialize()
-{
-    // Initialiser GLFW
-    glfwSetErrorCallback(glfwErrorCallback);
-    if (!glfwInit())
-    {
-        std::cerr << "Failed to initialize GLFW" << std::endl;
-        return nullptr;
-    }
-
-    // Créer une fenêtre GLFW
-    GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL Setup Test", NULL, NULL);
-    if (!window)
-    {
-        std::cerr << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return nullptr;
-    }
-
-    //--- Configuration de GFLW ---//
-    {
-        // D├®finir la version majeure du contexte OpenGL que nous souhaitons utiliser (ici, 3)
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-
-        // D├®finir la version mineure du contexte OpenGL que nous souhaitons utiliser (ici, 3)
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-
-        // Sp├®cifier le profil OpenGL ├á utiliser. Le profil "Core" ne comporte que les fonctionnalit├®s de base d'OpenGL, 
-        // sans les anciennes fonctionnalit├®s obsol├¿tes. Cela est recommand├® pour les nouvelles applications.
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-        // Activer la compatibilit├® avec les versions ant├®rieures d'OpenGL sur macOS, 
-        // car macOS requiert ce param├¿tre pour les versions r├®centes d'OpenGL. 
-        // Cela permet aux programmes utilisant des fonctionnalit├®s modernes d'OpenGL de fonctionner correctement sur macOS.
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    }
-    //--- Fin configuration GLFW  --- //
-
-    //On choisit sur quelle feuille on dessine
-    glfwMakeContextCurrent(window);
-
-    // Initialiser GLEW
-    glewExperimental = GL_TRUE; // N├®cessaire pour utiliser les fonctionnalit├®s modernes d'OpenGL
-    GLenum err = glewInit();
-    if (err != GLEW_OK)
-    {
-        std::cerr << "Failed to initialize GLEW: " << glewGetErrorString(err) << std::endl;
-        if (window) glfwDestroyWindow(window);
-        glfwTerminate();
-        return nullptr;
-    }
-
-    return window;
-}
-
-void clear()
-{
-    if (window) glfwDestroyWindow(window);
-    glfwTerminate();
-}
-
 int main()
 {
-    window = initialize();
-    if (!window)
-    {
-        cout << "    ---------------------" <<
-            endl << "/!\\ Initialization failed /!\\" <<
-            endl << "    ---------------------" << endl;
-
-        return -1;
-    }
+    window = new Window(1920, 1080);
 
     Model character("models/fbx/doublecube.fbx");
-    Camera camera(glm::vec3(camX, camY, camZ), glm::vec3(0.0f, 0.0f, 0.0f));
+    Camera camera(glm::vec3(0.0f, 0.0f, 0.0f));
 
     //--- Création des shaders ---//
     GLuint shaderProgram = 0;
@@ -136,21 +53,19 @@ int main()
         bonesTransformsLoc = glGetUniformLocation(shaderProgram, "bonesTransform");
     }
 
+    //--- Couleurs du modèle ---//
     glm::vec3 color(r, g, b);
-
-    // Définir la fonction de rappel pour les entrées clavier
-    glfwSetKeyCallback(window, keyCallback);
 
     //Matrice du model
     glm::mat4 model = glm::mat4(1.0f); // Matrice de modèle d'identité
 
     //Matrice de la caméra
-    glm::mat4 view;
+    glm::mat4* view = camera.getViewMatrixP();
 
     //Matrice de projection
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 1000.0f);
 
-    model = glm::translate(model, glm::vec3(0.0f, -5.0f, 0.0f));
+    model = glm::translate(model, glm::vec3(0.0f, -3.0f, 0.0f));
     //model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     //model = glm::scale(model, glm::vec3(0.01, 0.01, 0.01));
     //Exemples transformations
@@ -170,12 +85,21 @@ int main()
     float ticksPerSecond = 24;
     if (animation) ticksPerSecond = animation->getTicksPerSecond();
     float duration = animation->getDuration() / ticksPerSecond;
-
+    GLFWwindow* glfwWindow = window->getGLFWWindow();
+    // Définir la fonction de rappel pour les entrées clavier
+    glfwSetKeyCallback(glfwWindow, keyCallback);
+    float lastFrame = glfwGetTime(), currentFrame = 0, deltaTime = 0;
     int c = 0;//debug
     //Boucle de rendu
-    while (!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(glfwWindow))
     {
         c++;//debug
+
+        currentFrame = glfwGetTime();
+        deltaTime    = currentFrame - lastFrame;
+
+        camera.mouseControl(window->getGLFWWindow(), window->getXChange(), window->getYChange(), window->getScrollValue());
+
         // Effacer l'écran
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -191,7 +115,6 @@ int main()
         auto currentTime = std::chrono::high_resolution_clock::now();
         float timeElapsed = std::chrono::duration<float>(currentTime - startTime).count();
         float animationTime = fmod(timeElapsed * ticksPerSecond, duration);
-        //if (animation) animation->animate(animationTime);
 
         //--- Caméra ---//
         //printf("Bones size... %d\n", character.getBones().size());
@@ -204,25 +127,27 @@ int main()
         glm::mat4 mtx = glm::mat4(1.0f);
         character.getBone("Bone")->interpolateTransform(animationTime, bonesTransform, mtx);
 
-        //Matrice de vue
-        view = camera.getViewMatrix();
+        /*view = camera.getViewMatrixP();*/
 
         //Passer les matrices de vue et de projection aux shaders
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(*view));
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
         glUniformMatrix4fv(bonesTransformsLoc, NUM_BONES, GL_FALSE, &bonesTransform[0][0][0]);
-
 
         character.renderModel();
 
         //Swap buffers
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(glfwWindow);
         glfwPollEvents();
     }
 
     // Nettoyer et quitter
-    glfwDestroyWindow(window);
-    glfwTerminate();
+    if (window)
+    {
+        delete window;
+        window = nullptr;
+    }
+    
     return 0;
 }
