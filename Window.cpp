@@ -21,22 +21,28 @@ Window::Window(short width, short height)
     }
 
     //--- Configuration de GFLW ---//
-    {
-        // Définir la version majeure du contexte OpenGL que nous souhaitons utiliser (ici, 3)
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 
-        // Définir la version mineure du contexte OpenGL que nous souhaitons utiliser (ici, 3)
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    // Définir la version majeure du contexte OpenGL que nous souhaitons utiliser (ici, 3)
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 
-        // Spécifier le profil OpenGL á utiliser. Le profil "Core" ne comporte que les fonctionnalités de base d'OpenGL, 
-        // sans les anciennes fonctionnalités obsolètes. Cela est recommandé pour les nouvelles applications.
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    // Définir la version mineure du contexte OpenGL que nous souhaitons utiliser (ici, 3)
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
-        // Activer la compatibilité avec les versions antérieures d'OpenGL sur macOS, 
-        // car macOS requiert ce paramètre pour les versions récentes d'OpenGL. 
-        // Cela permet aux programmes utilisant des fonctionnalités modernes d'OpenGL de fonctionner correctement sur macOS.
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    }
+    // Spécifier le profil OpenGL á utiliser. Le profil "Core" ne comporte que les fonctionnalités de base d'OpenGL, 
+    // sans les anciennes fonctionnalités obsolètes. Cela est recommandé pour les nouvelles applications.
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    // Activer la compatibilité avec les versions antérieures d'OpenGL sur macOS, 
+    // car macOS requiert ce paramètre pour les versions récentes d'OpenGL. 
+    // Cela permet aux programmes utilisant des fonctionnalités modernes d'OpenGL de fonctionner correctement sur macOS.
+    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
+    glfwWindowHint(GLFW_DEPTH_BITS, 24);
+
+    // Activer le test de profondeur
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_ALWAYS);
+
     //--- Fin configuration GLFW  --- //
 
     //On choisit sur quelle feuille on dessine

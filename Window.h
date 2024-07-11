@@ -11,10 +11,12 @@ class Window
 		Window(short width, short height);
 		~Window();
 
-		GLFWwindow* getGLFWWindow() { return window; }
-		GLfloat getXChange();
-		GLfloat getYChange();
-		GLfloat& getScrollValue() { return scrollValue; }
+		GLFWwindow* getGLFWWindow()  { return window; }
+		GLfloat		getXChange();
+		GLfloat		getYChange();
+		GLint		getWidth()       { return width; }
+		GLint		getHeight()      { return height; }
+		GLfloat&	getScrollValue() { return scrollValue; }
 
 		void createCallbacks();
 		

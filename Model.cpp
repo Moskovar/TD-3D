@@ -36,7 +36,7 @@ Model::Model(const std::string& filePath)
 
 void Model::loadModel(const std::string& fileName)
 {
-	clearModel();
+	//clearModel();
 
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(fileName, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices);
@@ -123,11 +123,6 @@ void Model::loadModel(const std::string& fileName)
 
 void Model::renderModel()
 {
-	//for (Mesh* mesh : meshList)
-	//{
-	//	
-	//}
-
 	for (size_t i = 0; i < meshList.size(); i++)
 	{
 		unsigned int materialIndex = meshToTex[i];
@@ -144,23 +139,7 @@ void Model::renderModel()
 
 void Model::clearModel()
 {
-	for (size_t i = 0; i < meshList.size(); i++)
-	{
-		if (meshList[i])
-		{
-			delete meshList[i];
-			meshList[i] = nullptr;
-		}
-	}
-
-	//for (size_t i = 0; i < textureList.size(); i++)
-	//{
-	//	if (textureList[i])
-	//	{
-	//		delete textureList[i];
-	//		textureList[i] = nullptr;
-	//	}
-	//}
+	
 }
 
 //void Model::animate(double animationTime)
@@ -180,11 +159,34 @@ void Model::clearModel()
 
 Model::~Model()
 {
+	for (size_t i = 0; i < meshList.size(); i++)
+	{
+		if (meshList[i])
+		{
+			delete meshList[i];
+			meshList[i] = nullptr;
+		}
+	}
+
 	for (auto it = bones.begin(); it != bones.end(); ++it)
 	{
-		delete it->second;
-		it->second = nullptr;
+		if (it->second)
+		{
+			delete it->second;
+			it->second = nullptr;
+		}
 	}
+
+	//for (size_t i = 0; i < textureList.size(); i++)
+	//{
+	//	if (textureList[i])
+	//	{
+	//		delete textureList[i];
+	//		textureList[i] = nullptr;
+	//	}
+	//}
+
+	printf("||--- Model is cleared ---||\n");
 }
 
 void Model::loadNode(aiNode* node, const aiScene* scene, Node* parentNode)
