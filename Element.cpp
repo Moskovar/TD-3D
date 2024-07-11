@@ -23,12 +23,12 @@ void Element::render(GLuint& modelLoc, GLuint& bonesTransformsLoc, float& deltaT
 	glm::mat4 bonesTransform[NUM_BONES] = {};
 	if (model->getAnimations().size() > 0)
 	{
-		ticksPerSecond = model->getAnimation(0)->getTicksPerSecond();
-		duration = model->getAnimation(0)->getDuration() / ticksPerSecond;
+		ticksPerSecond = model->getAnimation(1)->getTicksPerSecond();
+		duration = model->getAnimation(1)->getDuration() / ticksPerSecond;
 		animationTime = fmod(deltaTime * ticksPerSecond, duration);
 
 		glm::mat4 mtx = glm::mat4(1.0f);
-		model->getBone("Bone")->interpolateTransform(animationTime, bonesTransform, mtx);
+		model->getAnimation(1)->getRootBone()->interpolateTransform(animationTime, bonesTransform, mtx);
 
 		glUniformMatrix4fv(bonesTransformsLoc, NUM_BONES, GL_FALSE, &bonesTransform[0][0][0]);
 	}

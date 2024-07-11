@@ -55,12 +55,11 @@ void Model::loadModel(const std::string& fileName)
 	}
 
 	printf("\n\n\n");
-
+	printf("Nombre d'animation pour: %s -> %d\n", fileName.c_str(), scene->mNumAnimations);
 	// Vérifiez si le modèle contient des animations
-	if (scene->mNumAnimations > 0) 
+	for(int a = 0; a < scene->mNumAnimations; ++a)
 	{
-		const aiAnimation* animation = scene->mAnimations[ANIMATION_ID]; // Récupère la première animation
-		printf("Nombre d'animation pour: %s -> %d\n", fileName.c_str(), scene->mNumAnimations);
+		const aiAnimation* animation = scene->mAnimations[a]; // Récupère la première animation
 		// Vous pouvez maintenant travailler avec l'animation
 		// Variables pour gérer le temps
 		printf("Duree d'animation: %f\nNombre de tick par seconde: %f\n", animation->mDuration, animation->mTicksPerSecond);
@@ -79,7 +78,7 @@ void Model::loadModel(const std::string& fileName)
 				keyFrames[bone->mPositionKeys[j].mTime / ticksPerSecond].position.x = bone->mPositionKeys[j].mValue.x;
 				keyFrames[bone->mPositionKeys[j].mTime / ticksPerSecond].position.y = bone->mPositionKeys[j].mValue.y;
 				keyFrames[bone->mPositionKeys[j].mTime / ticksPerSecond].position.z = bone->mPositionKeys[j].mValue.z;
-				printf("Position:  x: %f ... y: %f ... z: %f  -> Time: %f\n", keyFrames[bone->mPositionKeys[j].mTime / ticksPerSecond].position.x, keyFrames[bone->mPositionKeys[j].mTime / ticksPerSecond].position.y, keyFrames[bone->mPositionKeys[j].mTime / ticksPerSecond].position.z, bone->mPositionKeys[j].mTime / ticksPerSecond);
+				//printf("Position:  x: %f ... y: %f ... z: %f  -> Time: %f\n", keyFrames[bone->mPositionKeys[j].mTime / ticksPerSecond].position.x, keyFrames[bone->mPositionKeys[j].mTime / ticksPerSecond].position.y, keyFrames[bone->mPositionKeys[j].mTime / ticksPerSecond].position.z, bone->mPositionKeys[j].mTime / ticksPerSecond);
 				//printf("Time: pos : %f\n", bone->mPositionKeys[j].mTime);
 			}
 
@@ -91,7 +90,7 @@ void Model::loadModel(const std::string& fileName)
 				keyFrames[bone->mRotationKeys[j].mTime / ticksPerSecond].rotation.x = bone->mRotationKeys[j].mValue.x;
 				keyFrames[bone->mRotationKeys[j].mTime / ticksPerSecond].rotation.y = bone->mRotationKeys[j].mValue.y;
 				keyFrames[bone->mRotationKeys[j].mTime / ticksPerSecond].rotation.z = bone->mRotationKeys[j].mValue.z;
-				printf("Rotation:  w: %f ... x: %f ... y: %f ... z: %f  -> Time: %f\n", keyFrames[bone->mRotationKeys[j].mTime / ticksPerSecond].rotation.w, keyFrames[bone->mRotationKeys[j].mTime / ticksPerSecond].rotation.x, keyFrames[bone->mRotationKeys[j].mTime / ticksPerSecond].rotation.y, keyFrames[bone->mRotationKeys[j].mTime / ticksPerSecond].rotation.z, bone->mRotationKeys[j].mTime / ticksPerSecond);
+				//printf("Rotation:  w: %f ... x: %f ... y: %f ... z: %f  -> Time: %f\n", keyFrames[bone->mRotationKeys[j].mTime / ticksPerSecond].rotation.w, keyFrames[bone->mRotationKeys[j].mTime / ticksPerSecond].rotation.x, keyFrames[bone->mRotationKeys[j].mTime / ticksPerSecond].rotation.y, keyFrames[bone->mRotationKeys[j].mTime / ticksPerSecond].rotation.z, bone->mRotationKeys[j].mTime / ticksPerSecond);
 				//printf(" ... rot : %f\n", bone->mRotationKeys[j].mTime);
 			}
 
@@ -103,7 +102,7 @@ void Model::loadModel(const std::string& fileName)
 				keyFrames[bone->mScalingKeys[j].mTime / ticksPerSecond].scale.x = bone->mScalingKeys[j].mValue.x;
 				keyFrames[bone->mScalingKeys[j].mTime / ticksPerSecond].scale.y = bone->mScalingKeys[j].mValue.y;
 				keyFrames[bone->mScalingKeys[j].mTime / ticksPerSecond].scale.z = bone->mScalingKeys[j].mValue.z;
-				printf("Scale: x: %f ... y: %f ... z: %f  -> Time: %f\n", bone->mScalingKeys[j].mValue.x, bone->mScalingKeys[j].mValue.y, bone->mScalingKeys[j].mValue.z, bone->mScalingKeys[j].mTime / ticksPerSecond);
+				//printf("Scale: x: %f ... y: %f ... z: %f  -> Time: %f\n", bone->mScalingKeys[j].mValue.x, bone->mScalingKeys[j].mValue.y, bone->mScalingKeys[j].mValue.z, bone->mScalingKeys[j].mTime / ticksPerSecond);
 				//printf(" ... scal : %f\n" , bone->mScalingKeys[j].mTime);
 			}
 
@@ -112,7 +111,6 @@ void Model::loadModel(const std::string& fileName)
 			//else printf("%s is not set \n", bone->mNodeName.C_Str());
 		}
 	}
-	else printf("Pas d'animation pour: %s\n", fileName.c_str());
 
 	//for (auto it = nodes.begin(); it != nodes.end(); it++) printf("%s\n", it->first.c_str());//if(it->second) printf("Node name : % s\n", it->second->getName().c_str());
 

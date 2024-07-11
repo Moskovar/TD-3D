@@ -48,11 +48,11 @@ void Camera::mouseControl(GLFWwindow* window, GLfloat xChange, GLfloat yChange, 
 		if (yChange > 0) 
 		{
 			pitch -= 5 * sensitivity;
-			if (pitch < 0) pitch = 0;
+			if (pitch < 1) pitch = 1;
 		}
 		else if (yChange < 0) {
 			pitch += 5 * sensitivity;
-			if (pitch > 90) pitch = 90;
+			if (pitch > 89) pitch = 89;
 		}
 	}
 

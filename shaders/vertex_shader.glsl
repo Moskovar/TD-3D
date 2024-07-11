@@ -12,6 +12,7 @@ uniform mat4 model; // Matrice de modele
 uniform mat4 view;  // Matrice de vue
 uniform mat4 projection; // Matrice de projection
 uniform mat4 bonesTransform[NUM_BONES];
+uniform int id;
 
 void main()
 {
@@ -26,9 +27,15 @@ void main()
         }
     }
 
-    if (boneIDs[0] == -1) vertexColor = vec4(1.0, 0.0, 0.0, 0.0);
-    if (boneWeights[0] == 0) vertexColor = vec4(0.0, 1.0, 0.0, 0.0);
-    //gl_Position = projection * view * model * vec4(pos, 1.0);
-    gl_Position = projection * view * model * totalPosition;
-    //gl_Position = projection * view * model * vec4(pos, 1.0);
+    if (boneIDs[0] != -1) 
+    {
+        gl_Position = projection * view * model * totalPosition;
+    }
+    else
+    {
+        gl_Position = projection * view * model * vec4(pos, 1.0);
+    }
+
+    if(id == 0) vertexColor = vec4(0.5, 0.1, 0.1, 0.0);
+    else if(id == 1) vertexColor = vec4(0.1, 0.5, 0.1, 0.0);
 }

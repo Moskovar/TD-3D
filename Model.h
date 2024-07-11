@@ -42,7 +42,7 @@ class Model
 		const std::map<std::string, Bone*> getBones() { return bones; }
 		Bone* getBone(std::string boneName) { return bones[boneName]; }
 		const auto getAnimations() { return animations; }
-		Animation* getAnimation(unsigned short id) { return (animations.size() > 0) ? & animations[id] : nullptr; }
+		Animation* getAnimation(unsigned short id) { return (animations.size() > 0) ? &animations[id] : nullptr; }
 
 		~Model();
 
