@@ -37,11 +37,7 @@ Window::Window(short width, short height)
     // Cela permet aux programmes utilisant des fonctionnalités modernes d'OpenGL de fonctionner correctement sur macOS.
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    glfwWindowHint(GLFW_DEPTH_BITS, 24);
-
-    // Activer le test de profondeur
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_ALWAYS);
+    //glfwWindowHint(GLFW_DEPTH_BITS, 24);
 
     //--- Fin configuration GLFW  --- //
 

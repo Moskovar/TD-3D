@@ -38,9 +38,9 @@ int main()
 
 
     entities.push_back(new Entity(1, glm::vec3(0.0f,  0.0f, 0.0f), "models/fbx/cube.fbx"));
-    entities.push_back(new Entity(0, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/cube.fbx"));
+    entities.push_back(new Entity(0, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/doublecube.fbx"));
 
-    //entities.push_back(new Entity(2, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/ground.fbx"));
+    entities.push_back(new Entity(2, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/ground.fbx"));
     glm::vec3 target = glm::vec3(0.0f, 0.0f, 0.0f);
     Camera camera(entities[1]->getPositionP());
     //--- Création des shaders ---//
@@ -84,9 +84,20 @@ int main()
     GLFWwindow* glfwWindow = window->getGLFWWindow();
     glfwSetKeyCallback(glfwWindow, keyCallback);
 
+    // Activer le test de profondeur
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+
+    if (glIsEnabled(GL_DEPTH_TEST)) {
+        std::cout << "Depth test is enabled." << std::endl;
+    }
+    else {
+        std::cout << "Depth test is not enabled." << std::endl;
+    }
+
     auto startTime = std::chrono::high_resolution_clock::now();
     float lastFrame = glfwGetTime(), currentFrame = 0, animationTime = 0, deltaTime = 0;
-
+    
     //Boucle de rendu
     while (!glfwWindowShouldClose(glfwWindow))
     {
