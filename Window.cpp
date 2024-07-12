@@ -65,6 +65,9 @@ Window::Window(short width, short height)
         exit(0);
     }
 
+    //Synchronise la boucle de rendu avec le taux de rafraichissement de l'écran de l'utilisateur
+    glfwSwapInterval(1); // Activer vsync
+
     glfwSetWindowUserPointer(window, this);
 }
 
@@ -78,16 +81,12 @@ Window::~Window()
 
 GLfloat Window::getXChange()
 {
-    GLfloat theChange = xChange;
-    xChange = 0.0f;
-    return theChange;
+    return xChange;
 }
 
 GLfloat Window::getYChange()
 {
-    GLfloat theChange = yChange;
-    yChange = 0.0f;
-    return theChange;
+    return yChange;
 }
 
 void Window::glfwErrorCallback(int error, const char* description)
@@ -118,6 +117,12 @@ void Window::handleScroll(GLFWwindow* window, double xOffset, double yOffset)
     Window* theWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
 
     theWindow->scrollValue = yOffset;
+}
+
+void Window::resetXYChange()
+{
+    xChange = 0;
+    yChange = 0;
 }
 
 void Window::createCallbacks()

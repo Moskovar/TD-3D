@@ -11,18 +11,26 @@ class Element
 
 		~Element();
 
-		Model* getModel() { return model; }
-		glm::vec3* getPositionP() { return &position; }
+		//--- Getters ---//
+		Model* getModel()			{ return model; }
+		glm::vec3* getPositionP()	{ return &position; }
 		
-		void addX(GLfloat x) { position.x += x; }
-		void addY(GLfloat y) { position.y += y; }
-		void addZ(GLfloat z) { position.z += z; }
+		//--- Setters ---//
+		void setAnimationID(short id) { animationID = id; }
+
+		void move(GLfloat deltaTime);
+		void turn(GLfloat yaw);
+		void updatePosition();
+		
+
 		void render(GLuint& modelLoc, GLuint& bonesTransformsLoc, float& animationTime, int idLoc);
 
 	private:
-		short id = -1;
+		short id = -1, animationID = 0;
 		Model*    model       = nullptr;
 		glm::mat4 modelMatrix = glm::mat4(1.0f);
 		glm::vec3 position	  = glm::vec3(0.0f, 0.0f, 0.0f);
+		GLfloat yaw = 45;//à descendre dans entity ? avec render en méthode abstraite ?
+		GLfloat moveSpeed = 5;
 };
 

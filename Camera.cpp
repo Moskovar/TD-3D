@@ -21,94 +21,57 @@ void Camera::update()
 {
     position.x = target->x + radius * cos(glm::radians(pitch)) * cos(glm::radians(yaw));
     position.y = target->y + radius * sin(glm::radians(pitch));
-					   
     position.z = target->z + radius * cos(glm::radians(pitch)) * sin(glm::radians(yaw));
-
-	//std::cout << position.z << " : " << target->y << std::endl;
 
     viewMatrix = glm::lookAt(position, *target, up);
 }
 
-void Camera::mouseControl(GLFWwindow* window, GLfloat xChange, GLfloat yChange, GLfloat& scrollValue)
+void Camera::addYaw(GLfloat yaw)
+{
+	this->yaw += yaw;
+
+	if		(this->yaw >  360) this->yaw -= 360;
+	else if (this->yaw < -360) this->yaw += 360;
+}
+
+void Camera::addPitch(GLfloat pitch)
+{
+	this->pitch += pitch;
+
+	if		(this->pitch > 89) this->pitch = 89;
+	else if (this->pitch < 1 ) this->pitch = 1;
+}
+
+void Camera::setRadius(GLfloat radius)
+{
+	this->radius -= radius;
+
+	if      (this->radius > 30) this->radius = 30;
+	else if (this->radius < 0 ) this->radius = 0;
+}
+
+void Camera::mouseControl(GLFWwindow* window, GLfloat xChange, GLfloat yChange, GLfloat& scrollValue, const float& deltaTime)
 {
 	//xChange *= turnSpeed;//USE TURNSPEED OU VELOCITY ???
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) || glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT)) {
-		if (xChange > 0) 
-		{
-			yaw += 5 * sensitivity;
-			if (yaw >= 360) yaw = 0;
-		}
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT))//|| glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT)) 
+	{
+		if		(xChange > 0) addYaw( deltaTime * sensitivity);
+		else if (xChange < 0) addYaw(-deltaTime * sensitivity);
 
-		else if (xChange < 0)
-		{
-			yaw -= 5 * sensitivity;
-			if (yaw <= -360) yaw = 0;
-		}
-
-		if (yChange > 0) 
-		{
-			pitch -= 5 * sensitivity;
-			if (pitch < 1) pitch = 1;
-		}
-		else if (yChange < 0) {
-			pitch += 5 * sensitivity;
-			if (pitch > 89) pitch = 89;
-		}
+		if		(yChange > 0) addPitch(-deltaTime * sensitivity / 2);//pour clique gauche et droit
+		else if (yChange < 0) addPitch( deltaTime * sensitivity / 2);
 	}
-
-	
+	else if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
+	{
+		if		(yChange > 0) addPitch(-deltaTime * sensitivity / 2);//pour clique gauche et droit
+		else if (yChange < 0) addPitch( deltaTime * sensitivity / 2);
+	}
 
 	if (scrollValue != 0)
 	{
-		radius -= scrollValue;
+		setRadius(scrollValue);
 		scrollValue = 0;
-
-		//if (radius > 30) radius = 30;
-		//else if (radius < 0) radius = 0;
 	}
 
 	update();
-
-
-	//if (*yOffset > 0) {
-	//	if (y_LookAt > y_min_LookAt) {
-	//		y_LookAt -= y_LookAt_Ratio;
-	//	}
-	//	if (position.y > y_min_distance) {
-	//		position.y -= y_distance_ratio;
-	//	}
-	//	if (position.z < z_min_distance)
-	//		position.z += z_distance_ratio;
-
-	//	*yOffset = 0.0f;
-	//}
-	//else if (*yOffset < 0) {//mettre variable max distance
-
-	//	if (y_LookAt < y_max_LookAt) {
-	//		y_LookAt += y_LookAt_Ratio;
-	//	}
-	//	if (position.y < y_max_distance) {
-	//		position.y += y_distance_ratio;
-	//	}
-	//	if (position.z > z_max_distance)
-	//		position.z -= z_distance_ratio;
-	//	*yOffset = 0.0f;
-	//}
-
-	/*yChange *= turnSpeed;
-
-	yaw += xChange;
-	pitch += yChange;
-
-	if (pitch > 89.0f)
-	{
-		pitch = 89.0f;
-	}
-
-	if (pitch < -89.0f)
-	{
-		pitch = -89.0f;
-	}
-
-	update();*/
 }

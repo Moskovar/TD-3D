@@ -2,7 +2,7 @@
 
 Animation::Animation(std::string name, float duration, float ticksPerSecond, Bone* rootBone)
 {
-	this->name			 = this->name;
+	this->name			 = name;
 	this->duration		 = duration;
 	this->ticksPerSecond = ticksPerSecond;
 	this->rootBone		 = rootBone;

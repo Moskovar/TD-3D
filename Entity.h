@@ -8,9 +8,11 @@ class Entity : public Element
 		Entity() {}
 		Entity(short id, glm::vec3 position, const std::string& filePath);
 
-		/*short getID() { return id; }*/
+		bool isMoving() { return moving; }
+
+		void setMove(bool state) { moving = state; }
 
 	private:
-		//short id = -1;
+		bool moving = false;
 };
 

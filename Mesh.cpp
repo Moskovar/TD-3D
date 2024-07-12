@@ -17,14 +17,10 @@ Mesh::Mesh(std::vector<Vertex> v_vertices, std::vector<unsigned int> v_indices)
 		//printf("OFFICIAL: VertexID: %d ... BoneID: %d ... Weight: %f\n", v.id, v.bonesID.x, v.weights.x);
 	}
 
-	updateMesh();
-}
-
-void Mesh::updateMesh()
-{
+	//--- Création et bind des VAO VBO IBO ---//
 	unsigned int numOfVertices = v_vertices.size();
 	unsigned int* indices = &v_indices[0];
-	unsigned int numOfIndices= v_indices.size();
+	unsigned int numOfIndices = v_indices.size();
 	indexCount = numOfIndices;
 
 	glGenVertexArrays(1, &VAO);
@@ -42,12 +38,16 @@ void Mesh::updateMesh()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
 	glEnableVertexAttribArray(0);
 
+	updateMesh();
+}
+
+void Mesh::updateMesh()
+{
 	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, bonesID));
 	glEnableVertexAttribArray(5);
 
 	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, weights));
 	glEnableVertexAttribArray(6);
-
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

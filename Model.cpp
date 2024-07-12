@@ -20,10 +20,6 @@ Model::Model(const std::string& filePath)
 		}
 	}
 
-	//printf("Bone children: %d\n", bones["Bone"]->getChildren().size());
-	//printf("Lowerbone children name: %s\n", bones["Bone"]->getChildren()[0]->getName().c_str());
-	//printf("UpperBone children: %d\n", bones["UpperBone"]->getChildren().size());
-
 	for (Node* node : nodes)
 	{
 		if (node)
@@ -31,6 +27,11 @@ Model::Model(const std::string& filePath)
 			delete node;
 			node = nullptr;
 		}
+	}
+
+	for (auto& animation : animations)
+	{
+		printf("Animation name: %s\n", animation.second.getName().c_str());
 	}
 }
 
@@ -71,8 +72,8 @@ void Model::loadModel(const std::string& fileName)
 			std::map<double, KeyFrame> keyFrames;
 			double ticksPerSecond = animation->mTicksPerSecond / ANIMATION_SPEED_RATE;
 
-			if (bones[std::string(bone->mNodeName.C_Str())]) printf("bone name: %s ... Vertices: %d\n", bone->mNodeName.C_Str(), bones[std::string(bone->mNodeName.C_Str())]->getVertices().size());
-			else printf("Bone %s is not set\n", bone->mNodeName.C_Str());
+			//if (bones[std::string(bone->mNodeName.C_Str())]) printf("bone name: %s ... Vertices: %d\n", bone->mNodeName.C_Str(), bones[std::string(bone->mNodeName.C_Str())]->getVertices().size());
+			//else printf("Bone %s is not set\n", bone->mNodeName.C_Str());
 			for (unsigned int j = 0; j < bone->mNumPositionKeys; j++) 
 			{
 				keyFrames[bone->mPositionKeys[j].mTime / ticksPerSecond].position.x = bone->mPositionKeys[j].mValue.x;

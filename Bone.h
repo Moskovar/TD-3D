@@ -27,24 +27,22 @@ class Bone
 		Bone(int id, std::string name, aiMatrix4x4 offsetMatrix, std::vector<std::tuple<float, Vertex>> vertices);
 		~Bone();
 
-		auto getVertices() { return vertices; }
-		auto getAnimations() { return keyFrames; }
-		std::string getName() { return name; }
-		glm::mat4 getOffsetMatrix() { return offetMatrix; }
+		auto getAnimations()				{ return keyFrames; }
+		std::string getName()				{ return name; }
+		glm::mat4 getOffsetMatrix()			{ return offsetMatrix; }
+		void addChildren(Bone* bone)		{ children.push_back(bone); }
+		std::vector<Bone*> getChildren()	{ return children; }
+
+
 		void setKeyFrames(std::map<double, KeyFrame> keyFrames) { this->keyFrames = keyFrames; }
-		void addChildren(Bone* bone) { children.push_back(bone); }
-		std::vector<Bone*> getChildren() { return children; }
-        // Fonction pour interpoler les transformations d'une animation
 		void interpolateTransform(double animationTime, glm::mat4* bonesTransform, glm::mat4& parentTransforms);
-		void applyTransformations(glm::mat4 localTransform, glm::mat4 parentTransform, double animationTime);
 		
 	private:
 		int id = 0;
 		std::string name;
-		std::vector<std::tuple<float, Vertex>> vertices;//poids vertex
 		std::map<double, KeyFrame> keyFrames;
 		std::vector<Bone*> children;
-		glm::mat4 offetMatrix;
+		glm::mat4 offsetMatrix;
 
 		// Fonction pour interpoler entre deux valeurs
 		glm::vec3 interpolate(const glm::vec3& start, const glm::vec3& end, float factor) { return start + factor * (end - start); }
