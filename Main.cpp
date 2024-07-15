@@ -7,6 +7,7 @@
 #include "Camera.h"
 #include "Shader.h"
 
+
 #define TURN_SPEED          100.0//character turn speed
 
 Window* window = nullptr;
@@ -21,10 +22,10 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     {
         switch (key) 
         {
-            case GLFW_KEY_W: entities[1]->setAnimationID(1);                 break;
-            case GLFW_KEY_S: entities[1]->setAnimationID(1);                 break;
-            case GLFW_KEY_D: entities[1]->setAnimationID(1);                 break;
-            case GLFW_KEY_A: entities[1]->setAnimationID(1);                 break;
+            case GLFW_KEY_W: entities[0]->setAnimationID(1);                 break;
+            case GLFW_KEY_S: entities[0]->setAnimationID(1);                 break;
+            case GLFW_KEY_D: entities[0]->setAnimationID(1);                 break;
+            case GLFW_KEY_A: entities[0]->setAnimationID(1);                 break;
             case GLFW_KEY_ESCAPE: glfwSetWindowShouldClose(window, true);    break;
         }
     }
@@ -32,10 +33,10 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     {
         switch (key)
         {
-            case GLFW_KEY_W: entities[0]->setAnimationID(1);                 break;
-            case GLFW_KEY_S: entities[0]->setAnimationID(1);                 break;
-            case GLFW_KEY_D: entities[0]->setAnimationID(1);                 break;
-            case GLFW_KEY_A: entities[0]->setAnimationID(1);                 break;
+            case GLFW_KEY_W: entities[0]->setAnimationID(0);                 break;
+            case GLFW_KEY_S: entities[0]->setAnimationID(0);                 break;
+            case GLFW_KEY_D: entities[0]->setAnimationID(0);                 break;
+            case GLFW_KEY_A: entities[0]->setAnimationID(0);                 break;
         }
     }
 }
@@ -66,11 +67,11 @@ int main()
 {
     window = new Window(800, 600);
 
-    entities.push_back(new Entity(0, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/doublecube.fbx"));
-    entities.push_back(new Entity(1, glm::vec3(0.0f,  0.0f, 0.0f), "models/fbx/cube.fbx"));
+    entities.push_back(new Entity(0, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/c1.fbx"));
+    entities.push_back(new Entity(1, glm::vec3(0.0f,  0.0f, 0.0f), "models/obj/r1.obj"));
 
     entities.push_back(new Entity(2, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/ground.fbx"));
-    glm::vec3 target = glm::vec3(0.0f, 0.0f, 0.0f);
+    //glm::vec3 target = glm::vec3(0.0f, 0.0f, 0.0f);
     camera = new Camera(entities[0]->getPositionP());
     //--- Création des shaders ---//
     GLuint shaderProgram = 0;
@@ -88,9 +89,7 @@ int main()
         bonesTransformsLoc = glGetUniformLocation(shaderProgram, "bonesTransform");
     }
 
-    GLint idLoc = glGetUniformLocation(shaderProgram, "id");
-
-
+    GLint idLoc = glGetUniformLocation(shaderProgram, "id");//debug
 
     //--- Couleurs du modèle ---//
     glm::vec3 color(r, g, b);
@@ -110,6 +109,18 @@ int main()
 
         //model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
     }
+
+
+
+
+    
+
+
+
+
+
+
+
 
     GLFWwindow* glfwWindow = window->getGLFWWindow();
     glfwSetKeyCallback(glfwWindow, keyCallback);

@@ -24,7 +24,7 @@ class Bone
 {
 	public:
 		Bone() {};
-		Bone(int id, std::string name, aiMatrix4x4 offsetMatrix, std::vector<std::tuple<float, Vertex>> vertices);
+		Bone(int id, std::string name, aiMatrix4x4 offsetMatrix);
 		~Bone();
 
 		auto getAnimations()				{ return keyFrames; }
@@ -33,14 +33,13 @@ class Bone
 		void addChildren(Bone* bone)		{ children.push_back(bone); }
 		std::vector<Bone*> getChildren()	{ return children; }
 
-
-		void setKeyFrames(std::map<double, KeyFrame> keyFrames) { this->keyFrames = keyFrames; }
-		void interpolateTransform(double animationTime, glm::mat4* bonesTransform, glm::mat4& parentTransforms);
+		void setKeyFrames(unsigned short animationID, std::map<double, KeyFrame> keyFrames) { this->keyFrames[animationID] = keyFrames; }
+		void interpolateTransform(unsigned short animationID, double animationTime, glm::mat4* bonesTransform, glm::mat4& parentTransforms);
 		
 	private:
 		int id = 0;
 		std::string name;
-		std::map<double, KeyFrame> keyFrames;
+		std::map<unsigned short, std::map<double, KeyFrame>> keyFrames;
 		std::vector<Bone*> children;
 		glm::mat4 offsetMatrix;
 

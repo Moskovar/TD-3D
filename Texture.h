@@ -1,0 +1,20 @@
+#pragma once
+#include <GL/glew.h>
+
+#include <iostream>
+
+class Texture
+{
+	public:
+		Texture() {}
+		Texture(const char* filePath);
+		~Texture();
+
+		void useTexture();
+
+	private:
+		GLuint textureID = 0;
+		int width = 0, height = 0, nrChannels = 0;
+		const char* filePath = "";
+};
+

@@ -16,6 +16,7 @@
 
 #include "Bone.h"
 #include "Mesh.h"
+#include "Texture.h"
 #include "Animation.h"
 //#include "Texture.h"
 
@@ -49,10 +50,10 @@ class Model
 	private:
 		void loadNode(aiNode* node, const aiScene *scene, Node* parentNode = nullptr);
 		void loadMesh(aiMesh* mesh, const aiScene *scene, std::vector<Mesh*>& meshes);
-		//void loadMaterials(const aiScene *scene);
+		void loadMaterials(const aiScene* scene);
 
 		std::vector<Mesh*> meshList;
-		//std::vector<Texture*> textureList;
+		std::vector<Texture*> textures;
 		std::vector<unsigned int> meshToTex;
 
 		std::map<std::string, Bone*> bones;//on utilise le nom du node pour le retrouver dans le map

@@ -8,6 +8,7 @@ Camera::Camera(glm::vec3* target)
     position.z = target->z + radius * cos(glm::radians(pitch)) * sin(glm::radians(yaw));
 
 	this->target   = target;
+	this->target->y += 3.0f;
     this->front    = glm::normalize(position - *target);
     glm::vec3 up   = glm::vec3(0.0f, 1.0f, 0.0f);
 	worldUp		   = up;

@@ -3,16 +3,17 @@
 #define NUM_BONES 100
 
 layout(location = 0) in vec3  pos; // Position des sommets
+layout(location = 1) in vec2  texCoords; // Coordonnées de texture
 layout(location = 5) in ivec4 boneIDs;
 layout(location = 6) in vec4  boneWeights;
 
 out vec4 vertexColor;
+out vec2 TexCoords; // Passer les coordonnées de texture au fragment shader
 
 uniform mat4 model; // Matrice de modele
 uniform mat4 view;  // Matrice de vue
 uniform mat4 projection; // Matrice de projection
 uniform mat4 bonesTransform[NUM_BONES];
-uniform int id;
 
 void main()
 {
@@ -36,6 +37,5 @@ void main()
         gl_Position = projection * view * model * vec4(pos, 1.0);
     }
 
-    if(id == 0) vertexColor = vec4(0.5, 0.1, 0.1, 0.0);
-    else if(id == 1) vertexColor = vec4(0.1, 0.5, 0.1, 0.0);
+    TexCoords = texCoords; // Assigner les coordonnées de texture à la variable de sortie
 }

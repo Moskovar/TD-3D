@@ -42,12 +42,14 @@ void Element::render(GLuint& modelLoc, GLuint& bonesTransformsLoc, float& timeSi
 	glm::mat4 bonesTransform[NUM_BONES] = {};
 	if (model->getAnimations().size() > 0)
 	{
+		//printf("AnimationID: %d\n", animationID);
+		//printf("AnimationID: %d ... Duration: %f\n", animationID, model->getAnimation(animationID)->getDuration());
 		ticksPerSecond = model->getAnimation(animationID)->getTicksPerSecond();
 		duration = model->getAnimation(animationID)->getDuration() / ticksPerSecond;
 		animationTime = fmod(timeSinceStart * ticksPerSecond, duration);
 
 		glm::mat4 rootMatrix = glm::mat4(1.0f);
-		model->getAnimation(animationID)->getRootBone()->interpolateTransform(animationTime, bonesTransform, rootMatrix);
+		model->getAnimation(animationID)->getRootBone()->interpolateTransform(animationID, animationTime, bonesTransform, rootMatrix);
 
 		glUniformMatrix4fv(bonesTransformsLoc, NUM_BONES, GL_FALSE, &bonesTransform[0][0][0]);
 	}

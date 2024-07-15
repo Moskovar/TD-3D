@@ -35,6 +35,8 @@ class Mesh
 	public:
 		Mesh(std::vector<Vertex> v_vertices, std::vector<unsigned int> indices);
 
+		auto getVertices() { return v_vertices; }
+
 		void updateMesh();
 		void RenderMesh();
 		void ClearMesh();

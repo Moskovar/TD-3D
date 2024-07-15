@@ -42,7 +42,7 @@ void Model::loadModel(const std::string& fileName)
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(fileName, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices);
 
-	if (!scene) 
+	if (!scene || !scene->mRootNode)
 	{
 		printf("Model (%s) failed to load: %s", fileName, importer.GetErrorString());
 		return;
@@ -50,27 +50,22 @@ void Model::loadModel(const std::string& fileName)
 
 	loadNode(scene->mRootNode, scene);
 
-	scene = importer.ReadFile(fileName, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
-	if (!scene || !scene->mRootNode) {
-		printf("Model (%s) failed to load: %s", fileName, importer.GetErrorString());
-	}
-
 	printf("\n\n\n");
 	printf("Nombre d'animation pour: %s -> %d\n", fileName.c_str(), scene->mNumAnimations);
 	// Vérifiez si le modèle contient des animations
-	for(int a = 0; a < scene->mNumAnimations; ++a)
+	for(int animationID = 0; animationID < scene->mNumAnimations; ++animationID)
 	{
-		const aiAnimation* animation = scene->mAnimations[a]; // Récupère la première animation
+		const aiAnimation* animation = scene->mAnimations[animationID]; // Récupère la première animation
+		double ticksPerSecond = animation->mTicksPerSecond / ANIMATION_SPEED_RATE;
 		// Vous pouvez maintenant travailler avec l'animation
 		// Variables pour gérer le temps
-		printf("Duree d'animation: %f\nNombre de tick par seconde: %f\n", animation->mDuration, animation->mTicksPerSecond);
 		printf("Animation name: %s\n", animation->mName.C_Str());
+		printf("Duree d'animation: %f\nNombre de tick par seconde: %f\n", animation->mDuration, animation->mTicksPerSecond);
 
 		for (unsigned int i = 0; i < animation->mNumChannels; i++)//on parcourt os de l'animation
 		{
 			const aiNodeAnim* bone = animation->mChannels[i];
 			std::map<double, KeyFrame> keyFrames;
-			double ticksPerSecond = animation->mTicksPerSecond / ANIMATION_SPEED_RATE;
 
 			//if (bones[std::string(bone->mNodeName.C_Str())]) printf("bone name: %s ... Vertices: %d\n", bone->mNodeName.C_Str(), bones[std::string(bone->mNodeName.C_Str())]->getVertices().size());
 			//else printf("Bone %s is not set\n", bone->mNodeName.C_Str());
@@ -107,17 +102,39 @@ void Model::loadModel(const std::string& fileName)
 				//printf(" ... scal : %f\n" , bone->mScalingKeys[j].mTime);
 			}
 
-			animations[animations.size()] = Animation(std::string(animation->mName.C_Str()), animation->mDuration, ticksPerSecond, bones["Bone"]);
-			if (bones[std::string(bone->mNodeName.C_Str())]) bones[std::string(bone->mNodeName.C_Str())]->setKeyFrames(keyFrames);
+			
+			if (bones[std::string(bone->mNodeName.C_Str())]) bones[std::string(bone->mNodeName.C_Str())]->setKeyFrames(animationID, keyFrames);
 			//else printf("%s is not set \n", bone->mNodeName.C_Str());
 		}
+		animations[animationID] = Animation(std::string(animation->mName.C_Str()), animation->mDuration, ticksPerSecond, bones["Bone"]);
 	}
 
 	//for (auto it = nodes.begin(); it != nodes.end(); it++) printf("%s\n", it->first.c_str());//if(it->second) printf("Node name : % s\n", it->second->getName().c_str());
 
 	//printf("\nNombre de noeuds total: %d", nodes.size());
 
-	//loadMaterials(scene);
+	loadMaterials(scene);
+
+
+	for (auto& vertex : meshList[0]->getVertices())
+	{
+		float weightSum = vertex.weights.x + vertex.weights.y + vertex.weights.z + vertex.weights.w;
+		if (weightSum > 0.0f) 
+		{
+			//printf("Vertex ID: %d ... weightSum: %f\n", vertex.id, weightSum);
+			vertex.weights /= weightSum;
+			weightSum = vertex.weights.x + vertex.weights.y + vertex.weights.z + vertex.weights.w;
+			printf("Vertex ID: %d ... weightSum: %f\n", vertex.id, weightSum);
+		}
+
+		
+
+		if ((vertex.bonesID.x == 3 || vertex.bonesID.y == 3 || vertex.bonesID.z == 3 || vertex.bonesID.w == 3)
+		 && (vertex.bonesID.x == 4 || vertex.bonesID.y == 4 || vertex.bonesID.z == 4 || vertex.bonesID.w == 4))
+		{
+			std::cout << "Vertex ID: " << vertex.id << " is common" << std::endl;
+		}
+	}
 }
 
 void Model::renderModel()
@@ -131,6 +148,8 @@ void Model::renderModel()
 		//	textureList[materialIndex]->UseTexture();
 		//}
 
+		if(textures.size() > 0 && textures[0]) textures[0]->useTexture();
+
 		meshList[i]->updateMesh();
 		meshList[i]->RenderMesh();
 	}
@@ -140,21 +159,6 @@ void Model::clearModel()
 {
 	
 }
-
-//void Model::animate(double animationTime)
-//{
-//	//printf("Animation name: %s\n", animation.name.c_str());
-//	glm::mat4 parentTransform(1.0f);
-//	bones["Bone"]->applyTransformations(bones["Bone"]->interpolateTransform(animationTime), parentTransform, animationTime);
-//
-//	//if(bones["Bone"])
-//	//	bones["Bone"]->applyTransformations(bones["Bone"]->interpolateTransform(animationTime, animation));
-//
-//	for (Mesh* mesh : meshList)
-//	{
-//		mesh->updateMesh();
-//	}
-//}
 
 Model::~Model()
 {
@@ -212,7 +216,7 @@ void Model::loadNode(aiNode* node, const aiScene* scene, Node* parentNode)
 
 	//bones[std::string(node->mName.C_Str())] = Bone(std::string(node->mName.C_Str()), meshes);
 }
-
+#include <glm/gtx/string_cast.hpp>
 void Model::loadMesh(aiMesh* mesh, const aiScene* scene, std::vector<Mesh*>& meshes)
 {
 	std::vector<Vertex>	  v_vertices;
@@ -263,12 +267,13 @@ void Model::loadMesh(aiMesh* mesh, const aiScene* scene, std::vector<Mesh*>& mes
 						else if (vertex.bonesID.y == -1) { vertex.bonesID.y = i; vertex.weights.y = bone->mWeights[i].mWeight; }
 						else if (vertex.bonesID.z == -1) { vertex.bonesID.z = i; vertex.weights.z = bone->mWeights[i].mWeight; }
 						else if (vertex.bonesID.w == -1) { vertex.bonesID.w = i; vertex.weights.w = bone->mWeights[i].mWeight; }
-						printf("Bone x: %f ... y: %f ... z: %f !!!!\n", bone->mOffsetMatrix[3]);
+						//if (std::string(bone->mName.C_Str()) == "Head") printf("Head ID: %d\n", i);
+						//printf("Bone x: %f ... y: %f ... z: %f !!!!\n", bone->mOffsetMatrix[3]);
 						//printf("ID: %d, poids: %f\n", vertex.bonesID.x, vertex.weights.x);
-						v_vertices2.push_back(std::make_tuple(bone->mWeights[j].mWeight, vertex));
+						//v_vertices2.push_back(std::make_tuple(bone->mWeights[j].mWeight, vertex));
 					}
 			}
-			bones[std::string(bone->mName.C_Str())] = new Bone(i, std::string(bone->mName.C_Str()), bone->mOffsetMatrix, v_vertices2);
+			bones[std::string(bone->mName.C_Str())] = new Bone(i, std::string(bone->mName.C_Str()), bone->mOffsetMatrix);
 			//printf("Bone: %s has %d vertices\n", bone->mName.C_Str(), bones[std::string(bone->mName.C_Str())].getVertices().size());
 		}
 	}
@@ -283,23 +288,18 @@ void Model::loadMesh(aiMesh* mesh, const aiScene* scene, std::vector<Mesh*>& mes
 	}
 
 	Mesh* newMesh = new Mesh(v_vertices, v_indices);
-	//newMesh->CreateMesh();
 	meshList.push_back(newMesh);
 	meshes.push_back(newMesh);
 	meshToTex.push_back(mesh->mMaterialIndex);
 }
 
-/*void Model::loadMaterials(const aiScene* scene)
+void Model::loadMaterials(const aiScene* scene)
 {
-	textureList.resize(scene->mNumMaterials);
-
 	for (size_t i = 0; i < scene->mNumMaterials; i++)
 	{
 		aiMaterial* material = scene->mMaterials[i];
 
-		textureList[i] = nullptr;
-
-		if (material->GetTextureCount(aiTextureType_DIFFUSE));
+		if (material->GetTextureCount(aiTextureType_DIFFUSE))
 		{
 			aiString path;
 			if (material->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS)
@@ -307,22 +307,12 @@ void Model::loadMesh(aiMesh* mesh, const aiScene* scene, std::vector<Mesh*>& mes
 				int idx = std::string(path.data).rfind("\\");
 				std::string filename = std::string(path.data).substr(idx + 1);
 
-				std::string texPath = std::string("Textures/") + filename;
+				std::string texPath = std::string("textures/") + filename;
 
-				textureList[i] = new Texture(texPath.c_str());
+				std::cout << "TexPath: " << texPath << std::endl;
 
-				if (!textureList[i]->LoadTexture())
-				{
-					printf("Failed to load texture at: %s", texPath);
-					delete textureList[i];
-					textureList[i] = nullptr;
-				}
+				textures.push_back(new Texture(texPath.c_str()));
 			}
 		}
-		if (!textureList[i])
-		{
-			textureList[i] = new Texture("Textures/plain.png");
-			textureList[i]->LoadTextureA();
-		}
 	}
-}*/
+}

@@ -26,23 +26,21 @@ Mesh::Mesh(std::vector<Vertex> v_vertices, std::vector<unsigned int> v_indices)
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 
-	glGenBuffers(1, &IBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numOfIndices * sizeof(unsigned int), v_indices.data(), GL_STATIC_DRAW);
-
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * v_vertices.size(), &v_vertices[0], GL_STATIC_DRAW);
-	glBufferData(GL_ARRAY_BUFFER, numOfVertices * sizeof(Vertex), v_vertices.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * v_vertices.size(), v_vertices.data(), GL_STATIC_DRAW);
+
+	glGenBuffers(1, &IBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, v_indices.size() * sizeof(unsigned int), v_indices.data(), GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
 	glEnableVertexAttribArray(0);
 
-	updateMesh();
-}
+	// Attribut des coordonnées de texture
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
+	glEnableVertexAttribArray(1);
 
-void Mesh::updateMesh()
-{
 	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, bonesID));
 	glEnableVertexAttribArray(5);
 
@@ -53,6 +51,15 @@ void Mesh::updateMesh()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0);
+
+	//updateMesh();
+}
+
+void Mesh::updateMesh()
+{
+	
+
+	
 }
 
 void Mesh::RenderMesh()
