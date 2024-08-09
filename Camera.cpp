@@ -73,6 +73,4 @@ void Camera::mouseControl(GLFWwindow* window, GLfloat xChange, GLfloat yChange, 
 		setRadius(scrollValue);
 		scrollValue = 0;
 	}
-
-	update();
 }

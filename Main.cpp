@@ -22,27 +22,36 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     {
         switch (key) 
         {
-            case GLFW_KEY_W: entities[0]->setAnimationID(1);                 break;
-            case GLFW_KEY_S: entities[0]->setAnimationID(1);                 break;
-            case GLFW_KEY_D: entities[0]->setAnimationID(1);                 break;
-            case GLFW_KEY_A: entities[0]->setAnimationID(1);                 break;
-            case GLFW_KEY_ESCAPE: glfwSetWindowShouldClose(window, true);    break;
+            case GLFW_KEY_W: entities[0]->directionPressed(GLFW_KEY_W);     break;
+            case GLFW_KEY_S: entities[0]->directionPressed(GLFW_KEY_S);     break;
+            case GLFW_KEY_D: entities[0]->directionPressed(GLFW_KEY_D);     break;
+            case GLFW_KEY_A: entities[0]->directionPressed(GLFW_KEY_A);     break;
+            case GLFW_KEY_ESCAPE: glfwSetWindowShouldClose(window, true);   break;
         }
     }
     else if (action == GLFW_RELEASE)
     {
         switch (key)
         {
-            case GLFW_KEY_W: entities[0]->setAnimationID(0);                 break;
-            case GLFW_KEY_S: entities[0]->setAnimationID(0);                 break;
-            case GLFW_KEY_D: entities[0]->setAnimationID(0);                 break;
-            case GLFW_KEY_A: entities[0]->setAnimationID(0);                 break;
+            case GLFW_KEY_W: entities[0]->directionReleased(GLFW_KEY_W);     break;
+            case GLFW_KEY_S: entities[0]->directionReleased(GLFW_KEY_S);     break;
+            case GLFW_KEY_D: entities[0]->directionReleased(GLFW_KEY_D);     break;
+            case GLFW_KEY_A: entities[0]->directionReleased(GLFW_KEY_A);     break;
         }
     }
 }
 
 void processKeyPressed(GLFWwindow* window, float deltaTime)
 {
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    {
+        entities[0]->move(deltaTime);
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    {
+        entities[0]->move(-deltaTime);
+    }
+
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
         entities[0]->turn(TURN_SPEED * deltaTime);
@@ -53,22 +62,14 @@ void processKeyPressed(GLFWwindow* window, float deltaTime)
         entities[0]->turn(TURN_SPEED * -deltaTime);
         camera->addYaw(TURN_SPEED * -deltaTime);
     }
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-    {
-        entities[0]->move(deltaTime);
-    }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-    {
-        entities[0]->move(-deltaTime);
-    }
 }
 
 int main()
 {
     window = new Window(800, 600);
 
-    entities.push_back(new Entity(0, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/c1.fbx"));
-    entities.push_back(new Entity(1, glm::vec3(0.0f,  0.0f, 0.0f), "models/obj/r1.obj"));
+    entities.push_back(new Entity(0, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/doublecube.fbx"));
+    //entities.push_back(new Entity(1, glm::vec3(0.0f,  0.0f, 0.0f), "models/obj/r1.obj"));
 
     entities.push_back(new Entity(2, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/ground.fbx"));
     //glm::vec3 target = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -110,18 +111,6 @@ int main()
         //model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
     }
 
-
-
-
-    
-
-
-
-
-
-
-
-
     GLFWwindow* glfwWindow = window->getGLFWWindow();
     glfwSetKeyCallback(glfwWindow, keyCallback);
 
@@ -147,7 +136,9 @@ int main()
         deltaTime = now - lastFrame;
         lastFrame = now;
 
+        processKeyPressed(glfwWindow, deltaTime);
 
+        //--- Caméra ---//
         camera->mouseControl(window->getGLFWWindow(), window->getXChange(), window->getYChange(), window->getScrollValue(), deltaTime);
 
         if (glfwGetMouseButton(glfwWindow, GLFW_MOUSE_BUTTON_RIGHT))
@@ -162,10 +153,9 @@ int main()
                 entities[0]->turn(camera->getSensitivity() * -deltaTime);
                 camera->addYaw(camera->getSensitivity() * -deltaTime);
             }
-            //printf("CamMove: %f\n", camera->getSensitivity() * -deltaTime);
         }
 
-        processKeyPressed(glfwWindow, deltaTime);
+        camera->update();
 
         // Effacer le buffer de couleur et de profondeur
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
