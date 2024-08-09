@@ -13,8 +13,9 @@ class Camera
 	public:
 		Camera(glm::vec3* target);
 
-		glm::mat4* getViewMatrixP()		{ return &viewMatrix; }
-		GLfloat	   getSensitivity()		{ return sensitivity; }
+		glm::mat4*	getViewMatrixP()		{ return &viewMatrix;					}
+		GLfloat		getSensitivity()		{ return sensitivity;					}
+		glm::vec3	getUp()					{ return glm::vec3(0.0f, 1.0f, 0.0f);	}
 
 		void addYaw(GLfloat yaw);
 		void addPitch(GLfloat pitch);
@@ -25,9 +26,9 @@ class Camera
 
 	private:
 		glm::mat4  viewMatrix;
-		glm::vec3  position, front, right, up, worldUp;
+		glm::vec3  position, front, right;
 		glm::vec3* target;
-		GLfloat yaw = -180.0f, pitch = 0.0f, radius = 30.0f, sensitivity = 150.0f;
+		GLfloat yaw = -180.0f, pitch = 0.0f, radius = 30.0f, sensitivity = 300.0f;
 
 };
 

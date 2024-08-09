@@ -10,21 +10,25 @@ Camera::Camera(glm::vec3* target)
 	this->target   = target;
 	this->target->y += 3.0f;
     this->front    = glm::normalize(position - *target);
-    glm::vec3 up   = glm::vec3(0.0f, 1.0f, 0.0f);
-	worldUp		   = up;
-    this->right    = glm::normalize(glm::cross(up, front));
-    this->up       = glm::cross(front, right);
+    this->right    = glm::normalize(glm::cross(getUp(), front));
 
-    viewMatrix = glm::lookAt(position, *target, up);
+    viewMatrix = glm::lookAt(position, *target, getUp());
 }
 
 void Camera::update()
 {
+
     position.x = target->x + radius * cos(glm::radians(pitch)) * cos(glm::radians(yaw));
     position.y = target->y + radius * sin(glm::radians(pitch));
     position.z = target->z + radius * cos(glm::radians(pitch)) * sin(glm::radians(yaw));
 
-    viewMatrix = glm::lookAt(position, *target, up);
+	//float time = static_cast<float>(glfwGetTime());
+	//std::cout << up.x << " ... " << up.y << " ... " << up.z << std::endl;
+	//position.x = sin(time) * 20;
+	//position.z = cos(time) * 20;
+
+	
+    viewMatrix = glm::lookAt(position, *target, getUp());
 }
 
 void Camera::addYaw(GLfloat yaw)
