@@ -20,6 +20,7 @@ class Camera
 		void addYaw(GLfloat yaw);
 		void addPitch(GLfloat pitch);
 		void setRadius(GLfloat radius);
+		void resetYaw() { this->yaw = -90.0f; }
 
 		void mouseControl(GLFWwindow* window, GLfloat xChange, GLfloat yChange, GLfloat& scrollValue, const float& deltaTime);
 		void update();
@@ -28,7 +29,7 @@ class Camera
 		glm::mat4  viewMatrix;
 		glm::vec3  position, front, right;
 		glm::vec3* target;
-		GLfloat yaw = -180.0f, pitch = 0.0f, radius = 30.0f, sensitivity = 300.0f;
+		GLfloat yaw = -90.0f, pitch = 0.0f, radius = 30.0f, sensitivity = 300.0f;
 
 };
 

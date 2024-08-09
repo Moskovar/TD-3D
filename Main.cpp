@@ -46,10 +46,12 @@ void processKeyPressed(GLFWwindow* window, float deltaTime)
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
         entities[0]->move(deltaTime);
+        camera->resetYaw();
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
         entities[0]->move(-deltaTime);
+        camera->resetYaw();
     }
 
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
