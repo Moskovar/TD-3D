@@ -16,6 +16,26 @@ float r = 0.5f, g = 0.5f, b = 0.5f;
 
 std::vector<Entity*> entities;
 
+bool checkCollision(const AABB& box1, const AABB& box2) {
+    // Vérifier l'axe x
+    if (box1.max_point.x < box2.min_point.x || box1.min_point.x > box2.max_point.x) {
+        return false; // Pas de collision sur l'axe x
+    }
+
+    // Vérifier l'axe y
+    if (box1.max_point.y < box2.min_point.y || box1.min_point.y > box2.max_point.y) {
+        return false; // Pas de collision sur l'axe y
+    }
+
+    // Vérifier l'axe z
+    if (box1.max_point.z < box2.min_point.z || box1.min_point.z > box2.max_point.z) {
+        return false; // Pas de collision sur l'axe z
+    }
+
+    // Les boîtes se chevauchent
+    return true;
+}
+
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if (action == GLFW_PRESS) 
@@ -71,9 +91,10 @@ int main()
     window = new Window(800, 600);
 
     entities.push_back(new Entity(0, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/doublecube.fbx"));
-    //entities.push_back(new Entity(1, glm::vec3(0.0f,  0.0f, 0.0f), "models/obj/r1.obj"));
+    //entities.push_back(new Entity(1, glm::vec3(0.0f,  0.0f, 0.0f), "models/fbx/cube.obj"));
 
     entities.push_back(new Entity(2, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/ground.fbx"));
+
     //glm::vec3 target = glm::vec3(0.0f, 0.0f, 0.0f);
     camera = new Camera(entities[0]->getPositionP());
     //--- Création des shaders ---//

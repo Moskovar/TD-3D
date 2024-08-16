@@ -33,6 +33,9 @@ Model::Model(const std::string& filePath)
 	{
 		printf("Animation name: %s\n", animation.second.getName().c_str());
 	}
+
+	std::cout << "MIN_POINT: " << hitBox.min_point.x << " ... " << hitBox.min_point.y << " ... " << hitBox.min_point.z << std::endl;
+	std::cout << "MAX_POINT: " << hitBox.max_point.x << " ... " << hitBox.max_point.y << " ... " << hitBox.max_point.z << std::endl;
 }
 
 void Model::loadModel(const std::string& fileName)
@@ -230,6 +233,14 @@ void Model::loadMesh(aiMesh* mesh, const aiScene* scene, std::vector<Mesh*>& mes
 		vertex.position.x = mesh->mVertices[i].x;
 		vertex.position.y = mesh->mVertices[i].y;
 		vertex.position.z = mesh->mVertices[i].z;
+
+		if (vertex.position.x < hitBox.min_point.x) hitBox.min_point.x = vertex.position.x;
+		if (vertex.position.y < hitBox.min_point.y) hitBox.min_point.y = vertex.position.y;
+		if (vertex.position.z < hitBox.min_point.z) hitBox.min_point.z = vertex.position.z;
+
+		if (vertex.position.x > hitBox.max_point.x) hitBox.max_point.x = vertex.position.x;
+		if (vertex.position.y > hitBox.max_point.y) hitBox.max_point.y = vertex.position.y;
+		if (vertex.position.z > hitBox.max_point.z) hitBox.max_point.z = vertex.position.z;
 
 		// Récupérer les normales
 		if (mesh->HasNormals())

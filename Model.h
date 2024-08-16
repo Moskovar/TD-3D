@@ -29,6 +29,11 @@ struct Node
 	std::vector<Node*> children;
 };
 
+struct AABB 
+{
+	glm::vec3 min_point = glm::vec3(0.0f, 0.0f, 0.0f), max_point = glm::vec3(0.0f, 0.0f, 0.0f);
+};
+
 class Model
 {
 	public:
@@ -58,6 +63,8 @@ class Model
 
 		std::map<std::string, Bone*> bones;//on utilise le nom du node pour le retrouver dans le map
 		std::vector<Node*> nodes;
+
+		AABB hitBox;
 
 		//--- Animations ---//
 		std::map<unsigned short, Animation> animations;
