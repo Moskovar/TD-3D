@@ -7,10 +7,6 @@
 #include "Camera.h"
 #include "Shader.h"
 
-#include "uti.hpp"
-
-//#define TURN_SPEED          100.0//character turn speed
-
 Window* window = nullptr;
 Camera* camera = nullptr;
 float r = 0.5f, g = 0.5f, b = 0.5f;
@@ -18,23 +14,22 @@ std::map<char, bool> keyPressed;
 
 std::vector<Entity*> entities;
 
-bool checkCollision(const AABB& box1, const AABB& box2) {
-    // Vérifier l'axe x
+bool checkCollision(const AABB& box1, const AABB& box2) 
+{
     //std::cout << box1.max_point.x << " < " << box2.min_point.x << " || " << box1.min_point.x << " > " << box2.max_point.x << std::endl;
-    //if (box1.max_point.x < box2.min_point.x || box1.min_point.x > box2.max_point.x) {
-    //    return false; // Pas de collision sur l'axe x
-    //}
+    // Vérifier l'axe x
+    if (box1.max_point.x < box2.min_point.x || box1.min_point.x > box2.max_point.x)
+        return false; // Pas de collision sur l'axe x
 
-    std::cout << box1.max_point.y << " < " << box2.min_point.y << " || " << box1.min_point.y << " > " << box2.max_point.y << std::endl;
+    //std::cout << box1.max_point.y << " < " << box2.min_point.y << " || " << box1.min_point.y << " > " << box2.max_point.y << std::endl;
     // Vérifier l'axe y
     if (box1.max_point.y < box2.min_point.y || box1.min_point.y > box2.max_point.y)
         return false; // Pas de collision sur l'axe y
 
     //std::cout << box1.max_point.z << " < " << box2.min_point.z << " || " << box1.min_point.z << " > " << box2.max_point.z << std::endl;
     //// Vérifier l'axe z
-    //if (box1.max_point.z < box2.min_point.z || box1.min_point.z > box2.max_point.z) {
-    //    return false; // Pas de collision sur l'axe z
-    //}
+    if (box1.max_point.z < box2.min_point.z || box1.min_point.z > box2.max_point.z)
+        return false; // Pas de collision sur l'axe z
 
     // Les boîtes se chevauchent
     return true;
@@ -79,13 +74,13 @@ void processKeyPressed(GLFWwindow* window, float deltaTime)
     if(keyPressed[GLFW_KEY_W])
     {
         entities[0]->move(deltaTime);
-        camera->resetYaw();
+        if(!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) && !glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT)) camera->resetYaw();
     }
 
     if (keyPressed[GLFW_KEY_S])
     {
         entities[0]->move(-deltaTime);
-        camera->resetYaw();
+        if (!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) && !glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT)) camera->resetYaw();
     }
 
     if(!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
@@ -99,7 +94,7 @@ int main()
 {
     window = new Window(800, 600);
 
-    entities.push_back(new Entity(0, glm::vec3(0.0f, 2.0f, 0.0f), "models/fbx/doublecube.fbx"));
+    entities.push_back(new Entity(0, glm::vec3(0.0f, 10.0f, 0.0f), "models/fbx/doublecube.fbx"));
     //entities.push_back(new Entity(1, glm::vec3(0.0f,  0.0f, 0.0f), "models/fbx/cube.obj"));
 
     entities.push_back(new Entity(2, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/ground.fbx"));

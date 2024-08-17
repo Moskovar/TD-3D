@@ -18,6 +18,8 @@ class Entity : public Element
 		void directionPressed(uint8_t keyPressed)	{ directionKeys += directionsValue[keyPressed]; updateAnimationID(); }
 		void directionReleased(uint8_t keyPressed)	{ directionKeys -= directionsValue[keyPressed]; updateAnimationID(); }
 
+		void calculateHitBox();
+
 	private:
 		//bool moving = false;
 		bool falling = false;

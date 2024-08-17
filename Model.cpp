@@ -1,7 +1,5 @@
 #include "Model.h"
 
-
-
 Model::Model(const std::string& filePath)
 {
 	loadModel(filePath);
@@ -34,8 +32,8 @@ Model::Model(const std::string& filePath)
 		printf("Animation name: %s\n", animation.second.getName().c_str());
 	}
 
-	std::cout << "MIN_POINT: " << hitBox.min_point.x << " ... " << hitBox.min_point.y << " ... " << hitBox.min_point.z << std::endl;
-	std::cout << "MAX_POINT: " << hitBox.max_point.x << " ... " << hitBox.max_point.y << " ... " << hitBox.max_point.z << std::endl;
+	//std::cout << "MIN_POINT: " << hitBox.min_point.x << " ... " << hitBox.min_point.y << " ... " << hitBox.min_point.z << std::endl;
+	//std::cout << "MAX_POINT: " << hitBox.max_point.x << " ... " << hitBox.max_point.y << " ... " << hitBox.max_point.z << std::endl;
 }
 
 void Model::loadModel(const std::string& fileName)
@@ -118,26 +116,26 @@ void Model::loadModel(const std::string& fileName)
 
 	loadMaterials(scene);
 
-
-	for (auto& vertex : meshList[0]->getVertices())
-	{
-		float weightSum = vertex.weights.x + vertex.weights.y + vertex.weights.z + vertex.weights.w;
-		if (weightSum > 0.0f) 
+	//if(!meshList.empty())
+		for (auto& vertex : meshList[0]->getVertices())
 		{
-			//printf("Vertex ID: %d ... weightSum: %f\n", vertex.id, weightSum);
-			vertex.weights /= weightSum;
-			weightSum = vertex.weights.x + vertex.weights.y + vertex.weights.z + vertex.weights.w;
-			printf("Vertex ID: %d ... weightSum: %f\n", vertex.id, weightSum);
-		}
+			float weightSum = vertex.weights.x + vertex.weights.y + vertex.weights.z + vertex.weights.w;
+			if (weightSum > 0.0f) 
+			{
+				//printf("Vertex ID: %d ... weightSum: %f\n", vertex.id, weightSum);
+				vertex.weights /= weightSum;
+				weightSum = vertex.weights.x + vertex.weights.y + vertex.weights.z + vertex.weights.w;
+				printf("Vertex ID: %d ... weightSum: %f\n", vertex.id, weightSum);
+			}
 
 		
 
-		if ((vertex.bonesID.x == 3 || vertex.bonesID.y == 3 || vertex.bonesID.z == 3 || vertex.bonesID.w == 3)
-		 && (vertex.bonesID.x == 4 || vertex.bonesID.y == 4 || vertex.bonesID.z == 4 || vertex.bonesID.w == 4))
-		{
-			std::cout << "Vertex ID: " << vertex.id << " is common" << std::endl;
+			if ((vertex.bonesID.x == 3 || vertex.bonesID.y == 3 || vertex.bonesID.z == 3 || vertex.bonesID.w == 3)
+			 && (vertex.bonesID.x == 4 || vertex.bonesID.y == 4 || vertex.bonesID.z == 4 || vertex.bonesID.w == 4))
+			{
+				std::cout << "Vertex ID: " << vertex.id << " is common" << std::endl;
+			}
 		}
-	}
 }
 
 void Model::renderModel()
@@ -163,10 +161,10 @@ void Model::clearModel()
 	
 }
 
-void Model::translateHitBox(glm::vec3 translation)
+void Model::translate(glm::mat4& modelMatrix, glm::vec3 translation)
 {
-	hitBox.max_point += translation;
-	hitBox.min_point += translation;
+	modelMatrix = glm::translate(modelMatrix, translation);
+	//translateHitBox(translation);
 }
 
 Model::~Model()
@@ -225,7 +223,7 @@ void Model::loadNode(aiNode* node, const aiScene* scene, Node* parentNode)
 
 	//bones[std::string(node->mName.C_Str())] = Bone(std::string(node->mName.C_Str()), meshes);
 }
-#include <glm/gtx/string_cast.hpp>
+//#include <glm/gtx/string_cast.hpp>
 void Model::loadMesh(aiMesh* mesh, const aiScene* scene, std::vector<Mesh*>& meshes)
 {
 	std::vector<Vertex>	  v_vertices;
@@ -240,13 +238,13 @@ void Model::loadMesh(aiMesh* mesh, const aiScene* scene, std::vector<Mesh*>& mes
 		vertex.position.y = mesh->mVertices[i].y;
 		vertex.position.z = mesh->mVertices[i].z;
 
-		if (vertex.position.x < hitBox.min_point.x) hitBox.min_point.x = vertex.position.x;
-		if (vertex.position.y < hitBox.min_point.y) hitBox.min_point.y = vertex.position.y;
-		if (vertex.position.z < hitBox.min_point.z) hitBox.min_point.z = vertex.position.z;
+		if (vertex.position.x < minPoint.x) minPoint.x = vertex.position.x;
+		if (vertex.position.y < minPoint.y) minPoint.y = vertex.position.y;
+		if (vertex.position.z < minPoint.z) minPoint.z = vertex.position.z;
 
-		if (vertex.position.x > hitBox.max_point.x) hitBox.max_point.x = vertex.position.x;
-		if (vertex.position.y > hitBox.max_point.y) hitBox.max_point.y = vertex.position.y;
-		if (vertex.position.z > hitBox.max_point.z) hitBox.max_point.z = vertex.position.z;
+		if (vertex.position.x > maxPoint.x) maxPoint.x = vertex.position.x;
+		if (vertex.position.y > maxPoint.y) maxPoint.y = vertex.position.y;
+		if (vertex.position.z > maxPoint.z) maxPoint.z = vertex.position.z;
 
 		// Récupérer les normales
 		if (mesh->HasNormals())

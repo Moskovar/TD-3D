@@ -29,16 +29,13 @@ struct Node
 	std::vector<Node*> children;
 };
 
-struct AABB 
-{
-	glm::vec3 min_point = glm::vec3(0.0f, 0.0f, 0.0f), max_point = glm::vec3(0.0f, 0.0f, 0.0f);
-};
-
 class Model
 {
 	public:
 		Model() {};
 		Model(const std::string& filePath);
+
+		~Model();
 
 		void loadModel(const std::string& fileName);
 		void renderModel();
@@ -50,12 +47,11 @@ class Model
 		Bone* getBone(std::string boneName)				{ return bones[boneName];										}
 		const auto getAnimations()						{ return animations;											}
 		Animation* getAnimation(unsigned short id)		{ return (animations.size() > 0) ? &animations[id] : nullptr;	}
-		AABB& getRHitbox()								{ return hitBox;												}
-
-		void translateHitBox(glm::vec3 translation);
-
-		~Model();
-
+		glm::vec3 getMaxPoint()							{ return maxPoint;												}
+		glm::vec3 getMinPoint()							{ return minPoint;												}
+		
+		void translate(glm::mat4& modelMatrix, glm::vec3 translation);
+		
 	private:
 		void loadNode(aiNode* node, const aiScene *scene, Node* parentNode = nullptr);
 		void loadMesh(aiMesh* mesh, const aiScene *scene, std::vector<Mesh*>& meshes);
@@ -68,7 +64,7 @@ class Model
 		std::map<std::string, Bone*> bones;//on utilise le nom du node pour le retrouver dans le map
 		std::vector<Node*> nodes;
 
-		AABB hitBox;
+		glm::vec3 maxPoint = glm::vec3(0.0f, 0.0f, 0.0f), minPoint = glm::vec3(0.0f, 0.0f, 0.0f);
 
 		//--- Animations ---//
 		std::map<unsigned short, Animation> animations;

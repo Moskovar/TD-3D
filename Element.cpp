@@ -6,9 +6,9 @@ Element::Element(short id, glm::vec3 position, const std::string& filePath)
 	this->id	   = id;
 
 	this->position = position;
+	halfSize = (model->getMaxPoint() - model->getMinPoint()) / 2.0f;
 
-	modelMatrix = glm::translate(modelMatrix, position);
-	model->translateHitBox(position);
+	model->translate(modelMatrix, position);
 	updatePosition();
 }
 
@@ -26,7 +26,7 @@ void Element::move(GLfloat deltaTime)
 {
 	moving = true;
 
-	modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, moveSpeed * deltaTime));
+	model->translate(modelMatrix, glm::vec3(0.0f, 0.0f, moveSpeed * deltaTime));
 	updatePosition();
 }
 
@@ -47,9 +47,14 @@ void Element::fall(GLfloat deltaTime)
 {
 	moving = true;
 
-	modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, -1.0f * deltaTime, 0.0f));
-	model->translateHitBox(glm::vec3(0.0f, -1.0f * deltaTime, 0.0f));
+	model->translate(modelMatrix, glm::vec3(0.0f, -FALL_SPEED * deltaTime, 0.0f));
 	updatePosition();
+}
+
+void Element::calculateHitBox()
+{
+	hitBox.max_point = position + halfSize;
+	hitBox.min_point = position - halfSize;
 }
 
 void Element::updatePosition()
@@ -57,6 +62,8 @@ void Element::updatePosition()
 	position.x = modelMatrix[3].x;
 	position.y = modelMatrix[3].y;
 	position.z = modelMatrix[3].z;
+
+	calculateHitBox();
 }
 
 void Element::render(GLuint& modelLoc, GLuint& bonesTransformsLoc, float& timeSinceStart, int idLoc)
