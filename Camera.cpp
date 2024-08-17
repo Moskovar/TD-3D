@@ -1,16 +1,20 @@
 #include "Camera.h"
+#include "uti.hpp"
 
-Camera::Camera(glm::vec3* target)
+Camera::Camera(glm::vec3* target, GLfloat* targetYaw, map<char, bool>* keyPressed)
 {
 	position = glm::vec3(0.0f, 0.0f, 0.0f);
     position.x = target->x + radius * cos(glm::radians(pitch)) * cos(glm::radians(yaw));
     position.y = target->y + radius * sin(glm::radians(pitch));
     position.z = target->z + radius * cos(glm::radians(pitch)) * sin(glm::radians(yaw));
 
-	this->target   = target;
+	this->targetYaw  = targetYaw;
+	this->keyPressed = keyPressed;
+
+	this->target     = target;
 	this->target->y += 3.0f;
-    this->front    = glm::normalize(position - *target);
-    this->right    = glm::normalize(glm::cross(getUp(), front));
+    this->front      = glm::normalize(position - *target);
+    this->right      = glm::normalize(glm::cross(getUp(), front));
 
     viewMatrix = glm::lookAt(position, *target, getUp());
 }
@@ -33,7 +37,10 @@ void Camera::update()
 
 void Camera::addYaw(GLfloat yaw)
 {
+	//std::cout << "addYaw" << std::endl;
 	this->yaw += yaw;
+
+	//std::cout << this->yaw << std::endl;
 
 	if		(this->yaw >  360) this->yaw -= 360;
 	else if (this->yaw < -360) this->yaw += 360;
@@ -58,18 +65,38 @@ void Camera::setRadius(GLfloat radius)
 void Camera::mouseControl(GLFWwindow* window, GLfloat xChange, GLfloat yChange, GLfloat& scrollValue, const float& deltaTime)
 {
 	//xChange *= turnSpeed;//USE TURNSPEED OU VELOCITY ???
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT))//|| glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT)) 
+
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) || glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT)) 
 	{
-		if		(xChange > 0) addYaw( deltaTime * sensitivity);
+		if		(xChange > 0) addYaw(deltaTime * sensitivity);
 		else if (xChange < 0) addYaw(-deltaTime * sensitivity);
 
 		if		(yChange > 0) addPitch(-deltaTime * sensitivity / 2);//pour clique gauche et droit
-		else if (yChange < 0) addPitch( deltaTime * sensitivity / 2);
+		else if (yChange < 0) addPitch(deltaTime * sensitivity / 2);
 	}
-	else if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
+	//else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
+	//{
+	//	//std::cout << (*keyPressed)[GLFW_KEY_D] << " ... " << (*keyPressed)[GLFW_KEY_A] << std::endl;
+	//		if		(xChange > 0) addYaw(sensitivity * deltaTime);
+	//		else if (xChange < 0) addYaw(sensitivity * -deltaTime);
+
+	//	if		(yChange > 0) addPitch(-deltaTime * sensitivity / 2);//pour clique gauche et droit
+	//	else if (yChange < 0) addPitch(deltaTime * sensitivity / 2);
+	//}
+
+	if(!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
 	{
-		if		(yChange > 0) addPitch(-deltaTime * sensitivity / 2);//pour clique gauche et droit
-		else if (yChange < 0) addPitch( deltaTime * sensitivity / 2);
+		if ((*keyPressed)[GLFW_KEY_D])
+		{
+			resetYaw();
+			addYaw(TURN_SPEED * deltaTime);
+		}
+
+		if ((*keyPressed)[GLFW_KEY_A])
+		{
+			resetYaw();
+			addYaw(TURN_SPEED * -deltaTime);
+		}
 	}
 
 	if (scrollValue != 0)

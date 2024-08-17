@@ -2,9 +2,14 @@
 
 Element::Element(short id, glm::vec3 position, const std::string& filePath)
 {
-	this->position = position;
 	model		   = new Model(filePath);
 	this->id	   = id;
+
+	this->position = position;
+
+	modelMatrix = glm::translate(modelMatrix, position);
+	model->translateHitBox(position);
+	updatePosition();
 }
 
 Element::~Element()
@@ -19,13 +24,31 @@ Element::~Element()
 
 void Element::move(GLfloat deltaTime)
 {
+	moving = true;
+
 	modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, moveSpeed * deltaTime));
 	updatePosition();
 }
 
-void Element::turn(GLfloat yaw)
+void Element::turn(GLfloat yaw)//et le deltatime ??
 {
+	moving = true;
+
+	this->yaw += yaw;
+	if		(this->yaw >  360) this->yaw -= 360;
+	else if (this->yaw < -360) this->yaw += 360;
+
 	modelMatrix = glm::rotate(modelMatrix, glm::radians(-yaw), glm::vec3(0.0f, 1.0f, 0.0f));
+	updatePosition();
+	//std::cout << this->yaw << std::endl;
+}
+
+void Element::fall(GLfloat deltaTime)
+{
+	moving = true;
+
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, -1.0f * deltaTime, 0.0f));
+	model->translateHitBox(glm::vec3(0.0f, -1.0f * deltaTime, 0.0f));
 	updatePosition();
 }
 

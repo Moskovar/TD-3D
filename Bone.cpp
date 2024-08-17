@@ -1,4 +1,5 @@
 #include "Bone.h"
+#include <iostream>
 
 Bone::Bone(int id, std::string name, aiMatrix4x4 offsetMatrix)
 {
@@ -23,6 +24,19 @@ void Bone::interpolateTransform(unsigned short animationID, double animationTime
     glm::mat4 res = parentTransforms;
     //const std::map<double, KeyFrame> keyFrames = keyFrames[animation];
     //printf("KeyFrame SIZE: %d\n", keyFrames.size());
+
+
+    //std::cout << animationID << std::endl;
+    //std::cout << &keyFrames << std::endl;
+    uintptr_t specificAddress = 0x30;
+
+    // Vérifier si le pointeur est nul ou si l'adresse est spécifique
+    if (&keyFrames == nullptr || reinterpret_cast<uintptr_t>(&keyFrames) == specificAddress)//pourquoi ça fait ça ??
+    {
+        std::cout << "Pointeur est nul ou egale a l'adresse specifique : 0x30" << std::endl;
+        return;
+    }
+
 
     // Si aucune keyframe n'est disponible, retourner une matrice identité
     if (keyFrames[animationID].empty())
@@ -68,5 +82,6 @@ void Bone::interpolateTransform(unsigned short animationID, double animationTime
     bonesTransform[id] = res * offsetMatrix;
     for (Bone* child : children)
         child->interpolateTransform(animationID, animationTime, bonesTransform, res);
+
     return;
 }

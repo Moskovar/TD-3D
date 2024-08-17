@@ -163,6 +163,12 @@ void Model::clearModel()
 	
 }
 
+void Model::translateHitBox(glm::vec3 translation)
+{
+	hitBox.max_point += translation;
+	hitBox.min_point += translation;
+}
+
 Model::~Model()
 {
 	for (size_t i = 0; i < meshList.size(); i++)

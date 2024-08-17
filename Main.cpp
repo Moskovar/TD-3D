@@ -7,82 +7,91 @@
 #include "Camera.h"
 #include "Shader.h"
 
+#include "uti.hpp"
 
-#define TURN_SPEED          100.0//character turn speed
+//#define TURN_SPEED          100.0//character turn speed
 
 Window* window = nullptr;
 Camera* camera = nullptr;
 float r = 0.5f, g = 0.5f, b = 0.5f;
+std::map<char, bool> keyPressed;
 
 std::vector<Entity*> entities;
 
 bool checkCollision(const AABB& box1, const AABB& box2) {
     // Vérifier l'axe x
-    if (box1.max_point.x < box2.min_point.x || box1.min_point.x > box2.max_point.x) {
-        return false; // Pas de collision sur l'axe x
-    }
+    //std::cout << box1.max_point.x << " < " << box2.min_point.x << " || " << box1.min_point.x << " > " << box2.max_point.x << std::endl;
+    //if (box1.max_point.x < box2.min_point.x || box1.min_point.x > box2.max_point.x) {
+    //    return false; // Pas de collision sur l'axe x
+    //}
 
+    std::cout << box1.max_point.y << " < " << box2.min_point.y << " || " << box1.min_point.y << " > " << box2.max_point.y << std::endl;
     // Vérifier l'axe y
-    if (box1.max_point.y < box2.min_point.y || box1.min_point.y > box2.max_point.y) {
+    if (box1.max_point.y < box2.min_point.y || box1.min_point.y > box2.max_point.y)
         return false; // Pas de collision sur l'axe y
-    }
 
-    // Vérifier l'axe z
-    if (box1.max_point.z < box2.min_point.z || box1.min_point.z > box2.max_point.z) {
-        return false; // Pas de collision sur l'axe z
-    }
+    //std::cout << box1.max_point.z << " < " << box2.min_point.z << " || " << box1.min_point.z << " > " << box2.max_point.z << std::endl;
+    //// Vérifier l'axe z
+    //if (box1.max_point.z < box2.min_point.z || box1.min_point.z > box2.max_point.z) {
+    //    return false; // Pas de collision sur l'axe z
+    //}
 
     // Les boîtes se chevauchent
     return true;
 }
 
+void applyGravity(GLfloat deltaTime)
+{
+    if (!checkCollision(entities[0]->getRHitbox(), entities[1]->getRHitbox())) entities[0]->fall(deltaTime);
+}
+
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+    //std::cout << "KeyPressed callback" << std::endl;
     if (action == GLFW_PRESS) 
     {
+        keyPressed[key] = true;
+
+        if (key == GLFW_KEY_W || key == GLFW_KEY_S || key == GLFW_KEY_D || key == GLFW_KEY_A)//sert à quoi ??
+        {
+            entities[0]->directionPressed(key);
+        }
+
         switch (key) 
         {
-            case GLFW_KEY_W: entities[0]->directionPressed(GLFW_KEY_W);     break;
-            case GLFW_KEY_S: entities[0]->directionPressed(GLFW_KEY_S);     break;
-            case GLFW_KEY_D: entities[0]->directionPressed(GLFW_KEY_D);     break;
-            case GLFW_KEY_A: entities[0]->directionPressed(GLFW_KEY_A);     break;
             case GLFW_KEY_ESCAPE: glfwSetWindowShouldClose(window, true);   break;
         }
     }
     else if (action == GLFW_RELEASE)
     {
-        switch (key)
+        keyPressed[key] = false;
+
+        if (key == GLFW_KEY_W || key == GLFW_KEY_S || key == GLFW_KEY_D || key == GLFW_KEY_A)
         {
-            case GLFW_KEY_W: entities[0]->directionReleased(GLFW_KEY_W);     break;
-            case GLFW_KEY_S: entities[0]->directionReleased(GLFW_KEY_S);     break;
-            case GLFW_KEY_D: entities[0]->directionReleased(GLFW_KEY_D);     break;
-            case GLFW_KEY_A: entities[0]->directionReleased(GLFW_KEY_A);     break;
+            entities[0]->directionReleased(key);
+            entities[0]->setMove(false);
         }
     }
 }
 
 void processKeyPressed(GLFWwindow* window, float deltaTime)
 {
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    if(keyPressed[GLFW_KEY_W])
     {
         entities[0]->move(deltaTime);
         camera->resetYaw();
     }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+
+    if (keyPressed[GLFW_KEY_S])
     {
         entities[0]->move(-deltaTime);
         camera->resetYaw();
     }
 
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    if(!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
     {
-        entities[0]->turn(TURN_SPEED * deltaTime);
-        camera->addYaw(TURN_SPEED * deltaTime);
-    }
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-    {
-        entities[0]->turn(TURN_SPEED * -deltaTime);
-        camera->addYaw(TURN_SPEED * -deltaTime);
+        if (keyPressed[GLFW_KEY_D]) entities[0]->turn(TURN_SPEED * deltaTime);
+        if (keyPressed[GLFW_KEY_A]) entities[0]->turn(TURN_SPEED * -deltaTime);
     }
 }
 
@@ -90,13 +99,13 @@ int main()
 {
     window = new Window(800, 600);
 
-    entities.push_back(new Entity(0, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/doublecube.fbx"));
+    entities.push_back(new Entity(0, glm::vec3(0.0f, 2.0f, 0.0f), "models/fbx/doublecube.fbx"));
     //entities.push_back(new Entity(1, glm::vec3(0.0f,  0.0f, 0.0f), "models/fbx/cube.obj"));
 
     entities.push_back(new Entity(2, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/ground.fbx"));
 
     //glm::vec3 target = glm::vec3(0.0f, 0.0f, 0.0f);
-    camera = new Camera(entities[0]->getPositionP());
+    camera = new Camera(entities[0]->getPositionP(), entities[0]->getPYaw(), &keyPressed);
     //--- Création des shaders ---//
     GLuint shaderProgram = 0;
     // Obtenir l'emplacement des uniforms
@@ -159,24 +168,20 @@ int main()
         deltaTime = now - lastFrame;
         lastFrame = now;
 
+        applyGravity(deltaTime);
+
+
+        //--- Personnage ---//
+        if (glfwGetMouseButton(glfwWindow, GLFW_MOUSE_BUTTON_RIGHT))
+        {
+            if      (window->getXChange() > 0) entities[0]->turn(camera->getSensitivity() * deltaTime);
+            else if (window->getXChange() < 0) entities[0]->turn(camera->getSensitivity() * -deltaTime);
+        }
+
         processKeyPressed(glfwWindow, deltaTime);
 
         //--- Caméra ---//
         camera->mouseControl(window->getGLFWWindow(), window->getXChange(), window->getYChange(), window->getScrollValue(), deltaTime);
-
-        if (glfwGetMouseButton(glfwWindow, GLFW_MOUSE_BUTTON_RIGHT))
-        {
-            if      (window->getXChange() > 0)
-            {
-                entities[0]->turn(camera->getSensitivity() * deltaTime);
-                camera->addYaw(camera->getSensitivity() * deltaTime);
-            }
-            else if (window->getXChange() < 0)
-            {
-                entities[0]->turn(camera->getSensitivity() * -deltaTime);
-                camera->addYaw(camera->getSensitivity() * -deltaTime);
-            }
-        }
 
         camera->update();
 
@@ -196,7 +201,7 @@ int main()
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
         for (Entity* e : entities)
-            e->render(modelLoc, bonesTransformsLoc, timeSinceStart, idLoc);
+            if(e) e->render(modelLoc, bonesTransformsLoc, timeSinceStart, idLoc);
 
         //--- Reset des mouvements souris dans la fenêtre pour traiter les prochains ---//
         window->resetXYChange();

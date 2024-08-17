@@ -5,6 +5,11 @@ Entity::Entity(short id, glm::vec3 position, const std::string& filePath) : Elem
 	
 }
 
+void Entity::addY(GLfloat y)
+{
+	//{ this->position.y += y;	}
+}
+
 void Entity::updateAnimationID()
 {
 	switch (directionKeys)

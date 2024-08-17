@@ -45,10 +45,14 @@ class Model
 		void clearModel();
 		//void animate(double animationTime);
 
-		const std::map<std::string, Bone*> getBones() { return bones; }
-		Bone* getBone(std::string boneName) { return bones[boneName]; }
-		const auto getAnimations() { return animations; }
-		Animation* getAnimation(unsigned short id) { return (animations.size() > 0) ? &animations[id] : nullptr; }
+		//--- Getters ---//
+		const std::map<std::string, Bone*> getBones()	{ return bones;													}
+		Bone* getBone(std::string boneName)				{ return bones[boneName];										}
+		const auto getAnimations()						{ return animations;											}
+		Animation* getAnimation(unsigned short id)		{ return (animations.size() > 0) ? &animations[id] : nullptr;	}
+		AABB& getRHitbox()								{ return hitBox;												}
+
+		void translateHitBox(glm::vec3 translation);
 
 		~Model();
 
