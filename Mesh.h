@@ -48,6 +48,5 @@ class Mesh
 		GLsizei indexCount;
 		std::vector<Vertex>  v_vertices;//contient tous les vertices de la mesh -> attribué dans createMesh
 		std::vector<unsigned int> v_indices;//à voir à quoi ça correspond
-
 };
 

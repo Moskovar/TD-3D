@@ -7,12 +7,98 @@
 #include "Camera.h"
 #include "Shader.h"
 
+#include "PhysicsEngine.h"
+
+#include "stb_image.h"
+
 Window* window = nullptr;
 Camera* camera = nullptr;
-float r = 0.5f, g = 0.5f, b = 0.5f;
+PhysicsEngine physics;
+//float r = 0.5f, g = 0.5f, b = 0.5f;
 std::map<char, bool> keyPressed;
 
 std::vector<Entity*> entities;
+
+GLuint vao, vbo;
+
+// Affichage de la matrice
+void printMatrix(const glm::mat4& mat) {
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            std::cout << mat[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
+}
+
+void generateTerrainMesh(float* vertices, int width, int height, const char* heightmapPath) {
+    // Charger l'image PNG
+    int imgWidth, imgHeight, channels; 
+    unsigned char* heightmapData = stbi_load(heightmapPath, &imgWidth, &imgHeight, &channels, 1); // 1 pour charger en niveau de gris
+
+    if (!heightmapData) {
+        std::cerr << "Erreur de chargement de l'image heightmap." << std::endl;
+        return;
+    }
+
+    // Vérifiez que la largeur et la hauteur de l'image correspondent à la taille attendue
+    if (imgWidth != width || imgHeight != height) {
+        std::cerr << "Dimensions de l'image heightmap ne correspondent pas." << std::endl;
+        stbi_image_free(heightmapData);
+        return;
+    }
+
+    // Générer le maillage de terrain
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            // Lire la valeur de hauteur du tableau heightmapData
+            float heightValue = heightmapData[y * width + x];// / 255.0f; // Normaliser la valeur
+
+            //std::cout << "HeightValue: " << heightValue << std::endl;
+
+            // Définir la position du vertex en fonction de la hauteur
+            vertices[(y * width + x) * 3 + 0] = (float)x;
+            vertices[(y * width + x) * 3 + 1] = heightValue - 147; // Hauteur du terrain
+            vertices[(y * width + x) * 3 + 2] = (float)y;
+        }
+    }
+
+    // Libérer la mémoire de l'image
+    stbi_image_free(heightmapData);
+}
+
+// Fonction pour créer et configurer un Vertex Array Object (VAO) et un Vertex Buffer Object (VBO)
+void setupTerrainMesh(float* vertices, int width, int height) 
+{
+    // Création du VAO et du VBO
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+
+    // Bind VAO
+    glBindVertexArray(vao);
+
+    // Bind VBO et envoyer les données des vertices
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, width * height * 3 * sizeof(float), vertices, GL_STATIC_DRAW);
+
+    // Définir les attributs des vertices
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Débind VAO
+    glBindVertexArray(0);
+}
+
+void renderTerrain() {
+    // Bind VAO
+    glBindVertexArray(vao);
+
+    // Dessiner le terrain
+    glDrawArrays(GL_TRIANGLES, 0, 512 * 512); // Vous pouvez utiliser GL_TRIANGLES pour des rendus de maillage
+
+    // Débind VAO
+    glBindVertexArray(0);
+}
 
 bool checkCollision(const AABB& box1, const AABB& box2) 
 {
@@ -37,7 +123,12 @@ bool checkCollision(const AABB& box1, const AABB& box2)
 
 void applyGravity(GLfloat deltaTime)
 {
-    if (!checkCollision(entities[0]->getRHitbox(), entities[1]->getRHitbox())) entities[0]->fall(deltaTime);
+    //std::cout << entities[1]->getRHitbox().max_point.y << std::endl;
+    //std::cout << entities[1]->getRHitbox().max_point.x << std::endl;
+    for (int i = 1; i < entities.size(); i++)
+        if (checkCollision(entities[0]->getRHitbox(), entities[i]->getRHitbox())) return;
+        
+    entities[0]->fall(deltaTime);
 }
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -71,6 +162,12 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 void processKeyPressed(GLFWwindow* window, float deltaTime)
 {
+    bool collision = false;
+
+    //for (int i = 1; i < entities.size(); i++)
+    //    if ((collision = checkCollision(entities[0]->getRHitbox(), entities[i]->getRHitbox()))) return;
+
+
     if(keyPressed[GLFW_KEY_W])
     {
         entities[0]->move(deltaTime);
@@ -92,41 +189,30 @@ void processKeyPressed(GLFWwindow* window, float deltaTime)
 
 int main()
 {
+    //float* vertices = new float[786432];
+    //generateTerrainMesh(vertices, 512, 512, "textures/heightmap.png");
+
+    //for (int i = 0; i < 512 * 512 * 3; i += 3)
+    //    std::cout << vertices[i] << " ... " << vertices[i + 1] << " ... " << vertices[i + 2] << std::endl;
+
     window = new Window(800, 600);
 
     entities.push_back(new Entity(0, glm::vec3(0.0f, 10.0f, 0.0f), "models/fbx/doublecube.fbx"));
-    //entities.push_back(new Entity(1, glm::vec3(0.0f,  0.0f, 0.0f), "models/fbx/cube.obj"));
+    entities.push_back(new Entity(1, glm::vec3(5.0f,  2.0f, 5.0f), "models/fbx/doublecube.fbx"));
 
     entities.push_back(new Entity(2, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/ground.fbx"));
 
     //glm::vec3 target = glm::vec3(0.0f, 0.0f, 0.0f);
     camera = new Camera(entities[0]->getPositionP(), entities[0]->getPYaw(), &keyPressed);
-    //--- Création des shaders ---//
-    GLuint shaderProgram = 0;
-    // Obtenir l'emplacement des uniforms
-    GLuint ColorLoc = 0, viewLoc = 0, projLoc = 0, modelLoc = 0, bonesTransformsLoc = 0;
-    {
-        string vertexCode = "shaders/vertex_shader.glsl";// Lire le code du vertex shader ├á partir du fichier vertex_shader.glsl
-        string fragmentCode = "shaders/fragment_shader.glsl";// Lire le code du fragment shader ├á partir du fichier fragment_shader.glsl
-        Shader shaders = Shader(vertexCode, fragmentCode);
-        shaderProgram = shaders.getShaderProgram();
-        ColorLoc = glGetUniformLocation(shaderProgram, "color");
-        modelLoc = glGetUniformLocation(shaderProgram, "model");
-        viewLoc  = glGetUniformLocation(shaderProgram, "view");
-        projLoc  = glGetUniformLocation(shaderProgram, "projection");
-        bonesTransformsLoc = glGetUniformLocation(shaderProgram, "bonesTransform");
-    }
 
-    GLint idLoc = glGetUniformLocation(shaderProgram, "id");//debug
-
-    //--- Couleurs du modèle ---//
-    glm::vec3 color(r, g, b);
-
-    //Matrice de la caméra
     glm::mat4* view = camera->getViewMatrixP();
-
-    //Matrice de projection
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.5f, 100.0f);
+
+    //--- Création des shaders ---//    
+    Shader shaders        = Shader("shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl", view, &projection);
+    Shader simple_shaders = Shader("shaders/simple_vertex_shader.glsl", "shaders/simple_fragment_shader.glsl", view, &projection);
+
+    //GLint idLoc = glGetUniformLocation(shaderProgram, "id");//debug
 
     //Exemples transformations
     {
@@ -147,6 +233,45 @@ int main()
 
     if (glIsEnabled(GL_DEPTH_TEST)) std::cout << "Depth test is enabled."     << std::endl;
     else                            std::cout << "Depth test is not enabled." << std::endl;
+
+    //setupTerrainMesh(vertices, 512, 512);
+
+  
+    
+
+    //Vertex v1, v2, v3;
+    //v1.position = glm::vec3(-5.0f, 0.0f, 5.0f);
+    //v2.position = glm::vec3(0.0f , 5.0f, 5.0f);
+    //v3.position = glm::vec3(5.0f , 0.0f, 5.0f);
+
+    //std::vector<Vertex> v_vertices = { v1, v2, v3 };
+
+    //std::vector<unsigned int> v_indices = { 1, 2, 3 };
+
+    //Mesh chunk(v_vertices, v_indices);
+
+
+    float vertices[] = {
+        -5.0f, 0.0f, 0.0f,
+        0.0f , 5.0f, 0.0f,
+        5.0f , 0.0f, 0.0f
+    };
+
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+
+    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+
 
     auto startTime = std::chrono::high_resolution_clock::now();
     float currentFrame = 0, animationTime = 0, timeSinceStart = 0,
@@ -184,19 +309,31 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Utiliser le programme de shaders
-        glUseProgram(shaderProgram);
-
-        color.x = r;
-        color.y = g;
-        color.z = b;
+        shaders.use();
         
-        glUniform3fv(ColorLoc, 1, glm::value_ptr(color));
+        //glUniform3fv(ColorLoc, 1, glm::value_ptr(color));
 
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(*view));
-        glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+        //Passer les matrices de vue et de projection aux shaders
+        //glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(*view));
+        //glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+        //renderTerrain();
+        //glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelmtx));
+
+        //chunk.RenderMesh();
+        //printMatrix(*view);
 
         for (Entity* e : entities)
-            if(e) e->render(modelLoc, bonesTransformsLoc, timeSinceStart, idLoc);
+            if(e) e->render(shaders.modelLoc, shaders.bonesTransformsLoc, timeSinceStart);
+
+
+        glm::mat4 modelmtx = glm::mat4(1.0f);
+        simple_shaders.use();
+        glUniformMatrix4fv(simple_shaders.modelLoc, 1, GL_FALSE, glm::value_ptr(modelmtx));
+        //printMatrix(*view);
+        glBindVertexArray(vao);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
 
         //--- Reset des mouvements souris dans la fenêtre pour traiter les prochains ---//
         window->resetXYChange();
@@ -225,6 +362,9 @@ int main()
             delete e;
             e = nullptr;
         }
+
+    //delete vertices;
+    //vertices = nullptr;
 
     return 0;
 }

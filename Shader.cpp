@@ -1,11 +1,30 @@
 #include "Shader.h"
+#include <GLM/gtc/type_ptr.hpp>
 #include <iostream>
 #include <fstream>~
 #include <sstream>
 
-Shader::Shader(std::string vertexSrc, std::string fragmentSrc)
+Shader::Shader(std::string vertexSrc, std::string fragmentSrc, glm::mat4* view, glm::mat4* projection)
 {
     shaderProgram = createShaderProgram(vertexSrc, fragmentSrc);
+
+    this->view          = view;
+    this->projection    = projection;
+
+    colorLoc            = glGetUniformLocation(shaderProgram, "color");
+    modelLoc            = glGetUniformLocation(shaderProgram, "model");
+    viewLoc             = glGetUniformLocation(shaderProgram, "view");
+    projLoc             = glGetUniformLocation(shaderProgram, "projection");
+    bonesTransformsLoc  = glGetUniformLocation(shaderProgram, "bonesTransform");
+
+    std::cout << vertexSrc << " : " << modelLoc << " ... " << viewLoc << " ... " << projLoc << std::endl;
+}
+
+void Shader::use()
+{
+    glUseProgram(shaderProgram);
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(*view));
+    glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(*projection));
 }
 
 std::string Shader::readShaderSource(std::string filePath)

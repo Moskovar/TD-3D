@@ -27,7 +27,7 @@ class Element
 		void updatePosition();
 		
 
-		void render(GLuint& modelLoc, GLuint& bonesTransformsLoc, float& animationTime, int idLoc);
+		void render(GLuint& modelLoc, GLuint& bonesTransformsLoc, float& animationTime);
 
 	protected:
 		uint8_t id = -1, animationID = 0;

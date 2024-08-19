@@ -9,6 +9,13 @@ Element::Element(short id, glm::vec3 position, const std::string& filePath)
 	halfSize = (model->getMaxPoint() - model->getMinPoint()) / 2.0f;
 
 	model->translate(modelMatrix, position);
+	calculateHitBox();
+	if (id == 2)
+	{
+		hitBox.max_point = model->getMaxPoint();
+		hitBox.min_point = model->getMinPoint();
+		std::cout << "HB MAXP Y: " << hitBox.max_point.y << std::endl;
+ 	}
 	updatePosition();
 }
 
@@ -55,6 +62,9 @@ void Element::calculateHitBox()
 {
 	hitBox.max_point = position + halfSize;
 	hitBox.min_point = position - halfSize;
+
+	//hitBox.max_point = position + model->getMaxPoint();
+	//hitBox.min_point = position - model->getMinPoint();
 }
 
 void Element::updatePosition()
@@ -66,7 +76,7 @@ void Element::updatePosition()
 	calculateHitBox();
 }
 
-void Element::render(GLuint& modelLoc, GLuint& bonesTransformsLoc, float& timeSinceStart, int idLoc)
+void Element::render(GLuint& modelLoc, GLuint& bonesTransformsLoc, float& timeSinceStart)
 {
 	float ticksPerSecond = 0, duration = 0 , animationTime = 0;
 	glm::mat4 bonesTransform[NUM_BONES] = {};
@@ -84,7 +94,7 @@ void Element::render(GLuint& modelLoc, GLuint& bonesTransformsLoc, float& timeSi
 		glUniformMatrix4fv(bonesTransformsLoc, NUM_BONES, GL_FALSE, &bonesTransform[0][0][0]);
 	}
 
-	glUniform1i(idLoc, id);//debug - affichage couleurs différentes
+	//glUniform1i(idLoc, id);//debug - affichage couleurs différentes
 
 	//Passer les matrices de vue et de projection aux shaders
 	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
