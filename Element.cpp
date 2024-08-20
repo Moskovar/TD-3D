@@ -29,11 +29,24 @@ Element::~Element()
 	printf("||--- Element is cleared ---||\n");
 }
 
+void Element::setYaw(GLfloat yaw)
+{
+	this->yaw = yaw;	
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(this->yaw - yaw), glm::vec3(0.0f, 1.0f, 0.0f));
+	updatePosition();
+}
+
 void Element::move(GLfloat deltaTime)
 {
 	moving = true;
 
 	model->translate(modelMatrix, glm::vec3(0.0f, 0.0f, moveSpeed * deltaTime));
+	updatePosition();
+}
+
+void Element::moveUp(GLfloat positionY)
+{
+	model->translate(modelMatrix, glm::vec3(0.0f, positionY - position.y, 0.0f));
 	updatePosition();
 }
 

@@ -14,6 +14,8 @@ class Camera
 	public:
 		Camera(glm::vec3* target, GLfloat* targetYaw, map<char, bool>* keyPressed);
 
+		//--- Getters ---//
+		GLfloat		getYaw()				{ return yaw;							}
 		glm::mat4*	getViewMatrixP()		{ return &viewMatrix;					}
 		GLfloat		getSensitivity()		{ return sensitivity;					}
 		glm::vec3	getUp()					{ return glm::vec3(0.0f, 1.0f, 0.0f);	}

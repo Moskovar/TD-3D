@@ -27,6 +27,9 @@ struct DrawingVertex
     unsigned int indice = 0;
 };
 
+// Allocation dynamique pour un tableau 2D
+DrawingVertex** vertices = nullptr;
+
 // Affichage de la matrice
 void printMatrix(const glm::mat4& mat) {
     for (int i = 0; i < 4; i++) {
@@ -60,11 +63,11 @@ void generateTerrainMesh(DrawingVertex** vertices, int width, int height, const 
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
             // Lire la valeur de hauteur du tableau heightmapData
-            float heightValue = heightmapData[y * width + x];
+            GLfloat heightValue = heightmapData[y * width + x];
             //std::cout << heightValue << std::endl;
-            float inGameMaxHeight = 100;
+            GLfloat inGameMaxHeight = 100.0f;
             // Définir la position du vertex en fonction de la hauteur
-            vertices[y][x] = { (float)x, heightValue / 255.0f * inGameMaxHeight, (float)y, indice };
+            vertices[y][x] = { (GLfloat)x, heightValue / 255.0f * inGameMaxHeight, (GLfloat)y, indice };
             indice++;
         }
     }
@@ -74,38 +77,22 @@ void generateTerrainMesh(DrawingVertex** vertices, int width, int height, const 
         stbi_image_free(heightmapData);    
 }
 
-// Fonction pour créer et configurer un Vertex Array Object (VAO) et un Vertex Buffer Object (VBO)
-//void setupTerrainMesh(float* vertices, int width, int height) 
-//{
-//    // Création du VAO et du VBO
-//    glGenVertexArrays(1, &vao);
-//    glGenBuffers(1, &vbo);
-//
-//    // Bind VAO
-//    glBindVertexArray(vao);
-//
-//    // Bind VBO et envoyer les données des vertices
-//    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-//    glBufferData(GL_ARRAY_BUFFER, width * height * 3 * sizeof(float), vertices, GL_STATIC_DRAW);
-//
-//    // Définir les attributs des vertices
-//    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-//    glEnableVertexAttribArray(0);
-//
-//    // Débind VAO
-//    glBindVertexArray(0);
-//}
+void checkHeightMap()
+{
+    glm::vec3 playerPos = entities[0]->getPosition();
 
-//void renderTerrain() {
-//    // Bind VAO
-//    glBindVertexArray(vao);
-//
-//    // Dessiner le terrain
-//    glDrawArrays(GL_TRIANGLES, 0, 512 * 512); // Vous pouvez utiliser GL_TRIANGLES pour des rendus de maillage
-//
-//    // Débind VAO
-//    glBindVertexArray(0);
-//}
+    if (playerPos.x >= 0 && playerPos.x < 32 && playerPos.z >= 0 && playerPos.z < 32)//Si le joueur est dans la heightmap
+    {
+        std::cout << vertices[(int)playerPos.y][(int)playerPos.x].y - entities[0]->getPosition().y << std::endl;
+
+        GLfloat interpolatedY = 0.0f, y1 = 0.0f, y2 = 0.0f, y3 = 0.0f, y4 = 0.0f;
+
+        y1 = vertices[(int)playerPos.y + 1][(int)playerPos.x].y;    y2 = vertices[(int)playerPos.y + 1][(int)playerPos.x + 1].y;
+        y3 = vertices[(int)playerPos.y][(int)playerPos.x].y;        y4 = vertices[(int)playerPos.y][(int)playerPos.x + 1].y;
+
+        entities[0]->moveUp((y1 + y2 + y3 + y4) / 4.0f);
+    }
+}
 
 bool checkCollision(const AABB& box1, const AABB& box2) 
 {
@@ -179,12 +166,16 @@ void processKeyPressed(GLFWwindow* window, float deltaTime)
     {
         entities[0]->move(deltaTime);
         if(!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) && !glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT)) camera->resetYaw();
+
+        checkHeightMap();
     }
 
     if (keyPressed[GLFW_KEY_S])
     {
         entities[0]->move(-deltaTime);
         if (!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) && !glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT)) camera->resetYaw();
+
+        checkHeightMap();
     }
 
     if(!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
@@ -196,14 +187,10 @@ void processKeyPressed(GLFWwindow* window, float deltaTime)
 
 int main()
 {
-    const int WIDTH = 32;
-    const int HEIGHT = 32;
-
-    // Allocation dynamique pour un tableau 2D
-    DrawingVertex** vertices = new DrawingVertex*[HEIGHT];
-    for (int i = 0; i < HEIGHT; ++i) 
+    vertices = new DrawingVertex * [32];
+    for (int i = 0; i < 32; ++i) 
     {
-        vertices[i] = new DrawingVertex[WIDTH] {0.0f};
+        vertices[i] = new DrawingVertex[32] {0.0f};
     }
 
     //// Initialisation avec des zéros
@@ -215,10 +202,9 @@ int main()
 
     generateTerrainMesh(vertices, 32, 32, "heightmaps/h1.png");
 
-
     for (int y = 0; y < 32; ++y)
         for (int x = 0; x < 32; ++x)
-        std::cout << vertices[y][x].x << " ... " << vertices[y][x].y << " ... " << vertices[y][x].z << std::endl;
+            std::cout << vertices[y][x].x << " ... " << vertices[y][x].y << " ... " << vertices[y][x].z << std::endl;
 
     window = new Window(800, 600);
 
@@ -237,18 +223,6 @@ int main()
     Shader shaders        = Shader("shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl", view, &projection);
     Shader simple_shaders = Shader("shaders/simple_vertex_shader.glsl", "shaders/simple_fragment_shader.glsl", view, &projection);
 
-    //GLint idLoc = glGetUniformLocation(shaderProgram, "id");//debug
-
-    //Exemples transformations
-    {
-        //glm::vec3 scale(0.1f, 0.1f, 0.1f); // Echelle de 1x en x, 2x en y, et 1x en z
-        //model = glm::scale(model, scale);
-
-        //model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
-        //model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-    }
-
     GLFWwindow* glfwWindow = window->getGLFWWindow();
     glfwSetKeyCallback(glfwWindow, keyCallback);
 
@@ -258,16 +232,6 @@ int main()
 
     if (glIsEnabled(GL_DEPTH_TEST)) std::cout << "Depth test is enabled."     << std::endl;
     else                            std::cout << "Depth test is not enabled." << std::endl;
-
-    //setupTerrainMesh(vertices, 512, 512);
-
-  
- 
-
-    //struct TriangleIndices
-    //{
-    //    unsigned int i1 = 0, i2 = 0, i3 = 0;
-    //};
 
     std::vector<DrawingVertex> v_drawingVertices = {};
     std::vector<unsigned int>  v_indices = {};
@@ -292,29 +256,6 @@ int main()
                 v_indices.push_back(vertices[y + 1][x - 1].indice);
             }
         }
-
-    //Vertex v1, v2, v3;
-    //v1.position = glm::vec3(-5.0f, 0.0f, 5.0f);
-    //v2.position = glm::vec3(0.0f , 5.0f, 5.0f);
-    //v3.position = glm::vec3(5.0f , 0.0f, 5.0f);
-
-    //std::vector<Vertex> v_vertices = { v1, v2, v3 };
-
-    //std::vector<unsigned int> v_indices = { 1, 2, 3 };
-
-    //Mesh chunk(v_vertices, v_indices);
-
-    //float vertices[] = 
-    //{
-    //    vertices2[0][0], vertices2[0][1], vertices2[0][2],      vertices2[0][3], vertices2[0][4], vertices2[0][5],    vertices2[0][6], vertices2[0][7], vertices2[0][8],
-    //    vertices2[1][0], vertices2[1][1], vertices2[1][2],      vertices2[1][3], vertices2[1][4], vertices2[1][5],    vertices2[1][6], vertices2[1][7], vertices2[1][8],
-    //};
-
-    //unsigned int indices[] =
-    //{
-    //    0, 1, 32,
-    //    1, 32, 33,
-    //};
 
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
@@ -358,6 +299,16 @@ int main()
         //--- Personnage ---//
         if (glfwGetMouseButton(glfwWindow, GLFW_MOUSE_BUTTON_RIGHT))
         {
+            if (glfwGetMouseButton(glfwWindow, GLFW_MOUSE_BUTTON_LEFT))
+            {
+                GLfloat offsetYaw = camera->getYaw() - entities[0]->getYaw();
+                //std::cout << offsetYaw << std::endl;
+                entities[0]->turn(offsetYaw);
+                entities[0]->move(deltaTime);
+
+                checkHeightMap();
+            }
+
             if      (window->getXChange() > 0) entities[0]->turn(camera->getSensitivity() * deltaTime);
             else if (window->getXChange() < 0) entities[0]->turn(camera->getSensitivity() * -deltaTime);
         }
@@ -428,8 +379,8 @@ int main()
             e = nullptr;
         }
 
-    //delete vertices;
-    //vertices = nullptr;
+    delete vertices;
+    vertices = nullptr;
 
     return 0;
 }

@@ -74,17 +74,8 @@ void Camera::mouseControl(GLFWwindow* window, GLfloat xChange, GLfloat yChange, 
 		if		(yChange > 0) addPitch(-deltaTime * sensitivity / 2);//pour clique gauche et droit
 		else if (yChange < 0) addPitch(deltaTime * sensitivity / 2);
 	}
-	//else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
-	//{
-	//	//std::cout << (*keyPressed)[GLFW_KEY_D] << " ... " << (*keyPressed)[GLFW_KEY_A] << std::endl;
-	//		if		(xChange > 0) addYaw(sensitivity * deltaTime);
-	//		else if (xChange < 0) addYaw(sensitivity * -deltaTime);
 
-	//	if		(yChange > 0) addPitch(-deltaTime * sensitivity / 2);//pour clique gauche et droit
-	//	else if (yChange < 0) addPitch(deltaTime * sensitivity / 2);
-	//}
-
-	if(!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
+	if(!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT))
 	{
 		if ((*keyPressed)[GLFW_KEY_D])
 		{

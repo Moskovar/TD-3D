@@ -13,20 +13,24 @@ class Element
 		~Element();
 
 		//--- Getters ---//
-		Model* getModel()			{ return model;					}
-		glm::vec3* getPositionP()	{ return &position;				}
-		GLfloat* getPYaw()			{ return &yaw;					}
-		AABB& getRHitbox()			{ return hitBox;				}
+		Model*		getModel()		{ return model;					}
+		glm::vec3	getPosition()	{ return position;				}
+		glm::vec3*	getPositionP()	{ return &position;				}
+		GLfloat		getY()			{ return position.y;			}
+		GLfloat		getYaw()		{ return yaw;					}
+		GLfloat*	getPYaw()		{ return &yaw;					}
+		AABB&		getRHitbox()	{ return hitBox;				}
 		
 		//--- Setters ---//
+		void setYaw(GLfloat yaw);
 		void setAnimationID(uint8_t id) { animationID = id; }
 
 		void move(GLfloat deltaTime);
+		void moveUp(GLfloat positionY);
 		void turn(GLfloat yaw);
 		void fall(GLfloat deltaTime);
 		void updatePosition();
 		
-
 		void render(GLuint& modelLoc, GLuint& bonesTransformsLoc, float& animationTime);
 
 	protected:
@@ -35,7 +39,7 @@ class Element
 		glm::mat4 modelMatrix = glm::mat4(1.0f);
 		glm::vec3 position	  = glm::vec3(0.0f, 0.0f, 0.0f);
 		GLfloat yaw = -90;//à descendre dans entity ? avec render en méthode abstraite ?
-		GLfloat moveSpeed = 5;
+		GLfloat moveSpeed = 10;
 		bool moving = false;
 
 		glm::vec3 halfSize = glm::vec3(0.0f, 0.0f, 0.0f);
