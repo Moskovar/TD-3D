@@ -61,8 +61,10 @@ void generateTerrainMesh(DrawingVertex** vertices, int width, int height, const 
         for (int x = 0; x < width; ++x) {
             // Lire la valeur de hauteur du tableau heightmapData
             float heightValue = heightmapData[y * width + x];
+            //std::cout << heightValue << std::endl;
+            float inGameMaxHeight = 100;
             // Définir la position du vertex en fonction de la hauteur
-            vertices[y][x] = { (float)x, (255 - heightValue) / 255.0f, (float)y, indice };
+            vertices[y][x] = { (float)x, heightValue / 255.0f * inGameMaxHeight, (float)y, indice };
             indice++;
         }
     }
@@ -211,12 +213,12 @@ int main()
     //    }
     //}
 
-    generateTerrainMesh(vertices, 32, 32, "textures/h1.png");
+    generateTerrainMesh(vertices, 32, 32, "heightmaps/h1.png");
 
 
-    //for (int y = 0; y < 32; ++y)
-    //    for (int x = 0; x < 32 * 3; x += 3)
-    //    std::cout << vertices2[y][x] << " ... " << vertices2[y][x + 1] << " ... " << vertices2[y][x + 2] << std::endl;
+    for (int y = 0; y < 32; ++y)
+        for (int x = 0; x < 32; ++x)
+        std::cout << vertices[y][x].x << " ... " << vertices[y][x].y << " ... " << vertices[y][x].z << std::endl;
 
     window = new Window(800, 600);
 
