@@ -21,6 +21,12 @@ std::vector<Entity*> entities;
 
 GLuint vao, vbo, ibo;
 
+struct DrawingVertex
+{
+    GLfloat x = 0.0f, y = 0.0f, z = 0.0f;
+    unsigned int indice = 0;
+};
+
 // Affichage de la matrice
 void printMatrix(const glm::mat4& mat) {
     for (int i = 0; i < 4; i++) {
@@ -31,7 +37,8 @@ void printMatrix(const glm::mat4& mat) {
     }
 }
 
-void generateTerrainMesh(float** vertices, int width, int height, const char* heightmapPath) {
+void generateTerrainMesh(DrawingVertex** vertices, int width, int height, const char* heightmapPath) 
+{
     // Charger l'image PNG
     int imgWidth, imgHeight, channels; 
     unsigned char* heightmapData = stbi_load(heightmapPath, &imgWidth, &imgHeight, &channels, 1); // 1 pour charger en niveau de gris
@@ -48,18 +55,15 @@ void generateTerrainMesh(float** vertices, int width, int height, const char* he
         return;
     }
 
+    unsigned int indice = 0;
     // Générer le maillage de terrain
     for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width * 3; x += 3) {
+        for (int x = 0; x < width; ++x) {
             // Lire la valeur de hauteur du tableau heightmapData
-            float heightValue = heightmapData[y * width + x];// / 255.0f; // Normaliser la valeur
-
-            //std::cout << "HeightValue: " << heightValue << std::endl;
-
+            float heightValue = heightmapData[y * width + x];
             // Définir la position du vertex en fonction de la hauteur
-            vertices[y][x + 0] = (float)x;
-            vertices[y][x + 1] = (255 - heightValue) / 255.0f; // Hauteur du terrain
-            vertices[y][x + 2] = (float)y;
+            vertices[y][x] = { (float)x, (255 - heightValue) / 255.0f, (float)y, indice };
+            indice++;
         }
     }
 
@@ -69,37 +73,37 @@ void generateTerrainMesh(float** vertices, int width, int height, const char* he
 }
 
 // Fonction pour créer et configurer un Vertex Array Object (VAO) et un Vertex Buffer Object (VBO)
-void setupTerrainMesh(float* vertices, int width, int height) 
-{
-    // Création du VAO et du VBO
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
+//void setupTerrainMesh(float* vertices, int width, int height) 
+//{
+//    // Création du VAO et du VBO
+//    glGenVertexArrays(1, &vao);
+//    glGenBuffers(1, &vbo);
+//
+//    // Bind VAO
+//    glBindVertexArray(vao);
+//
+//    // Bind VBO et envoyer les données des vertices
+//    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+//    glBufferData(GL_ARRAY_BUFFER, width * height * 3 * sizeof(float), vertices, GL_STATIC_DRAW);
+//
+//    // Définir les attributs des vertices
+//    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+//    glEnableVertexAttribArray(0);
+//
+//    // Débind VAO
+//    glBindVertexArray(0);
+//}
 
-    // Bind VAO
-    glBindVertexArray(vao);
-
-    // Bind VBO et envoyer les données des vertices
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, width * height * 3 * sizeof(float), vertices, GL_STATIC_DRAW);
-
-    // Définir les attributs des vertices
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    // Débind VAO
-    glBindVertexArray(0);
-}
-
-void renderTerrain() {
-    // Bind VAO
-    glBindVertexArray(vao);
-
-    // Dessiner le terrain
-    glDrawArrays(GL_TRIANGLES, 0, 512 * 512); // Vous pouvez utiliser GL_TRIANGLES pour des rendus de maillage
-
-    // Débind VAO
-    glBindVertexArray(0);
-}
+//void renderTerrain() {
+//    // Bind VAO
+//    glBindVertexArray(vao);
+//
+//    // Dessiner le terrain
+//    glDrawArrays(GL_TRIANGLES, 0, 512 * 512); // Vous pouvez utiliser GL_TRIANGLES pour des rendus de maillage
+//
+//    // Débind VAO
+//    glBindVertexArray(0);
+//}
 
 bool checkCollision(const AABB& box1, const AABB& box2) 
 {
@@ -190,14 +194,14 @@ void processKeyPressed(GLFWwindow* window, float deltaTime)
 
 int main()
 {
-    const int WIDTH = 32 * 3;
+    const int WIDTH = 32;
     const int HEIGHT = 32;
 
     // Allocation dynamique pour un tableau 2D
-    float** vertices2 = new float* [HEIGHT];
+    DrawingVertex** vertices = new DrawingVertex*[HEIGHT];
     for (int i = 0; i < HEIGHT; ++i) 
     {
-        vertices2[i] = new float[WIDTH] {0.0f};
+        vertices[i] = new DrawingVertex[WIDTH] {0.0f};
     }
 
     //// Initialisation avec des zéros
@@ -207,11 +211,8 @@ int main()
     //    }
     //}
 
-    generateTerrainMesh(vertices2, 32, 32, "textures/h1.png");
+    generateTerrainMesh(vertices, 32, 32, "textures/h1.png");
 
-    std::cout << vertices2[0][0] << " ... " << vertices2[0][1] << " ... " << vertices2[0][2] << std::endl;
-    std::cout << vertices2[1][0] << " ... " << vertices2[1][1] << " ... " << vertices2[1][2] << std::endl;
-    std::cout << vertices2[0][3] << " ... " << vertices2[0][4] << " ... " << vertices2[0][5] << std::endl;
 
     //for (int y = 0; y < 32; ++y)
     //    for (int x = 0; x < 32 * 3; x += 3)
@@ -259,20 +260,35 @@ int main()
     //setupTerrainMesh(vertices, 512, 512);
 
   
-    struct DrawingVertex
-    {
-        GLfloat x = 0.0f, y = 0.0f, z = 0.0f;
-        unsigned int indice = 0;
-    };
+ 
+
+    //struct TriangleIndices
+    //{
+    //    unsigned int i1 = 0, i2 = 0, i3 = 0;
+    //};
 
     std::vector<DrawingVertex> v_drawingVertices = {};
+    std::vector<unsigned int>  v_indices = {};
 
-    unsigned int c = 0;
     for (int y = 0; y < 32; ++y)
-        for (int x = 0; x < 32 * 3; x += 3)
+        for (int x = 0; x < 32; ++x)
         {
-            v_drawingVertices.push_back({ vertices2[y][x + 0], vertices2[y][x + 1], vertices2[y][x + 2], c });
-            c++;
+            v_drawingVertices.push_back(vertices[y][x]);
+            if (x < 31 && y < 31)
+            {
+                //triangle de gauche
+                v_indices.push_back(vertices[y][x].indice);
+                v_indices.push_back(vertices[y][x + 1].indice);
+                v_indices.push_back(vertices[y + 1][x].indice);
+            }
+
+            if (x > 0 && y < 31)
+            {
+                ////triangle de droite
+                v_indices.push_back(vertices[y][x].indice);
+                v_indices.push_back(vertices[y + 1][x].indice);
+                v_indices.push_back(vertices[y + 1][x - 1].indice);
+            }
         }
 
     //Vertex v1, v2, v3;
@@ -292,11 +308,11 @@ int main()
     //    vertices2[1][0], vertices2[1][1], vertices2[1][2],      vertices2[1][3], vertices2[1][4], vertices2[1][5],    vertices2[1][6], vertices2[1][7], vertices2[1][8],
     //};
 
-    unsigned int indices[] =
-    {
-        0, 1, 32,
-        1, 32, 33,
-    };
+    //unsigned int indices[] =
+    //{
+    //    0, 1, 32,
+    //    1, 32, 33,
+    //};
 
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
@@ -309,7 +325,7 @@ int main()
 
     // Lier et remplir l'EBO (Element Buffer Object)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, v_indices.size() * sizeof(unsigned int), v_indices.data(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(DrawingVertex), (void*)offsetof(DrawingVertex, x));
     glEnableVertexAttribArray(0);
@@ -378,7 +394,7 @@ int main()
         glUniformMatrix4fv(simple_shaders.modelLoc, 1, GL_FALSE, glm::value_ptr(modelmtx));
         //printMatrix(*view);
         glBindVertexArray(vao);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, v_indices.size(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
 
 
