@@ -19,7 +19,7 @@ std::map<char, bool> keyPressed;
 
 std::vector<Entity*> entities;
 
-GLuint vao, vbo;
+GLuint vao, vbo, ibo;
 
 // Affichage de la matrice
 void printMatrix(const glm::mat4& mat) {
@@ -31,7 +31,7 @@ void printMatrix(const glm::mat4& mat) {
     }
 }
 
-void generateTerrainMesh(float* vertices, int width, int height, const char* heightmapPath) {
+void generateTerrainMesh(float** vertices, int width, int height, const char* heightmapPath) {
     // Charger l'image PNG
     int imgWidth, imgHeight, channels; 
     unsigned char* heightmapData = stbi_load(heightmapPath, &imgWidth, &imgHeight, &channels, 1); // 1 pour charger en niveau de gris
@@ -50,21 +50,22 @@ void generateTerrainMesh(float* vertices, int width, int height, const char* hei
 
     // Générer le maillage de terrain
     for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
+        for (int x = 0; x < width * 3; x += 3) {
             // Lire la valeur de hauteur du tableau heightmapData
             float heightValue = heightmapData[y * width + x];// / 255.0f; // Normaliser la valeur
 
             //std::cout << "HeightValue: " << heightValue << std::endl;
 
             // Définir la position du vertex en fonction de la hauteur
-            vertices[(y * width + x) * 3 + 0] = (float)x;
-            vertices[(y * width + x) * 3 + 1] = heightValue - 147; // Hauteur du terrain
-            vertices[(y * width + x) * 3 + 2] = (float)y;
+            vertices[y][x + 0] = (float)x;
+            vertices[y][x + 1] = (255 - heightValue) / 255.0f; // Hauteur du terrain
+            vertices[y][x + 2] = (float)y;
         }
     }
 
     // Libérer la mémoire de l'image
-    stbi_image_free(heightmapData);
+    if (heightmapData)
+        stbi_image_free(heightmapData);    
 }
 
 // Fonction pour créer et configurer un Vertex Array Object (VAO) et un Vertex Buffer Object (VBO)
@@ -189,18 +190,39 @@ void processKeyPressed(GLFWwindow* window, float deltaTime)
 
 int main()
 {
-    //float* vertices = new float[786432];
-    //generateTerrainMesh(vertices, 512, 512, "textures/heightmap.png");
+    const int WIDTH = 32 * 3;
+    const int HEIGHT = 32;
 
-    //for (int i = 0; i < 512 * 512 * 3; i += 3)
-    //    std::cout << vertices[i] << " ... " << vertices[i + 1] << " ... " << vertices[i + 2] << std::endl;
+    // Allocation dynamique pour un tableau 2D
+    float** vertices2 = new float* [HEIGHT];
+    for (int i = 0; i < HEIGHT; ++i) 
+    {
+        vertices2[i] = new float[WIDTH] {0.0f};
+    }
+
+    //// Initialisation avec des zéros
+    //for (int y = 0; y < HEIGHT; ++y) {
+    //    for (int x = 0; x < WIDTH; ++x) {
+    //        vertices2[x][y] = 0.0f;
+    //    }
+    //}
+
+    generateTerrainMesh(vertices2, 32, 32, "textures/h1.png");
+
+    std::cout << vertices2[0][0] << " ... " << vertices2[0][1] << " ... " << vertices2[0][2] << std::endl;
+    std::cout << vertices2[1][0] << " ... " << vertices2[1][1] << " ... " << vertices2[1][2] << std::endl;
+    std::cout << vertices2[0][3] << " ... " << vertices2[0][4] << " ... " << vertices2[0][5] << std::endl;
+
+    //for (int y = 0; y < 32; ++y)
+    //    for (int x = 0; x < 32 * 3; x += 3)
+    //    std::cout << vertices2[y][x] << " ... " << vertices2[y][x + 1] << " ... " << vertices2[y][x + 2] << std::endl;
 
     window = new Window(800, 600);
 
-    entities.push_back(new Entity(0, glm::vec3(0.0f, 10.0f, 0.0f), "models/fbx/doublecube.fbx"));
-    entities.push_back(new Entity(1, glm::vec3(5.0f,  2.0f, 5.0f), "models/fbx/doublecube.fbx"));
+    entities.push_back(new Entity(0, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/doublecube.fbx"));
+    entities.push_back(new Entity(1, glm::vec3(5.0f, 0.0f, 5.0f), "models/fbx/doublecube.fbx"));
 
-    entities.push_back(new Entity(2, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/ground.fbx"));
+    //entities.push_back(new Entity(2, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/ground.fbx"));
 
     //glm::vec3 target = glm::vec3(0.0f, 0.0f, 0.0f);
     camera = new Camera(entities[0]->getPositionP(), entities[0]->getPYaw(), &keyPressed);
@@ -237,7 +259,21 @@ int main()
     //setupTerrainMesh(vertices, 512, 512);
 
   
-    
+    struct DrawingVertex
+    {
+        GLfloat x = 0.0f, y = 0.0f, z = 0.0f;
+        unsigned int indice = 0;
+    };
+
+    std::vector<DrawingVertex> v_drawingVertices = {};
+
+    unsigned int c = 0;
+    for (int y = 0; y < 32; ++y)
+        for (int x = 0; x < 32 * 3; x += 3)
+        {
+            v_drawingVertices.push_back({ vertices2[y][x + 0], vertices2[y][x + 1], vertices2[y][x + 2], c });
+            c++;
+        }
 
     //Vertex v1, v2, v3;
     //v1.position = glm::vec3(-5.0f, 0.0f, 5.0f);
@@ -250,22 +286,32 @@ int main()
 
     //Mesh chunk(v_vertices, v_indices);
 
+    //float vertices[] = 
+    //{
+    //    vertices2[0][0], vertices2[0][1], vertices2[0][2],      vertices2[0][3], vertices2[0][4], vertices2[0][5],    vertices2[0][6], vertices2[0][7], vertices2[0][8],
+    //    vertices2[1][0], vertices2[1][1], vertices2[1][2],      vertices2[1][3], vertices2[1][4], vertices2[1][5],    vertices2[1][6], vertices2[1][7], vertices2[1][8],
+    //};
 
-    float vertices[] = {
-        -5.0f, 0.0f, 0.0f,
-        0.0f , 5.0f, 0.0f,
-        5.0f , 0.0f, 0.0f
+    unsigned int indices[] =
+    {
+        0, 1, 32,
+        1, 32, 33,
     };
 
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
+    glGenBuffers(1, &ibo);
 
     glBindVertexArray(vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, v_drawingVertices.size() * sizeof(DrawingVertex), v_drawingVertices.data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    // Lier et remplir l'EBO (Element Buffer Object)
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(DrawingVertex), (void*)offsetof(DrawingVertex, x));
     glEnableVertexAttribArray(0);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -288,7 +334,7 @@ int main()
         deltaTime = now - lastFrame;
         lastFrame = now;
 
-        applyGravity(deltaTime);
+        //applyGravity(deltaTime);
 
 
         //--- Personnage ---//
@@ -332,7 +378,8 @@ int main()
         glUniformMatrix4fv(simple_shaders.modelLoc, 1, GL_FALSE, glm::value_ptr(modelmtx));
         //printMatrix(*view);
         glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
 
 
         //--- Reset des mouvements souris dans la fenêtre pour traiter les prochains ---//
