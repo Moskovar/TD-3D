@@ -1,6 +1,4 @@
 #pragma once
-#include <GL/GL.h>
-
 #include <iostream>
 #include <vector>
 #include <cmath>

@@ -1,6 +1,6 @@
 #include "Tile.h"
 
-Tile::Tile(HeightMapVertex* vertices, int x, int y)
+Tile::Tile(int x, int y, HeightMapVertex* vertices)
 {
 	this->x = x;
 	this->y = y;
