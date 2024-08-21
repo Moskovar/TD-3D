@@ -8,6 +8,7 @@
 #include "Shader.h"
 
 #include "PhysicsEngine.h"
+#include "LargeTile.h"
 
 #include "stb_image.h"
 
@@ -187,11 +188,11 @@ void processKeyPressed(GLFWwindow* window, float deltaTime)
 
 int main()
 {
-    vertices = new DrawingVertex * [32];
-    for (int i = 0; i < 32; ++i) 
-    {
-        vertices[i] = new DrawingVertex[32] {0.0f};
-    }
+    //vertices = new DrawingVertex * [32];
+    //for (int i = 0; i < 32; ++i) 
+    //{
+    //    vertices[i] = new DrawingVertex[32] {0.0f};
+    //}
 
     //// Initialisation avec des zéros
     //for (int y = 0; y < HEIGHT; ++y) {
@@ -202,9 +203,11 @@ int main()
 
     generateTerrainMesh(vertices, 32, 32, "heightmaps/h1.png");
 
-    for (int y = 0; y < 32; ++y)
-        for (int x = 0; x < 32; ++x)
-            std::cout << vertices[y][x].x << " ... " << vertices[y][x].y << " ... " << vertices[y][x].z << std::endl;
+    LargeTile tile(0, 0, "heightmaps/h1.png");
+
+    //for (int y = 0; y < 32; ++y)
+    //    for (int x = 0; x < 32; ++x)
+    //        std::cout << vertices[y][x].x << " ... " << vertices[y][x].y << " ... " << vertices[y][x].z << std::endl;
 
     window = new Window(800, 600);
 
@@ -233,48 +236,48 @@ int main()
     if (glIsEnabled(GL_DEPTH_TEST)) std::cout << "Depth test is enabled."     << std::endl;
     else                            std::cout << "Depth test is not enabled." << std::endl;
 
-    std::vector<DrawingVertex> v_drawingVertices = {};
-    std::vector<unsigned int>  v_indices = {};
+    std::vector<HeightMapVertex> v_drawingVertices;// = tile.getTile(0, 0).getVertices();
+    std::vector<unsigned int>    v_indices;// = tile.getTile(0, 0).getIndices();
 
-    for (int y = 0; y < 32; ++y)
-        for (int x = 0; x < 32; ++x)
-        {
-            v_drawingVertices.push_back(vertices[y][x]);
-            if (x < 31 && y < 31)
-            {
-                //triangle de gauche
-                v_indices.push_back(vertices[y][x].indice);
-                v_indices.push_back(vertices[y][x + 1].indice);
-                v_indices.push_back(vertices[y + 1][x].indice);
-            }
+    //for (int y = 0; y < 32; ++y)
+    //    for (int x = 0; x < 32; ++x)
+    //    {
+    //        v_drawingVertices.push_back(vertices[y][x]);
+    //        if (x < 31 && y < 31)
+    //        {
+    //            //triangle de gauche
+    //            v_indices.push_back(vertices[y][x].indice);
+    //            v_indices.push_back(vertices[y][x + 1].indice);
+    //            v_indices.push_back(vertices[y + 1][x].indice);
+    //        }
 
-            if (x > 0 && y < 31)
-            {
-                ////triangle de droite
-                v_indices.push_back(vertices[y][x].indice);
-                v_indices.push_back(vertices[y + 1][x].indice);
-                v_indices.push_back(vertices[y + 1][x - 1].indice);
-            }
-        }
+    //        if (x > 0 && y < 31)
+    //        {
+    //            ////triangle de droite
+    //            v_indices.push_back(vertices[y][x].indice);
+    //            v_indices.push_back(vertices[y + 1][x].indice);
+    //            v_indices.push_back(vertices[y + 1][x - 1].indice);
+    //        }
+    //    }
 
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-    glGenBuffers(1, &ibo);
+    //glGenVertexArrays(1, &vao);
+    //glGenBuffers(1, &vbo);
+    //glGenBuffers(1, &ibo);
 
-    glBindVertexArray(vao);
+    //glBindVertexArray(vao);
 
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, v_drawingVertices.size() * sizeof(DrawingVertex), v_drawingVertices.data(), GL_STATIC_DRAW);
+    //glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    //glBufferData(GL_ARRAY_BUFFER, v_drawingVertices.size() * sizeof(HeightMapVertex), v_drawingVertices.data(), GL_STATIC_DRAW);
 
-    // Lier et remplir l'EBO (Element Buffer Object)
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, v_indices.size() * sizeof(unsigned int), v_indices.data(), GL_STATIC_DRAW);
+    //// Lier et remplir l'EBO (Element Buffer Object)
+    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, v_indices.size() * sizeof(unsigned int), v_indices.data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(DrawingVertex), (void*)offsetof(DrawingVertex, x));
-    glEnableVertexAttribArray(0);
+    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(HeightMapVertex), (void*)offsetof(HeightMapVertex, x));
+    //glEnableVertexAttribArray(0);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    //glBindBuffer(GL_ARRAY_BUFFER, 0);
+    //glBindVertexArray(0);
 
 
 
@@ -346,9 +349,9 @@ int main()
         simple_shaders.use();
         glUniformMatrix4fv(simple_shaders.modelLoc, 1, GL_FALSE, glm::value_ptr(modelmtx));
         //printMatrix(*view);
-        glBindVertexArray(vao);
-        glDrawElements(GL_TRIANGLES, v_indices.size(), GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
+        //glBindVertexArray(vao);
+        //glDrawElements(GL_TRIANGLES, v_indices.size(), GL_UNSIGNED_INT, 0);
+        //glBindVertexArray(0);
 
 
         //--- Reset des mouvements souris dans la fenêtre pour traiter les prochains ---//
@@ -379,8 +382,11 @@ int main()
             e = nullptr;
         }
 
-    delete vertices;
-    vertices = nullptr;
+    if (vertices)
+    {
+        delete vertices;
+        vertices = nullptr;
+    }
 
     return 0;
 }
