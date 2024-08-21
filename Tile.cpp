@@ -13,7 +13,8 @@ void Tile::setVectors()
 {
     for (int y = 0; y < TILE_SIZE; ++y)
         for (int x = 0; x < TILE_SIZE; ++x)
-        {//   std::cout << y << " ... " << x << std::endl;
+        {
+            //std::cout << y << " ... " << x << std::endl;
             v_vertices.push_back(vertices[y][x]);
             if (x < TILE_SIZE - 1 && y < TILE_SIZE - 1)
             {

@@ -8,7 +8,7 @@ class Tile
 {
 	public:
 		Tile();
-		Tile(int x, int y, HeightMapVertex** vertices);
+		//Tile(int x, int y, HeightMapVertex** vertices);
 
 		//--- Getters ---//
 		int getX()									{ return x;					}
@@ -29,7 +29,6 @@ class Tile
 		int x = 0, y = 0;
 
 		HeightMapVertex**			 vertices	= nullptr;
-		HeightMapVertex vertices2[TILE_SIZE][TILE_SIZE];
 		std::vector<HeightMapVertex> v_vertices = {};
 		std::vector<unsigned int>	 v_indices	= {};
 };

@@ -41,14 +41,14 @@ LargeTile::LargeTile(int x, int y, const char* heightmapPath)
             }
         }
 
+        tiles[cy][cx].setVectors();
+
         cx++;
         if (cx == 16)
         {
             cy++;
             cx = 0;
         }
-
-        //tiles[cy][cx].setVectors();
 
         indice = 0;
     }
