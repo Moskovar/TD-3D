@@ -12,6 +12,7 @@ Tile::Tile()
 void Tile::setVectors()
 {
     for (int y = 0; y < TILE_SIZE; ++y)
+    {
         for (int x = 0; x < TILE_SIZE; ++x)
         {
             //std::cout << y << " ... " << x << std::endl;
@@ -23,15 +24,42 @@ void Tile::setVectors()
                 v_indices.push_back(vertices[y][x + 1].indice);
                 v_indices.push_back(vertices[y + 1][x].indice);
             }
-    
+
             if (x > 0 && y < TILE_SIZE - 1)
             {
-                ////triangle de droite
+                //triangle de droite
                 v_indices.push_back(vertices[y][x].indice);
                 v_indices.push_back(vertices[y + 1][x].indice);
                 v_indices.push_back(vertices[y + 1][x - 1].indice);
             }
         }
+    }
+
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &IBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, v_vertices.size() * sizeof(HeightMapVertex), v_vertices.data(), GL_STATIC_DRAW);
+
+    // Lier et remplir l'EBO (Element Buffer Object)
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, v_indices.size() * sizeof(unsigned int), v_indices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(HeightMapVertex), (void*)offsetof(HeightMapVertex, x));
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+
+void Tile::render()
+{
+    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, v_indices.size(), GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
 }
 
 Tile::~Tile()
@@ -41,6 +69,24 @@ Tile::~Tile()
 		delete vertices;
 		vertices = nullptr;
 	}
+
+    if (IBO != 0)
+    {
+        glDeleteBuffers(1, &IBO);
+        IBO = 0;
+    }
+
+    if (VBO != 0)
+    {
+        glDeleteBuffers(1, &VBO);
+        VBO = 0;
+    }
+
+    if (VAO != 0)
+    {
+        glDeleteVertexArrays(1, &VAO);
+        VAO = 0;
+    }
 
 	printf("||--- Tile cleared ---||\n");
 }

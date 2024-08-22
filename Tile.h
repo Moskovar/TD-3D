@@ -23,10 +23,14 @@ class Tile
 		void setVertex(int y, int x, HeightMapVertex vertex) { vertices[y][x] = vertex;	  }
 		void setVectors();//Met à jour les vecteurs de vertices et indices
 
+		void render();
+
 		~Tile();
 
 	private:
 		int x = 0, y = 0;
+
+		GLuint VAO, VBO, IBO;
 
 		HeightMapVertex**			 vertices	= nullptr;
 		std::vector<HeightMapVertex> v_vertices = {};
