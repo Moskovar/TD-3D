@@ -39,7 +39,7 @@ class Element
 		glm::mat4 modelMatrix = glm::mat4(1.0f);
 		glm::vec3 position	  = glm::vec3(0.0f, 0.0f, 0.0f);
 		GLfloat yaw = -90;//à descendre dans entity ? avec render en méthode abstraite ?
-		GLfloat moveSpeed = 50;
+		GLfloat moveSpeed = 100;
 		bool moving = false;
 
 		glm::vec3 halfSize = glm::vec3(0.0f, 0.0f, 0.0f);

@@ -13,14 +13,16 @@ class Tile
 		//--- Getters ---//
 		int getX()									{ return x;					}
 		int getY()									{ return y;					}
-		HeightMapVertex getVertex(int y, int x)		{ return vertices[y][x];	}
+		HeightMapVertex  getVertex(int y, int x)	{ return vertices[y][x];	}
+		HeightMapVertex* getPVertex(int y, int x)	{ return &(vertices[y][x]); }
 		std::vector<HeightMapVertex> getVertices()	{ return v_vertices;		}
 		std::vector<unsigned int>	 getIndices()	{ return v_indices;			}
 
 		//--- Setters ---//
-		void setYX(int y, int x)							 { this->y = y;	this->x = x;  }
-		void setVertices(HeightMapVertex** vertices)		 { this->vertices = vertices; }
-		void setVertex(int y, int x, HeightMapVertex vertex) { vertices[y][x] = vertex;	  }
+		void setYX(int y, int x)								{ this->y = y;	this->x = x;		}
+		void setVertices(HeightMapVertex** vertices)			{ this->vertices = vertices;		}
+		void setVertexIndice(int y, int x, unsigned int indice) { vertices[y][x].indice = indice;	}
+		void setVertex(int y, int x, HeightMapVertex vertex)	{ vertices[y][x] = vertex;			}
 		void setVectors();//Met à jour les vecteurs de vertices et indices
 
 		void render();

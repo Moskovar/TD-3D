@@ -70,36 +70,79 @@ LargeTile::LargeTile(int x, int y, const char* heightmapPath)
 void LargeTile::setBuffers()
 {
     unsigned int indice = 0;
-    //Récupération des vertices qui forment les jointures à partir des tuiles
-    for(int y = 0; y < JUNCTIONS - 2; y += 2)
-        for (int x = 0; x < TILE_SIZE; ++x)
+    for(int i = 0; i < 2; ++i)//0 = jointures y sur x, 1 = jointures x sur y
+    {
+        for (int j = 0; j < LARGETILE_ARR_SIZE; ++j)//On parcourt chaque rangée de tuiles
         {
-            junction_vertices[y][x] = tiles[y / 2][0].getVertex(31, x);
-            junction_vertices[y][x].indice = indice++;
-            junction_vertices[y + 1][x] = tiles[(y / 2) + 1][0].getVertex(0, x);
-            junction_vertices[y + 1][x].indice = indice++;
+            for (int y = 0; y < JUNCTION_VERTICES_SIZE - 1; y += 2)//On parcourt chaque jointure (une jointure = 2 rangées de vertices)
+            {
+                for (int x = 0; x < TILE_SIZE; ++x)//On parcourt chaque vertex
+                {
+                    //--- Récupération des pointeurs HeightMapVertex pour modification ---//
+                    HeightMapVertex *vertex1 = nullptr, *vertex2 = nullptr;
+
+                    if (i == 0)
+                    {
+                        vertex1 = tiles[ y / 2     ][j].getPVertex(31, x);
+                        vertex2 = tiles[(y / 2) + 1][j].getPVertex(0, x);
+                    }
+                    else if (i == 1)
+                    {
+                        vertex1 = tiles[j][y / 2].getPVertex(x, 31);
+                        vertex2 = tiles[j][(y / 2) + 1].getPVertex(x, 0);
+                    }
+
+                    vertex1->indice = indice++;
+                    vertex2->indice = indice++;
+
+                    junction_vertices[i][j][y + 1][x] = *vertex1;
+                    junction_vertices[i][j][y    ][x] = *vertex2;
+
+                    v_vertices.push_back(*vertex1);
+                    v_vertices.push_back(*vertex2);
+                }
+
+                for (int x = 0; x < TILE_SIZE - 1; ++x)//On récupère les indices pour l'IBO
+                {
+                    //triangle de droite
+                    v_indices.push_back(junction_vertices[i][j][y][x].indice);
+                    v_indices.push_back(junction_vertices[i][j][y][x + 1].indice);
+                    v_indices.push_back(junction_vertices[i][j][y + 1][x].indice);
+
+                    //triangle de gauche                  
+                    v_indices.push_back(junction_vertices[i][j][y + 1][x].indice);
+                    v_indices.push_back(junction_vertices[i][j][y][x + 1].indice);
+                    v_indices.push_back(junction_vertices[i][j][y + 1][x + 1].indice);
+                }
+            }
         }
+    }
 
-    //Ajout de chaque vertex des jointures au vertices à envoyer à opengl
-    for (int y = 0; y < JUNCTIONS; ++y)
-        for (int x = 0; x < TILE_SIZE; ++x)
-            v_vertices.push_back(junction_vertices[y][x]);
-
-    //Ajout des indices pour former les triangles à envoyer à opengl
-    for (int y = 0; y < JUNCTIONS - 1; ++y)
-        for (int x = 0; x < TILE_SIZE - 1; ++x)
+    //--- On fait le joint du coin de chaque 4 tuiles ---//
+    for(int x = 0; x < LARGETILE_ARR_SIZE - 1; ++x)//On parcourt les tuiles sur x
+    {
+        for (int y = 0; y < JUNCTION_VERTICES_SIZE - 1; y += 2)//On parcourt les joints sur y (un joint = 2 rangée de vertices)
         {
             //triangle de droite
-            v_indices.push_back(junction_vertices[y][x].indice);
-            v_indices.push_back(junction_vertices[y][x + 1].indice);
-            v_indices.push_back(junction_vertices[y + 1][x].indice);
+            v_indices.push_back(junction_vertices[0][x][y + 1][31].indice);
+            v_indices.push_back(junction_vertices[0][x][y][31].indice);
+            v_indices.push_back(junction_vertices[0][x + 1][y][0].indice);
 
-            //triangle de gauche
-            v_indices.push_back(junction_vertices[y + 1][x].indice);
-            v_indices.push_back(junction_vertices[y][x + 1].indice);
-            v_indices.push_back(junction_vertices[y + 1][x + 1].indice);
+            //triangle de gauche                  
+            v_indices.push_back(junction_vertices[0][x][y + 1][31].indice);
+            v_indices.push_back(junction_vertices[0][x + 1][y + 1][0].indice);
+            v_indices.push_back(junction_vertices[0][x + 1][y][0].indice);
         }
-   
+    }
+
+    //for(int i = 0; i < 2; ++i)
+    //{
+    //    for (int j = 0; j < LARGETILE_ARR_SIZE; ++j)
+    //    {
+    //        for (int y = 0; y < JUNCTION_VERTICES_SIZE - 1; y += 2);
+    //    }      
+    //}
+
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &IBO);

@@ -139,27 +139,6 @@ void processKeyPressed(GLFWwindow* window, float deltaTime)
 
 int main()
 {
-    //vertices = new DrawingVertex * [32];
-    //for (int i = 0; i < 32; ++i) 
-    //{
-    //    vertices[i] = new DrawingVertex[32] {0.0f};
-    //}
-
-    //// Initialisation avec des zéros
-    //for (int y = 0; y < HEIGHT; ++y) {
-    //    for (int x = 0; x < WIDTH; ++x) {
-    //        vertices2[x][y] = 0.0f;
-    //    }
-    //}
-
-    //generateTerrainMesh(vertices, 32, 32, "heightmaps/h1.png");
-
-    //std::cout << tile->getTile(0, 0).getVertices().size() << " : " << tile->getTile(0, 0).getIndices().size() << std::endl;
-
-    //for (int y = 0; y < 32; ++y)
-    //    for (int x = 0; x < 32; ++x)
-    //        std::cout << vertices[y][x].x << " ... " << vertices[y][x].y << " ... " << vertices[y][x].z << std::endl;
-
     window = new Window(800, 600);
 
     entities.push_back(new Entity(0, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/doublecube.fbx"));
