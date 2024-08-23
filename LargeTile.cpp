@@ -69,35 +69,36 @@ LargeTile::LargeTile(int x, int y, const char* heightmapPath)
 
 void LargeTile::setBuffers()
 {
+    unsigned int indice = 0;
     //Récupération des vertices qui forment les jointures à partir des tuiles
-    for(int y = 0; y < 2 * (TILE_SIZE - 2) - 1; y += 2)
+    for(int y = 0; y < JUNCTIONS - 2; y += 2)
         for (int x = 0; x < TILE_SIZE; ++x)
         {
-            junction_vertices[y][x] = tiles[0][0].getVertex(31, x);
-            junction_vertices[y][x].indice = (y * 32) + x;
-
-            junction_vertices[y + 1][x] = tiles[1][0].getVertex(0, x);
-            junction_vertices[y + 1][x].indice = ((y + 1) * 32) + x;
+            junction_vertices[y][x] = tiles[y / 2][0].getVertex(31, x);
+            junction_vertices[y][x].indice = indice++;
+            junction_vertices[y + 1][x] = tiles[(y / 2) + 1][0].getVertex(0, x);
+            junction_vertices[y + 1][x].indice = indice++;
         }
 
     //Ajout de chaque vertex des jointures au vertices à envoyer à opengl
-    for (int y = 0; y < 2; ++y)
+    for (int y = 0; y < JUNCTIONS; ++y)
         for (int x = 0; x < TILE_SIZE; ++x)
             v_vertices.push_back(junction_vertices[y][x]);
 
     //Ajout des indices pour former les triangles à envoyer à opengl
-    for (int x = 0; x < TILE_SIZE - 1; ++x)
-    {
-        //triangle de droite
-        v_indices.push_back(junction_vertices[0][x].indice);
-        v_indices.push_back(junction_vertices[0][x + 1].indice);
-        v_indices.push_back(junction_vertices[1][x].indice);
+    for (int y = 0; y < JUNCTIONS - 1; ++y)
+        for (int x = 0; x < TILE_SIZE - 1; ++x)
+        {
+            //triangle de droite
+            v_indices.push_back(junction_vertices[y][x].indice);
+            v_indices.push_back(junction_vertices[y][x + 1].indice);
+            v_indices.push_back(junction_vertices[y + 1][x].indice);
 
-        //triangle de gauche
-        v_indices.push_back(junction_vertices[1][x].indice);
-        v_indices.push_back(junction_vertices[0][x + 1].indice);
-        v_indices.push_back(junction_vertices[1][x + 1].indice);
-    }
+            //triangle de gauche
+            v_indices.push_back(junction_vertices[y + 1][x].indice);
+            v_indices.push_back(junction_vertices[y][x + 1].indice);
+            v_indices.push_back(junction_vertices[y + 1][x + 1].indice);
+        }
    
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);

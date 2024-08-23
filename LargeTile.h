@@ -9,6 +9,7 @@
 
 #define LARGETILE_SIZE		512
 #define LARGETILE_ARR_SIZE	16
+#define JUNCTIONS			2 * (TILE_SIZE - 2)
 
 class LargeTile
 {
@@ -28,7 +29,7 @@ class LargeTile
 		GLuint VAO, VBO, IBO;
 
 		Tile tiles[LARGETILE_ARR_SIZE][LARGETILE_ARR_SIZE];
-		HeightMapVertex junction_vertices[(TILE_SIZE - 2) * 2][TILE_SIZE];//Il y a TILE_SIZE - 2 joint à faire sur l'axe z (y du tableau)
+		HeightMapVertex junction_vertices[JUNCTIONS][TILE_SIZE];//Il y a TILE_SIZE - 2 joint à faire sur l'axe z (y du tableau)
 																		  //* 2 car chaque jointure prendre les vertices haut d'une tuile et bas de la suivante (donc pas réutilisable d'une jointure à l'autre)
 		std::vector<HeightMapVertex> v_vertices = {};
 		std::vector<unsigned int>	 v_indices	= {};
