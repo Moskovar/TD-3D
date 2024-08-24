@@ -12,6 +12,8 @@
 
 #include "stb_image.h"
 
+#include <tinyexr.h>
+
 Window* window = nullptr;
 Camera* camera = nullptr;
 PhysicsEngine physics;
@@ -19,6 +21,86 @@ PhysicsEngine physics;
 std::map<char, bool> keyPressed;
 
 std::vector<Entity*> entities;
+
+
+void readEXR(const char* filename) 
+{
+    const char* err = NULL;
+    int width, height;
+    float* image;
+
+    int ret = IsEXR(filename);
+    if (ret != TINYEXR_SUCCESS) 
+    {
+        fprintf(stderr, "File not found or given file is not a EXR format. code %d\n", ret);
+        exit(-1);
+    }
+    else std::cout << "ok its exr file" << std::endl;
+
+    ret = LoadEXR(&image, &width, &height, filename, &err);
+    if (ret != TINYEXR_SUCCESS) {
+        if (err) 
+        {
+            fprintf(stderr, "Load EXR err: %s(code %d)\n", err, ret);
+        }
+        else 
+        {
+            fprintf(stderr, "Load EXR err: code = %d\n", ret);
+        }
+        FreeEXRErrorMessage(err);
+        return;
+    }
+    else std::cout << "Success loading exr" << std::endl;
+
+    //// Assurez-vous que 'image' est non nul et que 'width' et 'height' sont définis
+    //if (image != nullptr) {
+    //    // Parcourez chaque pixel
+    //    for (int y = 0; y < height; ++y) {
+    //        for (int x = 0; x < width; ++x) {
+    //            // Calculer l'index du pixel dans le tableau
+    //            int idx = (height - y - 1) * width + x; // Inverser y pour l'alignement des lignes
+
+    //            // Chaque pixel a 4 canaux : R, G, B, A
+    //            float r = image[4 * idx + 0];
+    //            float g = image[4 * idx + 1];
+    //            float b = image[4 * idx + 2];
+    //            float a = image[4 * idx + 3];
+
+    //            // Traitement ou affichage des valeurs des pixels
+    //            std::cout << "Pixel (" << x << ", " << y << "): "
+    //                << "R=" << r << " G=" << g << " B=" << b << " A=" << a << std::endl;
+    //        }
+    //    }
+    //}
+    //else {
+    //    std::cerr << "Error: Image data is null." << std::endl;
+    //}
+
+    //// Accéder aux données de pixels
+    //float* rgba = (float*)image.images[0]; // Premier canal (R, G, B, A)
+    //int width = header.data_window.max_x - header.data_window.min_x + 1;
+    //int height = header.data_window.max_y - header.data_window.min_y + 1;
+
+    //std::cout << "Image dimensions: " << width << " x " << height << std::endl;
+
+    //for (int y = 0; y < height; ++y) {
+    //    for (int x = 0; x < width; ++x) {
+    //        int idx = (height - y - 1) * width + x;
+    //        float r = rgba[4 * idx + 0];
+    //        float g = rgba[4 * idx + 1];
+    //        float b = rgba[4 * idx + 2];
+    //        float a = rgba[4 * idx + 3];
+
+    //        // Afficher les couleurs des pixels
+    //        std::cout << "Pixel (" << x << ", " << y << "): "
+    //            << "R=" << r << " G=" << g << " B=" << b << " A=" << a << std::endl;
+    //    }
+    //}
+
+    //// Libération des ressources
+    free(image);
+    //FreeEXRHeader(&header);
+}
 
 // Affichage de la matrice
 void printMatrix(const glm::mat4& mat) {
@@ -166,7 +248,9 @@ int main()
     if (glIsEnabled(GL_DEPTH_TEST)) std::cout << "Depth test is enabled."     << std::endl;
     else                            std::cout << "Depth test is not enabled." << std::endl;
 
-    LargeTile* largeTile = new LargeTile(0, 0, "heightmaps/h1.png");
+    LargeTile* largeTile = new LargeTile(0, 0, "heightmaps/h1.exr");
+
+    //readEXR("heightmaps/h1.exr");
 
     auto  startTime    = std::chrono::high_resolution_clock::now();
     float currentFrame = 0, animationTime = 0, timeSinceStart = 0,

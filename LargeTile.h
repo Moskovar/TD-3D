@@ -6,6 +6,7 @@
 #include "Tile.h"
 
 #include "stb_image.h"
+#include <tinyexr.h>
 
 
 #define LARGETILE_SIZE			512

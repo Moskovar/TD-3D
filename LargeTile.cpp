@@ -6,21 +6,98 @@ LargeTile::LargeTile(int x, int y, const char* heightmapPath)
 	this->y = y;
 
     // Charger l'image PNG
-    int imgWidth, imgHeight, channels;
-    unsigned char* heightmapData = stbi_load(heightmapPath, &imgWidth, &imgHeight, &channels, 1); // 1 pour charger en niveau de gris
+    //int imgWidth, imgHeight, channels;
+    //unsigned char* heightmapData = stbi_load(heightmapPath, &imgWidth, &imgHeight, &channels, 1); // 1 pour charger en niveau de gris
 
-    if (!heightmapData)
+    //if (!heightmapData)
+    //{
+    //    std::cerr << "Erreur de chargement de l'image heightmap." << std::endl;
+    //    return;
+    //}
+
+    //// Vérifiez que la largeur et la hauteur de l'image correspondent à la taille attendue
+    //if (imgWidth != LARGETILE_SIZE || imgHeight != LARGETILE_SIZE) {
+    //    std::cerr << "Dimensions de l'image heightmap ne correspondent pas." << std::endl;
+    //    stbi_image_free(heightmapData);
+    //    return;
+    //}
+
+    //unsigned int indice = 0,//indice du vertex
+    //             cy     = 0,//coordonnée y de la Tile dans le tableau de la LargeTile
+    //             cx     = 0;//coordonnée x de la Tile dans le tableau de la LargeTile
+    //// Générer le maillage de terrain
+    //int size = LARGETILE_ARR_SIZE * LARGETILE_ARR_SIZE;//Nombre de tiles dans le tableau (ex: 16 x 16)
+    //for (int i = 0; i < size; i++)
+    //{
+    //    tiles[cy][cx].setYX(cy, cx);
+    //    for (int y = 0; y < TILE_SIZE; ++y)//on parcourt chaque pixel de la heightmap par carré de 32x32 pour remplir les Tiles
+    //    {
+    //        for (int x = 0; x < TILE_SIZE; ++x)
+    //        {
+    //            GLfloat heightValue = heightmapData[y + (cy * TILE_SIZE) * TILE_SIZE + x + (cx * TILE_SIZE)];
+    //            //heightValue = 0;
+    //            //std::cout << (GLfloat)y + (GLfloat)(cy * TILE_SIZE) << std::endl;
+    //            tiles[cy][cx].setVertex(y % TILE_SIZE, x % TILE_SIZE, { (GLfloat)x + (GLfloat)(cx * TILE_SIZE), heightValue / 255.0f * MAX_HEIGHT, (GLfloat)y + (GLfloat)(cy * TILE_SIZE), indice});
+    //            indice++;
+    //        }
+    //    }
+
+    //    tiles[cy][cx].setVectors();
+
+    //    cx++;
+    //    if (cx == 16)
+    //    {
+    //        cy++;
+    //        cx = 0;
+    //    }
+
+    //    indice = 0;
+    //}
+
+
+    const char* err = NULL;
+    int width, height;
+    float* image;
+
+    int ret = IsEXR(heightmapPath);
+    if (ret != TINYEXR_SUCCESS)
     {
-        std::cerr << "Erreur de chargement de l'image heightmap." << std::endl;
+        fprintf(stderr, "File not found or given file is not a EXR format. code %d\n", ret);
+        exit(-1);
+    }
+    else std::cout << "ok its exr file" << std::endl;
+
+    ret = LoadEXR(&image, &width, &height, heightmapPath, &err);
+    if (ret != TINYEXR_SUCCESS) {
+        if (err)
+        {
+            fprintf(stderr, "Load EXR err: %s(code %d)\n", err, ret);
+        }
+        else
+        {
+            fprintf(stderr, "Load EXR err: code = %d\n", ret);
+        }
+        FreeEXRErrorMessage(err);
         return;
+    }
+    else std::cout << "Success loading exr" << std::endl;
+
+
+    if (image != nullptr) {
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+                int idx = (height - y - 1) * width + x;
+                float r = image[4 * idx + 0];  // Utilisez le canal rouge si l'image est en RGBA
+
+                //if(r > 0.1) std::cout << r << std::endl;
+            }
+        }
+    }
+    else {
+        std::cerr << "Error: Image data is null." << std::endl;
     }
 
-    // Vérifiez que la largeur et la hauteur de l'image correspondent à la taille attendue
-    if (imgWidth != LARGETILE_SIZE || imgHeight != LARGETILE_SIZE) {
-        std::cerr << "Dimensions de l'image heightmap ne correspondent pas." << std::endl;
-        stbi_image_free(heightmapData);
-        return;
-    }
+
 
     unsigned int indice = 0,//indice du vertex
                  cy     = 0,//coordonnée y de la Tile dans le tableau de la LargeTile
@@ -34,25 +111,38 @@ LargeTile::LargeTile(int x, int y, const char* heightmapPath)
         {
             for (int x = 0; x < TILE_SIZE; ++x)
             {
-                GLfloat heightValue = heightmapData[y + (cy * TILE_SIZE) * TILE_SIZE + x + (cx * TILE_SIZE)];
-                heightValue = 0;
-                //std::cout << (GLfloat)y + (GLfloat)(cy * TILE_SIZE) << std::endl;
-                tiles[cy][cx].setVertex(y % TILE_SIZE, x % TILE_SIZE, { (GLfloat)x + (GLfloat)(cx * TILE_SIZE), heightValue / 255.0f * MAX_HEIGHT, (GLfloat)y + (GLfloat)(cy * TILE_SIZE), indice});
+                // Calcul de l'index dans l'image globale
+                int globalX = x + cx * TILE_SIZE;
+                int globalY = y + cy * TILE_SIZE;
+                int pixelIdx = (globalY * LARGETILE_SIZE + globalX) * 4; // 4 pour RGBA
+                GLfloat heightValue = image[pixelIdx];
+                ////heightValue = 0;
+                ////std::cout << (GLfloat)y + (GLfloat)(cy * TILE_SIZE) << std::endl;
+                if (heightValue > 0.1) std::cout << heightValue << std::endl;
+                ////if(heightValue > 0.01) std::cout << heightValue * 255 << std::endl;
+                tiles[cy][cx].setVertex(y % TILE_SIZE, x % TILE_SIZE, { (GLfloat)x + (GLfloat)(cx * TILE_SIZE), heightValue * MAX_HEIGHT, (GLfloat)y + (GLfloat)(cy * TILE_SIZE), indice});
                 indice++;
             }
         }
-
+    
         tiles[cy][cx].setVectors();
-
+    
         cx++;
         if (cx == 16)
         {
             cy++;
             cx = 0;
         }
-
+    
         indice = 0;
     }
+
+
+
+
+
+
+
 
     setBuffers();
 
@@ -63,8 +153,9 @@ LargeTile::LargeTile(int x, int y, const char* heightmapPath)
     //        std::cout << "YX: " << tiles[y][x].getY() << " ... " << tiles[y][x].getX() << std::endl;
 
     // Libérer la mémoire de l'image
-    if (heightmapData)
-        stbi_image_free(heightmapData);
+    //if (heightmapData)
+    //    stbi_image_free(heightmapData);
+    free(image);
 }
 
 void LargeTile::setBuffers()
