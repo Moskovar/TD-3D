@@ -22,7 +22,7 @@ class Entity : public Element
 
 	private:
 		//bool moving = false;
-		bool falling = false;
+		
 
 		uint8_t directionKeys;//entier non signé de 0 à 255 -> à mettre dans une autre classe qui gère les entrées claviers ?
 

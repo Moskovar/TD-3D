@@ -116,9 +116,32 @@ LargeTile::LargeTile(int x, int y, const char* heightmapPath)
                 int globalY = y + cy * TILE_SIZE;
                 int pixelIdx = (globalY * LARGETILE_SIZE + globalX) * 4; // 4 pour RGBA
                 GLfloat heightValue = image[pixelIdx];
+
+                //à améliorer c'est carrément bancale mais ça dépanne le temps
+                if(globalX == 0 || globalY == 0)//à vérifier dynamiquement au chargement des Larges tuiles
+                {
+                    short count = 0;
+
+                    // Vérifier le pixel au-dessus (y-1)
+                    if (y > 0 && image[((y - 1) * width + x) * 4] > 0.0f)           ++count;
+ 
+                    // Vérifier le pixel en dessous (y+1)
+                    if (y < height - 1 && image[((y + 1) * width + x) * 4] > 0.0f)  ++count;
+
+                    // Vérifier le pixel à gauche (x-1)
+                    if (x > 0 && image[(y * width + (x - 1)) * 4] > 0.0f)           ++count;
+
+                    // Vérifier le pixel à droite (x+1)
+                    if (x < width - 1 && image[(y * width + (x + 1)) * 4] > 0.0f)   ++count;
+
+                    if (count <= 2) heightValue = 0.0f;
+                }
+
+
+                if (heightValue < 0.01f) heightValue = 0.0f;
                 ////heightValue = 0;
                 ////std::cout << (GLfloat)y + (GLfloat)(cy * TILE_SIZE) << std::endl;
-                if (heightValue > 0.1) std::cout << heightValue << std::endl;
+                //if (heightValue > 0) std::cout << heightValue << std::endl;
                 ////if(heightValue > 0.01) std::cout << heightValue * 255 << std::endl;
                 tiles[cy][cx].setVertex(y % TILE_SIZE, x % TILE_SIZE, { (GLfloat)x + (GLfloat)(cx * TILE_SIZE), heightValue * MAX_HEIGHT, (GLfloat)y + (GLfloat)(cy * TILE_SIZE), indice});
                 indice++;

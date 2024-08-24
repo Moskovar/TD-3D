@@ -20,6 +20,7 @@ class LargeTile
 
 		//--- Getters ---//
 		Tile getTile(int y, int x) { return tiles[y][x]; }
+		HeightMapVertex getVertex(int y, int x) { return tiles[y / TILE_SIZE][x / TILE_SIZE].getVertex(y % TILE_SIZE, x % TILE_SIZE); }
 
 		void setBuffers();
 

@@ -7,7 +7,7 @@
 
 #define MAX_HEIGHT 255
 #define TURN_SPEED 100	//character turn speed
-#define FALL_SPEED 5.0f	//character fall speed
+#define FALL_SPEED 25.0f	//character fall speed
 
 struct AABB
 {

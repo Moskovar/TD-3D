@@ -16,116 +16,64 @@
 
 Window* window = nullptr;
 Camera* camera = nullptr;
+LargeTile* largeTile = nullptr;
 PhysicsEngine physics;
 //float r = 0.5f, g = 0.5f, b = 0.5f;
 std::map<char, bool> keyPressed;
 
 std::vector<Entity*> entities;
 
-
-void readEXR(const char* filename) 
+void applyGravity(Element* element, GLfloat deltaTime)
 {
-    const char* err = NULL;
-    int width, height;
-    float* image;
+    //for (int i = 1; i < entities.size(); i++)
+    //    if (checkCollision(entities[0]->getRHitbox(), entities[i]->getRHitbox())) return;
 
-    int ret = IsEXR(filename);
-    if (ret != TINYEXR_SUCCESS) 
+    glm::vec3* elementPos = element->getPositionP();
+
+    if (elementPos->x >= 0 && elementPos->x < 512 && elementPos->z >= 0 && elementPos->z < 512)//Si le joueur est dans la heightmap
     {
-        fprintf(stderr, "File not found or given file is not a EXR format. code %d\n", ret);
-        exit(-1);
-    }
-    else std::cout << "ok its exr file" << std::endl;
+        GLfloat interpolatedGroundY = 0.0f, y1 = 0.0f, y2 = 0.0f, y3 = 0.0f, y4 = 0.0f;
 
-    ret = LoadEXR(&image, &width, &height, filename, &err);
-    if (ret != TINYEXR_SUCCESS) {
-        if (err) 
+        y1 = largeTile->getVertex(elementPos->z + 1, elementPos->x).y;      y2 = largeTile->getVertex(elementPos->z + 1, elementPos->x + 1).y;
+        y3 = largeTile->getVertex(elementPos->z    , elementPos->x).y;      y4 = largeTile->getVertex(elementPos->z    , elementPos->x + 1).y;
+
+        interpolatedGroundY = (y1 + y2 + y3 + y4) / 4.0f;
+
+        if(elementPos->y > interpolatedGroundY) //Si l'élément n'est pas au sol on le fait tomber
         {
-            fprintf(stderr, "Load EXR err: %s(code %d)\n", err, ret);
+            element->fall(deltaTime);
+            element->setFall(true);
         }
-        else 
+
+        //Si l'élément est tomber plus bas (ou même niveau) que le sol, on le remet au niveau du sol et on lui enlève son état de chute
+        if (elementPos->y <= interpolatedGroundY)
         {
-            fprintf(stderr, "Load EXR err: code = %d\n", ret);
+            elementPos->y = interpolatedGroundY;
+            element->setFall(false);
         }
-        FreeEXRErrorMessage(err);
-        return;
     }
-    else std::cout << "Success loading exr" << std::endl;
-
-    //// Assurez-vous que 'image' est non nul et que 'width' et 'height' sont définis
-    //if (image != nullptr) {
-    //    // Parcourez chaque pixel
-    //    for (int y = 0; y < height; ++y) {
-    //        for (int x = 0; x < width; ++x) {
-    //            // Calculer l'index du pixel dans le tableau
-    //            int idx = (height - y - 1) * width + x; // Inverser y pour l'alignement des lignes
-
-    //            // Chaque pixel a 4 canaux : R, G, B, A
-    //            float r = image[4 * idx + 0];
-    //            float g = image[4 * idx + 1];
-    //            float b = image[4 * idx + 2];
-    //            float a = image[4 * idx + 3];
-
-    //            // Traitement ou affichage des valeurs des pixels
-    //            std::cout << "Pixel (" << x << ", " << y << "): "
-    //                << "R=" << r << " G=" << g << " B=" << b << " A=" << a << std::endl;
-    //        }
-    //    }
-    //}
-    //else {
-    //    std::cerr << "Error: Image data is null." << std::endl;
-    //}
-
-    //// Accéder aux données de pixels
-    //float* rgba = (float*)image.images[0]; // Premier canal (R, G, B, A)
-    //int width = header.data_window.max_x - header.data_window.min_x + 1;
-    //int height = header.data_window.max_y - header.data_window.min_y + 1;
-
-    //std::cout << "Image dimensions: " << width << " x " << height << std::endl;
-
-    //for (int y = 0; y < height; ++y) {
-    //    for (int x = 0; x < width; ++x) {
-    //        int idx = (height - y - 1) * width + x;
-    //        float r = rgba[4 * idx + 0];
-    //        float g = rgba[4 * idx + 1];
-    //        float b = rgba[4 * idx + 2];
-    //        float a = rgba[4 * idx + 3];
-
-    //        // Afficher les couleurs des pixels
-    //        std::cout << "Pixel (" << x << ", " << y << "): "
-    //            << "R=" << r << " G=" << g << " B=" << b << " A=" << a << std::endl;
-    //    }
-    //}
-
-    //// Libération des ressources
-    free(image);
-    //FreeEXRHeader(&header);
 }
 
-// Affichage de la matrice
-void printMatrix(const glm::mat4& mat) {
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            std::cout << mat[i][j] << " ";
-        }
-        std::cout << std::endl;
-    }
-}
-void checkHeightMap()
+bool checkHeightMap(glm::vec3 playerPos)//revoir les points comptés dans l'interpolation
 {
-    //glm::vec3 playerPos = entities[0]->getPosition();
+    if (playerPos.x >= 0 && playerPos.x < 512 && playerPos.z >= 0 && playerPos.z < 512)//Si le joueur est dans la heightmap
+    {
+        
 
-    //if (playerPos.x >= 0 && playerPos.x < 32 && playerPos.z >= 0 && playerPos.z < 32)//Si le joueur est dans la heightmap
-    //{
-    //    std::cout << vertices[(int)playerPos.y][(int)playerPos.x].y - entities[0]->getPosition().y << std::endl;
+        GLfloat interpolatedY = 0.0f, y1 = 0.0f, y2 = 0.0f, y3 = 0.0f, y4 = 0.0f;
 
-    //    GLfloat interpolatedY = 0.0f, y1 = 0.0f, y2 = 0.0f, y3 = 0.0f, y4 = 0.0f;
+        y1 = largeTile->getVertex(playerPos.z + 1, playerPos.x).y;      y2 = largeTile->getVertex(playerPos.z + 1, playerPos.x + 1).y;
+        y3 = largeTile->getVertex(playerPos.z    , playerPos.x).y;      y4 = largeTile->getVertex(playerPos.z    , playerPos.x + 1).y;
+        //std::cout << y1 << std::endl;
 
-    //    y1 = vertices[(int)playerPos.y + 1][(int)playerPos.x].y;    y2 = vertices[(int)playerPos.y + 1][(int)playerPos.x + 1].y;
-    //    y3 = vertices[(int)playerPos.y][(int)playerPos.x].y;        y4 = vertices[(int)playerPos.y][(int)playerPos.x + 1].y;
+        interpolatedY = (y1 + y2 + y3 + y4) / 4.0f;
+        std::cout << interpolatedY - playerPos.y << std::endl;
+        if (interpolatedY - playerPos.y > 2) return false;
 
-    //    entities[0]->moveUp((y1 + y2 + y3 + y4) / 4.0f);
-    //}
+        if(playerPos.y < interpolatedY) entities[0]->moveUp(interpolatedY);
+
+        return true;
+    }
 }
 
 bool checkCollision(const AABB& box1, const AABB& box2) 
@@ -147,16 +95,6 @@ bool checkCollision(const AABB& box1, const AABB& box2)
 
     // Les boîtes se chevauchent
     return true;
-}
-
-void applyGravity(GLfloat deltaTime)
-{
-    //std::cout << entities[1]->getRHitbox().max_point.y << std::endl;
-    //std::cout << entities[1]->getRHitbox().max_point.x << std::endl;
-    for (int i = 1; i < entities.size(); i++)
-        if (checkCollision(entities[0]->getRHitbox(), entities[i]->getRHitbox())) return;
-        
-    entities[0]->fall(deltaTime);
 }
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -198,18 +136,22 @@ void processKeyPressed(GLFWwindow* window, float deltaTime)
 
     if(keyPressed[GLFW_KEY_W])
     {
-        entities[0]->move(deltaTime);
-        if(!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) && !glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT)) camera->resetYaw();
-
-        //checkHeightMap();
+        
+        if (checkHeightMap(entities[0]->anticipateMove(deltaTime)))
+        {
+            entities[0]->move(deltaTime);
+            if (!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) && !glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT)) camera->resetYaw();
+        }
     }
 
     if (keyPressed[GLFW_KEY_S])
     {
-        entities[0]->move(-deltaTime);
-        if (!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) && !glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT)) camera->resetYaw();
+        if(checkHeightMap(entities[0]->anticipateMove(deltaTime)))
+        {
+            entities[0]->move(-deltaTime);
+            if (!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) && !glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT)) camera->resetYaw();
+        }
 
-        //checkHeightMap();
     }
 
     if(!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
@@ -248,7 +190,7 @@ int main()
     if (glIsEnabled(GL_DEPTH_TEST)) std::cout << "Depth test is enabled."     << std::endl;
     else                            std::cout << "Depth test is not enabled." << std::endl;
 
-    LargeTile* largeTile = new LargeTile(0, 0, "heightmaps/h1.exr");
+    largeTile = new LargeTile(0, 0, "heightmaps/h1.exr");
 
     //readEXR("heightmaps/h1.exr");
 
@@ -267,7 +209,7 @@ int main()
         deltaTime = now - lastFrame;
         lastFrame = now;
 
-        //applyGravity(deltaTime);
+        applyGravity(entities[0], deltaTime);
 
 
         //--- Personnage ---//
@@ -278,9 +220,11 @@ int main()
                 GLfloat offsetYaw = camera->getYaw() - entities[0]->getYaw();
                 //std::cout << offsetYaw << std::endl;
                 entities[0]->turn(offsetYaw);
-                entities[0]->move(deltaTime);
 
-                //checkHeightMap();
+                if (checkHeightMap(entities[0]->anticipateMove(deltaTime)))
+                {
+                    entities[0]->move(deltaTime);
+                }
             }
 
             if      (window->getXChange() > 0) entities[0]->turn(camera->getSensitivity() * deltaTime);
@@ -291,8 +235,6 @@ int main()
 
         //--- Caméra ---//
         camera->mouseControl(window->getGLFWWindow(), window->getXChange(), window->getYChange(), window->getScrollValue(), deltaTime);
-
-        camera->update();
 
         // Effacer le buffer de couleur et de profondeur
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

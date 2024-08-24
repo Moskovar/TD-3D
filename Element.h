@@ -20,11 +20,18 @@ class Element
 		GLfloat		getYaw()		{ return yaw;					}
 		GLfloat*	getPYaw()		{ return &yaw;					}
 		AABB&		getRHitbox()	{ return hitBox;				}
+		bool		isFalling()		{ return falling;				}
+
+		
+		
+
 		
 		//--- Setters ---//
 		void setYaw(GLfloat yaw);
 		void setAnimationID(uint8_t id) { animationID = id; }
+		void setFall(bool state)		{ falling = state;	}
 
+		glm::vec3 anticipateMove(GLfloat deltaTime);
 		void move(GLfloat deltaTime);
 		void moveUp(GLfloat positionY);
 		void turn(GLfloat yaw);
@@ -39,8 +46,8 @@ class Element
 		glm::mat4 modelMatrix = glm::mat4(1.0f);
 		glm::vec3 position	  = glm::vec3(0.0f, 0.0f, 0.0f);
 		GLfloat yaw = -90;//à descendre dans entity ? avec render en méthode abstraite ?
-		GLfloat moveSpeed = 100;
-		bool moving = false;
+		GLfloat moveSpeed = 25;
+		bool moving = false, falling = false;
 
 		glm::vec3 halfSize = glm::vec3(0.0f, 0.0f, 0.0f);
 		AABB hitBox;
