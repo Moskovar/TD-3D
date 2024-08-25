@@ -36,6 +36,17 @@ void Element::setYaw(GLfloat yaw)
 	updatePosition();
 }
 
+void Element::setMove(bool state)
+{
+	if (!isFalling()) moving = state;
+}
+
+void Element::setFall(bool state)
+{
+	falling = state;
+	if (!falling) moving = false;
+}
+
 /// <summary>
 /// Récupère la position de l'élément si le mouvement qu'il s'apprête à faire s'effectue
 /// </summary>
@@ -50,13 +61,8 @@ glm::vec3 Element::anticipateMove(GLfloat deltaTime)
 
 void Element::move(GLfloat deltaTime)
 {
-	if(!falling)
-	{
-		moving = true;
-
-		model->translate(modelMatrix, glm::vec3(0.0f, 0.0f, moveSpeed * deltaTime));
-		updatePosition();
-	}
+	model->translate(modelMatrix, glm::vec3(0.0f, 0.0f, moveSpeed * deltaTime));
+	updatePosition();
 }
 
 void Element::moveUp(GLfloat positionY)
@@ -67,8 +73,6 @@ void Element::moveUp(GLfloat positionY)
 
 void Element::turn(GLfloat yaw)//et le deltatime ??
 {
-	moving = true;
-
 	this->yaw += yaw;
 	if		(this->yaw >  360) this->yaw -= 360;
 	else if (this->yaw < -360) this->yaw += 360;
@@ -80,8 +84,6 @@ void Element::turn(GLfloat yaw)//et le deltatime ??
 
 void Element::fall(GLfloat deltaTime)
 {
-	moving = true;
-
 	model->translate(modelMatrix, glm::vec3(0.0f, -FALL_SPEED * deltaTime, 0.0f));
 	updatePosition();
 }

@@ -5,9 +5,25 @@ Entity::Entity(short id, glm::vec3 position, const std::string& filePath) : Elem
 	//std::cout << "MAXPOINT: " << model->getMaxPoint().x << std::endl;
 }
 
-void Entity::addY(GLfloat y)
+void Entity::jump(GLfloat deltaTime)
 {
-	//{ this->position.y += y;	}
+	GLfloat value = moveSpeed * deltaTime / 2;
+
+	if (jumpValue + value >= JUMP_HIGH) value = JUMP_HIGH - jumpValue;
+	
+	jumpValue += value;
+
+	//checker le mouvement anticipé avant de le réaliser [A FAIRE]
+	model->translate(modelMatrix, glm::vec3(0.0f, value, 0.0f));
+	updatePosition();
+
+	std::cout << position.y << " ... " << jumpValue << std::endl;
+
+	if (jumpValue >= JUMP_HIGH)//Si jump atteint hauteur max, on jumping = false et la gravité reprend la main
+	{
+		jumping = false;
+		jumpValue = 0.0f;
+	}
 }
 
 void Entity::updateAnimationID()

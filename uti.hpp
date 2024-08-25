@@ -5,9 +5,10 @@
 #include <map>
 #include <string>
 
-#define MAX_HEIGHT 255
-#define TURN_SPEED 100	//character turn speed
-#define FALL_SPEED 25.0f	//character fall speed
+#define MAX_HEIGHT	255
+#define TURN_SPEED	100		//character turn speed
+#define FALL_SPEED	25.0f	//character fall speed
+#define JUMP_HIGH	2.0f
 
 struct AABB
 {

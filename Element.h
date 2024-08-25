@@ -20,6 +20,7 @@ class Element
 		GLfloat		getYaw()		{ return yaw;					}
 		GLfloat*	getPYaw()		{ return &yaw;					}
 		AABB&		getRHitbox()	{ return hitBox;				}
+		bool		isMoving()		{ return moving;				}
 		bool		isFalling()		{ return falling;				}
 
 		
@@ -29,7 +30,8 @@ class Element
 		//--- Setters ---//
 		void setYaw(GLfloat yaw);
 		void setAnimationID(uint8_t id) { animationID = id; }
-		void setFall(bool state)		{ falling = state;	}
+		void setMove(bool state);
+		void setFall(bool state);
 
 		glm::vec3 anticipateMove(GLfloat deltaTime);
 		void move(GLfloat deltaTime);

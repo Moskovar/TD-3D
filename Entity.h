@@ -10,21 +10,24 @@ class Entity : public Element
 		Entity() {}
 		Entity(short id, glm::vec3 position, const std::string& filePath);
 
-		bool	isMoving()							{ return moving;			}
+		//--- Getters ---//
 		uint8_t getDirectionKeys()					{ return directionKeys;		}
+		bool	isJumping()							{ return jumping;			}
 
-		void setMove(bool state)					{ moving = state;			}
-		void addY(GLfloat y);
-		void directionPressed(uint8_t keyPressed)	{ directionKeys += directionsValue[keyPressed]; updateAnimationID(); }
-		void directionReleased(uint8_t keyPressed)	{ directionKeys -= directionsValue[keyPressed]; updateAnimationID(); }
+		//--- Setters ---//
+		void setJumping(bool state)					{ jumping = state;														}
+		void directionPressed(uint8_t keyPressed)	{ directionKeys += directionsValue[keyPressed]; updateAnimationID();	}
+		void directionReleased(uint8_t keyPressed)	{ directionKeys -= directionsValue[keyPressed]; updateAnimationID();	}
+
+		void jump(GLfloat deltaTime);
 
 		void calculateHitBox();
 
 	private:
-		//bool moving = false;
-		
+		bool jumping = false;
+		GLfloat jumpValue = 0.0f;
 
-		uint8_t directionKeys;//entier non signé de 0 à 255 -> à mettre dans une autre classe qui gère les entrées claviers ?
+		uint8_t directionKeys = 0;//entier non signé de 0 à 255 -> à mettre dans une autre classe qui gère les entrées claviers ?
 
 		std::map<uint8_t, uint8_t> directionsValue = { {GLFW_KEY_W, 1}, {GLFW_KEY_D, 2}, {GLFW_KEY_S, 4}, {GLFW_KEY_A, 8} };
 		
