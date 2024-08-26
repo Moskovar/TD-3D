@@ -7,9 +7,13 @@ Tile::Tile()
 
 	for (int y = 0; y < TILE_SIZE; ++y)
 		vertices[y] = new HeightMapVertex[TILE_SIZE];
+
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &IBO);
 }
 
-void Tile::setVectors()
+void Tile::setIndices()
 {
     for (int y = 0; y < TILE_SIZE; ++y)
     {
@@ -35,10 +39,6 @@ void Tile::setVectors()
         }
     }
 
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &IBO);
-
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -48,6 +48,7 @@ void Tile::setVectors()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, v_indices.size() * sizeof(unsigned int), v_indices.data(), GL_STATIC_DRAW);
 
+    // Attribut des coordonnées des vertices
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(HeightMapVertex), (void*)offsetof(HeightMapVertex, x));
     glEnableVertexAttribArray(0);
 

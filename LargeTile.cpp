@@ -1,9 +1,11 @@
 #include "LargeTile.h"
 
-LargeTile::LargeTile(int x, int y, const char* heightmapPath)
+LargeTile::LargeTile(int x, int y, const char* heightmapPath, const char* texturePath)
 {
 	this->x = x;
 	this->y = y;
+
+    this->texture = new Texture(texturePath);
 
     const char* err = NULL;
     int width, height;
@@ -83,7 +85,7 @@ LargeTile::LargeTile(int x, int y, const char* heightmapPath)
             }
         }
     
-        tiles[cy][cx].setVectors();
+        tiles[cy][cx].setIndices();
     
         cx++;
         if (cx == 16)
@@ -95,12 +97,12 @@ LargeTile::LargeTile(int x, int y, const char* heightmapPath)
         indice = 0;
     }
 
-    setBuffers();
+    setJunctions();
 
     free(image);
 }
 
-void LargeTile::setBuffers()
+void LargeTile::setJunctions()
 {
     unsigned int indice = 0;
     for(int i = 0; i < 2; ++i)//0 = jointures y sur x, 1 = jointures x sur y
@@ -194,6 +196,8 @@ void LargeTile::setBuffers()
 
 void LargeTile::render()
 {
+    texture->useTexture();
+
     for (int y = 0; y < LARGETILE_ARR_SIZE; ++y)
         for (int x = 0; x < LARGETILE_ARR_SIZE; ++x)
             tiles[y][x].render();
@@ -221,6 +225,12 @@ LargeTile::~LargeTile()
     {
         glDeleteVertexArrays(1, &VAO);
         VAO = 0;
+    }
+
+    if(texture)
+    {
+        delete texture;
+        texture = nullptr;
     }
 
     printf("||--- LargeTile cleared ---||\n");

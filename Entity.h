@@ -1,8 +1,9 @@
 #pragma once
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include "Element.h"
 #include <string>
+
+#include "Element.h"
 
 class Entity : public Element
 {

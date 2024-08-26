@@ -180,7 +180,7 @@ int main()
     window = new Window(800, 600);
 
     entities.push_back(new Entity(0, glm::vec3(256.0f, 5.0f, 256.0f), "models/fbx/doublecube.fbx"));
-    entities.push_back(new Entity(1, glm::vec3(300.0f, 2.0f, 300.0f), "models/fbx/doublecube.fbx"));
+    entities.push_back(new Entity(1, glm::vec3(300.0f, 6.5f, 300.0f), "models/fbx/doublecube.fbx"));
 
     //entities.push_back(new Entity(2, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/ground.fbx"));
 
@@ -204,16 +204,12 @@ int main()
     if (glIsEnabled(GL_DEPTH_TEST)) std::cout << "Depth test is enabled."     << std::endl;
     else                            std::cout << "Depth test is not enabled." << std::endl;
 
-    largeTile = new LargeTile(0, 0, "heightmaps/h1.exr");
-
-    //readEXR("heightmaps/h1.exr");
+    largeTile = new LargeTile(0, 0, "heightmaps/h1.exr", "textures/h1.png");
 
     auto  startTime    = std::chrono::high_resolution_clock::now();
     float currentFrame = 0, animationTime = 0, timeSinceStart = 0,
           lastFrame    = glfwGetTime(), deltaTime = 0, now = 0;
     
-    Texture text("textures/h1.png");
-
     //Boucle de rendu
     while (!glfwWindowShouldClose(glfwWindow))
     {   //AnimationTime
@@ -271,7 +267,6 @@ int main()
         simple_shaders.use();
         glUniformMatrix4fv(simple_shaders.modelLoc, 1, GL_FALSE, glm::value_ptr(modelmtx));
         
-        text.useTexture();
         largeTile->render();
         
 

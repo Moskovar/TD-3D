@@ -22,7 +22,7 @@ class Tile
 		void setVertices(HeightMapVertex** vertices)			{ this->vertices = vertices;		}
 		void setVertexIndice(int y, int x, unsigned int indice) { vertices[y][x].indice = indice;	}
 		void setVertex(int y, int x, HeightMapVertex vertex)	{ vertices[y][x] = vertex;			}
-		void setVectors();//Met à jour les vecteurs de vertices et indices
+		void setIndices();//Met à jour les vecteurs de vertices et indices
 
 		void render();
 

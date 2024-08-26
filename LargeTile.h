@@ -4,8 +4,8 @@
 #include <cmath>
 
 #include "Tile.h"
+#include "Texture.h"
 
-#include "stb_image.h"
 #include <tinyexr.h>
 
 
@@ -17,7 +17,7 @@ class LargeTile
 {
 	public:
 		LargeTile() {};
-		LargeTile(int x, int y, const char* heightmapPath);
+		LargeTile(int x, int y, const char* heightmapPath, const char* texturePath);
 
 		//--- Getters ---//
 		Tile getTile(int y, int x) { return tiles[y][x]; }
@@ -30,6 +30,8 @@ class LargeTile
 	private:
 		int x = 0, y = 0;
 
+		Texture* texture = nullptr;
+
 		GLuint VAO, VBO, IBO;
 
 		Tile tiles[LARGETILE_ARR_SIZE][LARGETILE_ARR_SIZE];
@@ -38,6 +40,6 @@ class LargeTile
 		std::vector<HeightMapVertex> v_vertices = {};
 		std::vector<unsigned int>	 v_indices	= {};
 
-		void setBuffers();
+		void setJunctions();
 };
 
