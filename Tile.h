@@ -8,7 +8,6 @@ class Tile
 {
 	public:
 		Tile();
-		//Tile(int x, int y, HeightMapVertex** vertices);
 
 		//--- Getters ---//
 		int getX()									{ return x;					}

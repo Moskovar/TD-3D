@@ -20,12 +20,3 @@ struct HeightMapVertex
 	GLfloat x = 0.0f, y = 0.0f, z = 0.0f;
 	unsigned int indice = 0;
 };
-
-//namespace uti
-//{
-//
-//	//std::map<unsigned short, std::string> keyFrames
-//	//{
-//	//	{ 0, "RotationX" }
-//	//};
-//}

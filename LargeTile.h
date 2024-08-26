@@ -16,6 +16,7 @@
 class LargeTile
 {
 	public:
+		LargeTile() {};
 		LargeTile(int x, int y, const char* heightmapPath);
 
 		//--- Getters ---//
@@ -23,6 +24,8 @@ class LargeTile
 		HeightMapVertex getVertex(int y, int x) { return tiles[y / TILE_SIZE][x / TILE_SIZE].getVertex(y % TILE_SIZE, x % TILE_SIZE); }
 
 		void render();
+
+		~LargeTile();
 
 	private:
 		int x = 0, y = 0;
