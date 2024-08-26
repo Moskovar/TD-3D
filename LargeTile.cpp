@@ -73,7 +73,12 @@ LargeTile::LargeTile(int x, int y, const char* heightmapPath)
 
                 if (heightValue < 0.01f) heightValue = 0.0f;//pour éliminer les résidus ?? pas propre ...
 
-                tiles[cy][cx].setVertex(y % TILE_SIZE, x % TILE_SIZE, { (GLfloat)x + (GLfloat)(cx * TILE_SIZE), heightValue * MAX_HEIGHT, (GLfloat)y + (GLfloat)(cy * TILE_SIZE), indice});
+                glm::vec2 texCoords((GLfloat)globalX / (GLfloat)(LARGETILE_SIZE - 1), (GLfloat)globalY / (GLfloat)(LARGETILE_SIZE - 1));//Attribution des coordonnées de textures
+
+                //glm::vec2 texCoords(globalX, globalY);
+                //std::cout << u << " ... " << v << std::endl;
+
+                tiles[cy][cx].setVertex(y % TILE_SIZE, x % TILE_SIZE, { (GLfloat)x + (GLfloat)(cx * TILE_SIZE), heightValue * MAX_HEIGHT, (GLfloat)y + (GLfloat)(cy * TILE_SIZE), indice, texCoords});
                 indice++;
             }
         }
@@ -178,6 +183,10 @@ void LargeTile::setBuffers()
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(HeightMapVertex), (void*)offsetof(HeightMapVertex, x));
     glEnableVertexAttribArray(0);
+
+    // Attribut des coordonnées de texture
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(HeightMapVertex), (void*)offsetof(HeightMapVertex, texCoords));
+    glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);

@@ -17,7 +17,7 @@ void Entity::jump(GLfloat deltaTime)
 	model->translate(modelMatrix, glm::vec3(0.0f, value, 0.0f));
 	updatePosition();
 
-	std::cout << position.y << " ... " << jumpValue << std::endl;
+	//std::cout << position.y << " ... " << jumpValue << std::endl;
 
 	if (jumpValue >= JUMP_HIGH)//Si jump atteint hauteur max, on jumping = false et la gravité reprend la main
 	{

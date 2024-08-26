@@ -179,15 +179,15 @@ int main()
 {
     window = new Window(800, 600);
 
-    entities.push_back(new Entity(0, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/doublecube.fbx"));
-    entities.push_back(new Entity(1, glm::vec3(5.0f, 0.0f, 5.0f), "models/fbx/doublecube.fbx"));
+    entities.push_back(new Entity(0, glm::vec3(256.0f, 5.0f, 256.0f), "models/fbx/doublecube.fbx"));
+    entities.push_back(new Entity(1, glm::vec3(300.0f, 2.0f, 300.0f), "models/fbx/doublecube.fbx"));
 
     //entities.push_back(new Entity(2, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/ground.fbx"));
 
     camera = new Camera(entities[0]->getPositionP(), entities[0]->getPYaw(), &keyPressed);
 
     glm::mat4* view = camera->getViewMatrixP();
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.5f, 300.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.5f, 500.0f);
 
     //--- Création des shaders ---//    
     Shader shaders        = Shader("shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl", view, &projection);
@@ -212,6 +212,8 @@ int main()
     float currentFrame = 0, animationTime = 0, timeSinceStart = 0,
           lastFrame    = glfwGetTime(), deltaTime = 0, now = 0;
     
+    Texture text("textures/h1.png");
+
     //Boucle de rendu
     while (!glfwWindowShouldClose(glfwWindow))
     {   //AnimationTime
@@ -243,7 +245,7 @@ int main()
             else if (keyPressed['W'] && keyPressed['S']) factor = 0;//si Z et S sont appuyés, on bouge pas
 
             if (entities[0]->isFalling()) factor /= 2;
-            std::cout << factor << std::endl;
+            
             if(checkHeightMap(entities[0], entities[0]->anticipateMove(deltaTime * factor)))
             {
                 entities[0]->move(deltaTime * factor);
@@ -269,6 +271,7 @@ int main()
         simple_shaders.use();
         glUniformMatrix4fv(simple_shaders.modelLoc, 1, GL_FALSE, glm::value_ptr(modelmtx));
         
+        text.useTexture();
         largeTile->render();
         
 
