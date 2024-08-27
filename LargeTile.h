@@ -7,16 +7,11 @@
 #include "Texture.h"
 
 #include <tinyexr.h>
-
-
-#define LARGETILE_SIZE			512
-#define LARGETILE_ARR_SIZE		16
-#define JUNCTION_VERTICES_SIZE	2 * (LARGETILE_ARR_SIZE - 1) //* 2 car chaque jointure prendre les vertices haut d'une tuile et bas de la suivante (donc pas réutilisable d'une jointure à l'autre)
-															//Il y a TILE_SIZE - 1 joint à faire sur l'axe z (y du tableau) | y: nombre de Tile, x: nombre de vertex sur une rangée X d'une Tile																	
+																
 class LargeTile
 {
 	public:
-		LargeTile(int y, int x, std::string heightMapName, std::string textureName);
+		LargeTile(int y, int x, int yChunk, int xChunk, std::string heightMapName, std::string textureName);
 
 		//--- Getters ---//
 		Tile getTile(int y, int x) { return tiles[y][x]; }

@@ -93,5 +93,20 @@ Tile::~Tile()
         VAO = 0;
     }
 
+    if (vertices)
+    {
+        for (int y = 0; y < TILE_SIZE; ++y)
+        {
+            if (vertices[y])
+            {
+                delete vertices[y];
+                vertices[y] = nullptr;
+            }
+        }
+
+        delete vertices;
+        vertices = nullptr;
+    }
+
 	printf("||--- Tile cleared ---||\n");
 }

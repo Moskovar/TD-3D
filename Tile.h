@@ -2,8 +2,6 @@
 #include <vector>
 #include "uti.hpp"
 
-#define TILE_SIZE 32
-
 class Tile
 {
 	public:

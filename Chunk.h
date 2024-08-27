@@ -3,8 +3,6 @@
 #include "uti.hpp"
 #include "LargeTile.h"
 
-#define CHUNK_ARR_SIZE 2 //2x2
-
 class Chunk
 {
 public:
