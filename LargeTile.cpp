@@ -57,7 +57,7 @@ LargeTile::LargeTile(int y, int x, int yChunk, int xChunk, std::string heightmap
                     globalX = x + cx * TILE_SIZE;
                 int pixelIdx = (globalY * LARGETILE_SIZE + globalX) * 4; // 4 pour RGBA
                 GLfloat heightValue = image[pixelIdx];
-
+                //heightValue = 0.0f;
                 //à améliorer c'est carrément bancale mais ça dépanne le temps
                 if(globalX == 0 || globalY == 0)//à vérifier dynamiquement au chargement des Larges tuiles
                 {
@@ -115,7 +115,7 @@ void LargeTile::setJunctions()
     {
         for (int j = 0; j < LARGETILE_ARR_SIZE; ++j)//On parcourt chaque rangée de tuiles
         {
-            for (int y = 0; y < JUNCTION_VERTICES_SIZE - 1; y += 2)//On parcourt chaque jointure (une jointure = 2 rangées de vertices)
+            for (int y = 0; y < LT_JUNCTION_VERTICES_SIZE - 1; y += 2)//On parcourt chaque jointure (une jointure = 2 rangées de vertices)
             {
                 for (int x = 0; x < TILE_SIZE; ++x)//On parcourt chaque vertex
                 {
@@ -124,12 +124,12 @@ void LargeTile::setJunctions()
 
                     if (i == 0)
                     {
-                        vertex1 = tiles[ y / 2     ][j].getPVertex(31, x);
+                        vertex1 = tiles[ y / 2     ][j].getPVertex(TILE_SIZE - 1, x);
                         vertex2 = tiles[(y / 2) + 1][j].getPVertex(0, x);
                     }
                     else if (i == 1)
                     {
-                        vertex1 = tiles[j][y / 2].getPVertex(x, 31);
+                        vertex1 = tiles[j][y / 2].getPVertex(x, TILE_SIZE - 1);
                         vertex2 = tiles[j][(y / 2) + 1].getPVertex(x, 0);
                     }
 
@@ -162,15 +162,15 @@ void LargeTile::setJunctions()
     //--- On fait le joint du coin de chaque 4 tuiles ---//
     for(int x = 0; x < LARGETILE_ARR_SIZE - 1; ++x)//On parcourt les tuiles sur x
     {
-        for (int y = 0; y < JUNCTION_VERTICES_SIZE - 1; y += 2)//On parcourt les joints sur y (un joint = 2 rangée de vertices)
+        for (int y = 0; y < LT_JUNCTION_VERTICES_SIZE - 1; y += 2)//On parcourt les joints sur y (un joint = 2 rangée de vertices)
         {
             //triangle de droite
-            v_indices.push_back(junction_vertices[0][x][y + 1][31].indice);
-            v_indices.push_back(junction_vertices[0][x][y][31].indice);
+            v_indices.push_back(junction_vertices[0][x][y + 1][TILE_SIZE - 1].indice);
+            v_indices.push_back(junction_vertices[0][x][y][TILE_SIZE - 1].indice);
             v_indices.push_back(junction_vertices[0][x + 1][y][0].indice);
 
             //triangle de gauche                  
-            v_indices.push_back(junction_vertices[0][x][y + 1][31].indice);
+            v_indices.push_back(junction_vertices[0][x][y + 1][TILE_SIZE - 1].indice);
             v_indices.push_back(junction_vertices[0][x + 1][y + 1][0].indice);
             v_indices.push_back(junction_vertices[0][x + 1][y][0].indice);
         }

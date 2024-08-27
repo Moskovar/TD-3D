@@ -108,5 +108,5 @@ Tile::~Tile()
         vertices = nullptr;
     }
 
-	printf("||--- Tile cleared ---||\n");
+	//printf("||--- Tile cleared ---||\n");
 }

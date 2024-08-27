@@ -18,6 +18,8 @@ public:
 	void setX(int x)			{ this->x = x;					}
 	void setXY(int x, int y)	{ this->x = x;	this->y = y;	}
 
+	void setJunctions();
+
 	void render();
 
 	~Chunk();
@@ -27,6 +29,7 @@ private:
 
 	int x = 0, y = 0;
 	LargeTile*** largeTiles = nullptr;
+	HeightMapVertex junction_vertices[2][CHUNK_ARR_SIZE][CK_JUNCTION_VERTICES_SIZE][LARGETILE_SIZE];//[axes y et x][nombre de lignes et de colonnes][nombre de côté pour les jointures (2 côté pour 1 jointure)][nombre de vertices par côté]
 
 	std::vector<HeightMapVertex> v_vertices = {};
 	std::vector<unsigned int>	 v_indices = {};

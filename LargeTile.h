@@ -14,8 +14,10 @@ class LargeTile
 		LargeTile(int y, int x, int yChunk, int xChunk, std::string heightMapName, std::string textureName);
 
 		//--- Getters ---//
-		Tile getTile(int y, int x) { return tiles[y][x]; }
-		HeightMapVertex getVertex(int y, int x) { return tiles[y / TILE_SIZE][x / TILE_SIZE].getVertex(y % TILE_SIZE, x % TILE_SIZE); }
+		int getX()								{ return x;																				}
+		int getY()								{ return y;																				}
+		Tile getTile(int y, int x)				{ return tiles[y][x];																	}
+		HeightMapVertex getVertex(int y, int x) { return tiles[y / TILE_SIZE][x / TILE_SIZE].getVertex(y % TILE_SIZE, x % TILE_SIZE);	}
 
 		void render();
 
@@ -29,7 +31,7 @@ class LargeTile
 		GLuint VAO, VBO, IBO;
 
 		Tile tiles[LARGETILE_ARR_SIZE][LARGETILE_ARR_SIZE];
-		HeightMapVertex junction_vertices[2][LARGETILE_ARR_SIZE][JUNCTION_VERTICES_SIZE][TILE_SIZE];//2 -> 0 = les jointures y et 1 = les jointures x
+		HeightMapVertex junction_vertices[2][LARGETILE_ARR_SIZE][LT_JUNCTION_VERTICES_SIZE][TILE_SIZE];//[axes y et x][nombre de lignes et de colonnes][nombre de côté pour les jointures (2 côté pour 1 jointure)][nombre de vertices par côté]
 																		  
 		std::vector<HeightMapVertex> v_vertices = {};
 		std::vector<unsigned int>	 v_indices	= {};

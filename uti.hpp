@@ -12,13 +12,21 @@
 
 #define TILE_SIZE 32
 
-#define LARGETILE_SIZE			512
-#define LARGETILE_ARR_SIZE		16
-#define JUNCTION_VERTICES_SIZE	2 * (LARGETILE_ARR_SIZE - 1) //* 2 car chaque jointure prendre les vertices haut d'une tuile et bas de la suivante (donc pas réutilisable d'une jointure à l'autre)
-															//Il y a TILE_SIZE - 1 joint à faire sur l'axe z (y du tableau) | y: nombre de Tile, x: nombre de vertex sur une rangée X d'une Tile	
+#define LARGETILE_SIZE				512
+#define LARGETILE_ARR_SIZE			16
+
 #define CHUNK_ARR_SIZE 2 //2x2
 
 #define MAP_ARR_SIZE 2 //2x2
+
+//nombre de side pour les jointures dans LT (par paires)		 //* 2 car chaque jointure prendre les vertices haut d'une tuile et bas de la suivante (donc pas réutilisable d'une jointure à l'autre)
+#define LT_JUNCTION_VERTICES_SIZE	2 * (LARGETILE_ARR_SIZE - 1)//Il y a TILE_SIZE - 1 joint à faire sur l'axe z (y du tableau) | y: nombre de Tile, x: nombre de vertex sur une rangée X d'une Tile	
+																
+//nombre de side pour les jointures dans CK (par paires)
+#define CK_JUNCTION_VERTICES_SIZE	2 * (CHUNK_ARR_SIZE - 1)
+
+//nombre de side pour les jointures dans MP (par paires)
+#define MP_JUNCTION_VERTICES_SIZE	2 * (MAP_ARR_SIZE - 1)
 
 struct AABB
 {
