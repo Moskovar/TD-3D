@@ -2,9 +2,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-Texture::Texture(const char* filePath)
+Texture::Texture(std::string filePath)
 {
-	this->filePath = filePath;
+	this->filePath = filePath.c_str();
     // Crée une variable pour stocker l'ID de la texture
 
     // Génère une texture et stocke son ID dans la variable texture
@@ -14,7 +14,7 @@ Texture::Texture(const char* filePath)
     glBindTexture(GL_TEXTURE_2D, textureID);
 
     // Utilise stb_image pour charger l'image de la texture depuis le chemin spécifié
-    unsigned char* data = stbi_load(filePath, &width, &height, &nrChannels, 0);
+    unsigned char* data = stbi_load(this->filePath, &width, &height, &nrChannels, 0);
 
     // Vérifie si l'image a été chargée avec succès
     if (data)

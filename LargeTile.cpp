@@ -1,25 +1,31 @@
 #include "LargeTile.h"
 
-LargeTile::LargeTile(int x, int y, const char* heightmapPath, const char* texturePath)
+LargeTile::LargeTile(int y, int x, std::string heightmapName, std::string textureName)
 {
-	this->x = x;
 	this->y = y;
+	this->x = x;
 
-    this->texture = new Texture(texturePath);
+    int largeTileGlobalY = y * LARGETILE_SIZE,
+        largeTileGlobalX = x * LARGETILE_SIZE;
+
+    this->texture = new Texture("textures/" + textureName);
 
     const char* err = NULL;
     int width, height;
     float* image;
+    std::string heightmapPath = "heightmaps/" + heightmapName;
 
-    int ret = IsEXR(heightmapPath);
+    int ret = IsEXR(heightmapPath.c_str());
     if (ret != TINYEXR_SUCCESS)
     {
-        fprintf(stderr, "File not found or given file is not a EXR format. code %d\n", ret);
+        fprintf(stderr, "File [ %s ] not found or given file is not a EXR format. code %d\n", heightmapPath.c_str(), ret);
         exit(-1);
     }
     else std::cout << "ok its exr file" << std::endl;
 
-    ret = LoadEXR(&image, &width, &height, heightmapPath, &err);
+    
+
+    ret = LoadEXR(&image, &width, &height, heightmapPath.c_str(), &err);
     if (ret != TINYEXR_SUCCESS) {
         if (err)
         {
@@ -47,8 +53,8 @@ LargeTile::LargeTile(int x, int y, const char* heightmapPath, const char* textur
             for (int x = 0; x < TILE_SIZE; ++x)
             {
                 // Calcul de l'index dans l'image globale
-                int globalX = x + cx * TILE_SIZE;
-                int globalY = y + cy * TILE_SIZE;
+                int globalY = y + cy * TILE_SIZE,
+                    globalX = x + cx * TILE_SIZE;
                 int pixelIdx = (globalY * LARGETILE_SIZE + globalX) * 4; // 4 pour RGBA
                 GLfloat heightValue = image[pixelIdx];
 
@@ -77,10 +83,10 @@ LargeTile::LargeTile(int x, int y, const char* heightmapPath, const char* textur
 
                 glm::vec2 texCoords((GLfloat)globalX / (GLfloat)(LARGETILE_SIZE - 1), (GLfloat)globalY / (GLfloat)(LARGETILE_SIZE - 1));//Attribution des coordonnées de textures
 
-                //glm::vec2 texCoords(globalX, globalY);
-                //std::cout << u << " ... " << v << std::endl;
+                globalY += largeTileGlobalY;//ajout du offset de la LargeTile
+                globalX += largeTileGlobalX;//Après récup de la heightValue car la heightValue se situe dans la heightmap de la LargeTile et pas dans le chunk
 
-                tiles[cy][cx].setVertex(y % TILE_SIZE, x % TILE_SIZE, { (GLfloat)x + (GLfloat)(cx * TILE_SIZE), heightValue * MAX_HEIGHT, (GLfloat)y + (GLfloat)(cy * TILE_SIZE), indice, texCoords});
+                tiles[cy][cx].setVertex(y % TILE_SIZE, x % TILE_SIZE, { (GLfloat) globalX, heightValue * MAX_HEIGHT, (GLfloat)globalY, indice, texCoords});
                 indice++;
             }
         }
@@ -196,7 +202,7 @@ void LargeTile::setJunctions()
 
 void LargeTile::render()
 {
-    texture->useTexture();
+    if(texture) texture->useTexture();
 
     for (int y = 0; y < LARGETILE_ARR_SIZE; ++y)
         for (int x = 0; x < LARGETILE_ARR_SIZE; ++x)

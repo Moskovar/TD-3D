@@ -13,6 +13,7 @@ public:
 	//--- Getters ---//
 	int getX() { return x; }
 	int getY() { return y; }
+	LargeTile* getLargeTile(int y, int x) { return largeTiles[y][x]; }
 
 	//--- Setters ---//
 	void setY(int y)			{ this->y = y;					}
@@ -27,7 +28,7 @@ private:
 	GLuint VAO, VBO, IBO;
 
 	int x = 0, y = 0;
-	LargeTile largeTiles[CHUNK_ARR_SIZE][CHUNK_ARR_SIZE];
+	LargeTile*** largeTiles = nullptr;
 
 	std::vector<HeightMapVertex> v_vertices = {};
 	std::vector<unsigned int>	 v_indices = {};

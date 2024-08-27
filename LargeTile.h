@@ -16,8 +16,7 @@
 class LargeTile
 {
 	public:
-		LargeTile() {};
-		LargeTile(int x, int y, const char* heightmapPath, const char* texturePath);
+		LargeTile(int y, int x, std::string heightMapName, std::string textureName);
 
 		//--- Getters ---//
 		Tile getTile(int y, int x) { return tiles[y][x]; }

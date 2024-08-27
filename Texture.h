@@ -7,7 +7,7 @@ class Texture
 {
 	public:
 		Texture() {}
-		Texture(const char* filePath);
+		Texture(std::string filePath);
 		~Texture();
 
 		void useTexture();
