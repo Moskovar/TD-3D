@@ -8,16 +8,16 @@
 #include "Shader.h"
 
 #include "PhysicsEngine.h"
-#include "LargeTile.h"
+#include "Map.h"
 
 #include "stb_image.h"
 
 #include <tinyexr.h>
 
-Window* window = nullptr;
-Camera* camera = nullptr;
-LargeTile* largeTile = nullptr;
-PhysicsEngine physics;
+Window*         window  = nullptr;
+Camera*         camera  = nullptr;
+Game::Map*      world = nullptr;
+PhysicsEngine   physics;
 //float r = 0.5f, g = 0.5f, b = 0.5f;
 std::map<char, bool> keyPressed;
 std::map<int , bool> mousePressed;
@@ -26,21 +26,30 @@ std::vector<Entity*> entities;
 
 bool checkHeightMap(Element* element, glm::vec3 nextElementPos)//revoir les points comptés dans l'interpolation
 {
-    if (nextElementPos.x >= 0 && nextElementPos.x < 512 && nextElementPos.z >= 0 && nextElementPos.z < 512)//Si le joueur est dans la heightmap
-    {
-        GLfloat interpolatedY = 0.0f, y1 = 0.0f, y2 = 0.0f, y3 = 0.0f, y4 = 0.0f;
+    int chunkLength = (LARGETILE_SIZE * CHUNK_ARR_SIZE);
 
-        y1 = largeTile->getVertex(nextElementPos.z + 1, nextElementPos.x).y;        y2 = largeTile->getVertex(nextElementPos.z + 1, nextElementPos.x + 1).y;
-        y3 = largeTile->getVertex(nextElementPos.z, nextElementPos.x).y;            y4 = largeTile->getVertex(nextElementPos.z, nextElementPos.x + 1).y;
+    Chunk* chunk = world->getChunk((int)element->getPosition().z / chunkLength, (int)element->getPosition().x / chunkLength);
 
-        interpolatedY = (y1 + y2 + y3 + y4) / 4.0f;
+    LargeTile* lt = chunk->getLargeTile(((int)element->getPosition().z % chunkLength) / LARGETILE_SIZE, ((int)element->getPosition().x % chunkLength) / LARGETILE_SIZE);
 
-        if (interpolatedY - nextElementPos.y > 2) return false;
+    nextElementPos.x = (int)nextElementPos.x % LARGETILE_SIZE;
+    nextElementPos.z = (int)nextElementPos.z % LARGETILE_SIZE;
 
-        if (nextElementPos.y < interpolatedY) element->moveUp(interpolatedY);
+    int nextZ = (nextElementPos.z < LARGETILE_SIZE - 1) ? nextElementPos.z + 1 : nextElementPos.z - 1,
+        nextX = (nextElementPos.x < LARGETILE_SIZE - 1) ? nextElementPos.x + 1 : nextElementPos.x - 1;
 
-        return true;
-    }
+    GLfloat interpolatedY = 0.0f, y1 = 0.0f, y2 = 0.0f, y3 = 0.0f, y4 = 0.0f;
+
+    y1 = lt->getVertex(nextZ, nextElementPos.x).y;                  y2 = lt->getVertex(nextZ, nextX).y;
+    y3 = lt->getVertex(nextElementPos.z, nextElementPos.x).y;       y4 = lt->getVertex(nextElementPos.z, nextX).y;
+
+    interpolatedY = (y1 + y2 + y3 + y4) / 4.0f;
+
+    if (interpolatedY - nextElementPos.y > 2) return false;
+
+    if (nextElementPos.y < interpolatedY) element->moveUp(interpolatedY);
+
+    return true;
 }
 
 void applyGravity(Element* element, GLfloat deltaTime)
@@ -49,27 +58,37 @@ void applyGravity(Element* element, GLfloat deltaTime)
 
     glm::vec3* elementPos = element->getPositionP();
 
-    if (elementPos->x >= 0 && elementPos->x < 512 && elementPos->z >= 0 && elementPos->z < 512)//Si le joueur est dans la heightmap
+    int chunkLength = (LARGETILE_SIZE * CHUNK_ARR_SIZE);
+
+    Chunk*     chunk = world->getChunk(    (int)element->getPosition().z / chunkLength, (int)element->getPosition().x / chunkLength);
+    LargeTile* lt    = chunk->getLargeTile((int)element->getPosition().z / chunkLength, (int)element->getPosition().x / chunkLength);
+
+    int z = (int)elementPos->z % LARGETILE_SIZE,
+        x = (int)elementPos->x % LARGETILE_SIZE;
+
+    int nextZ = (z < LARGETILE_SIZE - 1) ? z + 1 : z - 1,
+        nextX = (x < LARGETILE_SIZE - 1) ? x + 1 : x - 1;
+
+    //std::cout << "NextZ: " << nextZ << " ... " << "NextX: " << nextX << std::endl;
+
+    GLfloat interpolatedGroundY = 0.0f, y1 = 0.0f, y2 = 0.0f, y3 = 0.0f, y4 = 0.0f;
+
+    y1 = lt->getVertex(nextZ, x).y;      y2 = lt->getVertex(nextZ, nextX).y;
+    y3 = lt->getVertex(z    , x).y;      y4 = lt->getVertex(z    , nextX).y;
+
+    interpolatedGroundY = (y1 + y2 + y3 + y4) / 4.0f;
+
+    if(elementPos->y > interpolatedGroundY) //Si l'élément n'est pas au sol on le fait tomber
     {
-        GLfloat interpolatedGroundY = 0.0f, y1 = 0.0f, y2 = 0.0f, y3 = 0.0f, y4 = 0.0f;
+        element->fall(deltaTime);
+        element->setFall(true);
+    }
 
-        y1 = largeTile->getVertex(elementPos->z + 1, elementPos->x).y;      y2 = largeTile->getVertex(elementPos->z + 1, elementPos->x + 1).y;
-        y3 = largeTile->getVertex(elementPos->z    , elementPos->x).y;      y4 = largeTile->getVertex(elementPos->z    , elementPos->x + 1).y;
-
-        interpolatedGroundY = (y1 + y2 + y3 + y4) / 4.0f;
-
-        if(elementPos->y > interpolatedGroundY) //Si l'élément n'est pas au sol on le fait tomber
-        {
-            element->fall(deltaTime);
-            element->setFall(true);
-        }
-
-        //Si l'élément est tomber plus bas (ou même niveau) que le sol, on le remet au niveau du sol et on lui enlève son état de chute
-        if (elementPos->y <= interpolatedGroundY)
-        {
-            elementPos->y = interpolatedGroundY;
-            element->setFall(false);
-        }
+    //Si l'élément est tomber plus bas (ou même niveau) que le sol, on le remet au niveau du sol et on lui enlève son état de chute
+    if (elementPos->y <= interpolatedGroundY)
+    {
+        elementPos->y = interpolatedGroundY;
+        element->setFall(false);
     }
 }
 
@@ -178,6 +197,7 @@ void processMousePressed(Window* window, float deltaTime)
 int main()
 {
     window = new Window(800, 600);
+    glfwSetWindowPos(window->getGLFWWindow(), 2100, 200);
 
     entities.push_back(new Entity(0, glm::vec3(256.0f, 5.0f, 256.0f), "models/fbx/doublecube.fbx"));
     entities.push_back(new Entity(1, glm::vec3(300.0f, 6.5f, 300.0f), "models/fbx/doublecube.fbx"));
@@ -204,11 +224,13 @@ int main()
     if (glIsEnabled(GL_DEPTH_TEST)) std::cout << "Depth test is enabled."     << std::endl;
     else                            std::cout << "Depth test is not enabled." << std::endl;
 
-    largeTile = new LargeTile(0, 0, "heightmaps/h1.exr", "textures/h1.png");
+    world = new Game::Map();
 
     auto  startTime    = std::chrono::high_resolution_clock::now();
     float currentFrame = 0, animationTime = 0, timeSinceStart = 0,
           lastFrame    = glfwGetTime(), deltaTime = 0, now = 0;
+
+    Texture textureTemp("textures/basic_texture_1.png");
     
     //Boucle de rendu
     while (!glfwWindowShouldClose(glfwWindow))
@@ -256,6 +278,8 @@ int main()
         // Effacer le buffer de couleur et de profondeur
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        textureTemp.useTexture();
+
         // Utiliser le programme de shaders
         shaders.use();
         
@@ -267,9 +291,9 @@ int main()
         simple_shaders.use();
         glUniformMatrix4fv(simple_shaders.modelLoc, 1, GL_FALSE, glm::value_ptr(modelmtx));
         
-        largeTile->render();
-        
-
+        //largeTile->render();
+        //chunk->render();
+        world->render();
 
         //--- Reset des mouvements souris dans la fenêtre pour traiter les prochains ---//
         window->resetXYChange();
@@ -298,6 +322,12 @@ int main()
             delete e;
             e = nullptr;
         }
+
+    if (world)
+    {
+        delete world;
+        world = nullptr;
+    }
 
     return 0;
 }
