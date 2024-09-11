@@ -2,13 +2,24 @@
 
 LargeTile::LargeTile(int y, int x, int yChunk, int xChunk, std::string heightmapName, std::string textureName)
 {
-	this->y = y;
-	this->x = x;
+	this->y = y;// * (yChunk + 1);
+	this->x = x;// * (xChunk + 1);
 
     int largeTileGlobalY = y * LARGETILE_SIZE + yChunk * CHUNK_ARR_SIZE * LARGETILE_SIZE,//On ajoute le offset du chunk dans la map également
         largeTileGlobalX = x * LARGETILE_SIZE + xChunk * CHUNK_ARR_SIZE * LARGETILE_SIZE;
 
-    this->texture = new Texture("textures/" + textureName);
+    std::cout << " y: " << y << " ... " << "x: " << x << std::endl;
+
+    if(y % 2 == 0 && x % 2 == 0 || y % 2 == 1 && x % 2 == 1)  
+    {
+        this->texture = new Texture("textures/" + textureName);
+        printf("h1 loaded !\n");
+    }
+    else            
+    {
+        this->texture = new Texture("textures/" + std::string("h2.png"));
+        printf("h2 loaded !\n");
+    }
 
     const char* err = NULL;
     int width, height;
