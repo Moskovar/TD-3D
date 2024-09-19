@@ -11,6 +11,7 @@ class Texture
 		~Texture();
 
 		void useTexture();
+		void useTexture(GLenum textureUnit);
 
 	private:
 		GLuint textureID = 0;

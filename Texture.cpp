@@ -87,3 +87,9 @@ void Texture::useTexture()
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textureID);
 }
+
+void Texture::useTexture(GLenum textureUnit)
+{
+    glActiveTexture(textureUnit);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+}

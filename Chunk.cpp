@@ -1,6 +1,6 @@
 #include "Chunk.h"
 
-Chunk::Chunk(int x, int y)
+Chunk::Chunk(int x, int y, GLuint shaderProgram)
 {
     this->y = y;
     this->x = x;
@@ -11,7 +11,7 @@ Chunk::Chunk(int x, int y)
     {
         largeTiles[y] = new LargeTile * [CHUNK_ARR_SIZE];
         for (int x = 0; x < CHUNK_ARR_SIZE; ++x)
-            largeTiles[y][x] = new LargeTile(y, x, this->y, this->x, "h1.exr", "h1.png");
+            largeTiles[y][x] = new LargeTile(y, x, this->y, this->x, "h1.exr", "h1.png", shaderProgram);
     }
 
 	glGenVertexArrays(1, &VAO);

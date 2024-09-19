@@ -11,7 +11,7 @@
 class LargeTile
 {
 	public:
-		LargeTile(int y, int x, int yChunk, int xChunk, std::string heightMapName, std::string textureName);
+		LargeTile(int y, int x, int yChunk, int xChunk, std::string heightMapName, std::string textureName, GLuint shaderProgram);
 
 		//--- Getters ---//
 		int getX()								{ return x;																				}
@@ -26,7 +26,9 @@ class LargeTile
 	private:
 		int x = 0, y = 0;
 
-		Texture* texture = nullptr;
+		Texture* texture		= nullptr;
+		Texture* texture1		= nullptr;
+		GLuint   shaderProgram	= 0;
 
 		GLuint VAO, VBO, IBO;
 

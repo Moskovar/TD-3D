@@ -1,9 +1,11 @@
 #include "LargeTile.h"
 
-LargeTile::LargeTile(int y, int x, int yChunk, int xChunk, std::string heightmapName, std::string textureName)
+LargeTile::LargeTile(int y, int x, int yChunk, int xChunk, std::string heightmapName, std::string textureName, GLuint shaderProgram)
 {
 	this->y = y;// * (yChunk + 1);
 	this->x = x;// * (xChunk + 1);
+
+    this->shaderProgram = shaderProgram;
 
     int largeTileGlobalY = y * LARGETILE_SIZE + yChunk * CHUNK_ARR_SIZE * LARGETILE_SIZE,//On ajoute le offset du chunk dans la map également
         largeTileGlobalX = x * LARGETILE_SIZE + xChunk * CHUNK_ARR_SIZE * LARGETILE_SIZE;
@@ -14,11 +16,15 @@ LargeTile::LargeTile(int y, int x, int yChunk, int xChunk, std::string heightmap
     {
         this->texture = new Texture("textures/" + textureName);
         printf("h1 loaded !\n");
+        this->texture1 = new Texture("textures/" + std::string("h2.png"));
+        printf("h2 loaded !\n");
     }
     else            
     {
         this->texture = new Texture("textures/" + std::string("h2.png"));
         printf("h2 loaded !\n");
+        this->texture1 = new Texture("textures/" + textureName);
+        printf("h1 loaded !\n");
     }
 
     const char* err = NULL;
@@ -213,7 +219,18 @@ void LargeTile::setJunctions()
 
 void LargeTile::render()
 {
-    if(texture) texture->useTexture();
+
+    if (texture)
+    {
+        texture->useTexture(GL_TEXTURE0);
+        glUniform1i(glGetUniformLocation(shaderProgram, "texture0"), 0);
+    }
+
+    if (texture1)
+    {
+        texture1->useTexture(GL_TEXTURE1);
+        glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 1);
+    }
 
     for (int y = 0; y < LARGETILE_ARR_SIZE; ++y)
         for (int x = 0; x < LARGETILE_ARR_SIZE; ++x)

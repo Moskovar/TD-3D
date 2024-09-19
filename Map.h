@@ -6,7 +6,7 @@ namespace Game
 	class Map
 	{
 		public:
-			Map();
+			Map(GLuint shaderProgram);
 
 			Chunk* getChunk(int y, int x) { return chunks[y][x]; }
 

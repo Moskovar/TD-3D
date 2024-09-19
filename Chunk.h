@@ -6,7 +6,7 @@
 class Chunk
 {
 public:
-	Chunk(int x, int y);
+	Chunk(int x, int y, GLuint shaderProgram);
 
 	//--- Getters ---//
 	int getX() { return x; }

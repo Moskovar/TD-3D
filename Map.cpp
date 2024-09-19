@@ -1,6 +1,6 @@
 #include "Map.h"
 
-Game::Map::Map()
+Game::Map::Map(GLuint shaderProgram)
 {
 	chunks = new Chunk * *[MAP_ARR_SIZE];
 
@@ -9,7 +9,7 @@ Game::Map::Map()
         chunks[y] = new Chunk * [MAP_ARR_SIZE];
 
         for (int x = 0; x < MAP_ARR_SIZE; ++x)
-            chunks[y][x] = new Chunk(y, x);
+            chunks[y][x] = new Chunk(y, x, shaderProgram);
     }
 
     glGenVertexArrays(1, &VAO);
