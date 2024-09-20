@@ -1,16 +1,22 @@
 #include "Map.h"
 
-Game::Map::Map(GLuint shaderProgram)
+Game::Map::Map(std::map<std::string, Shader>& shaders, Chunk*** chunks)
 {
-	chunks = new Chunk * *[MAP_ARR_SIZE];
+    //this->junctions_shaders = &shaders[MAP_JUNCTIONS_SHADERS];
 
-	for (int y = 0; y < MAP_ARR_SIZE; ++y)
+    if (!chunks)
     {
-        chunks[y] = new Chunk * [MAP_ARR_SIZE];
+        this->chunks = new Chunk * *[MAP_ARR_SIZE];
 
-        for (int x = 0; x < MAP_ARR_SIZE; ++x)
-            chunks[y][x] = new Chunk(y, x, shaderProgram);
+        for (int y = 0; y < MAP_ARR_SIZE; ++y)
+        {
+            this->chunks[y] = new Chunk * [MAP_ARR_SIZE];
+
+            for (int x = 0; x < MAP_ARR_SIZE; ++x)
+                this->chunks[y][x] = new Chunk(y, x, shaders);
+        }
     }
+    else this->chunks = chunks;
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);

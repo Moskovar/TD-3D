@@ -1,31 +1,35 @@
 #include "LargeTile.h"
 
-LargeTile::LargeTile(int y, int x, int yChunk, int xChunk, std::string heightmapName, std::string textureName, GLuint shaderProgram)
+LargeTile::LargeTile(int y, int x, int yChunk, int xChunk, std::string heightmapName, std::string textureName, std::map<std::string, Shader>& shaders)
 {
 	this->y = y;// * (yChunk + 1);
 	this->x = x;// * (xChunk + 1);
 
-    this->shaderProgram = shaderProgram;
+    this->shaders        = &shaders[LARGETILES_SHADERS];
+    this->shaderProgram  = this->shaders->getShaderProgram();
 
     int largeTileGlobalY = y * LARGETILE_SIZE + yChunk * CHUNK_ARR_SIZE * LARGETILE_SIZE,//On ajoute le offset du chunk dans la map également
         largeTileGlobalX = x * LARGETILE_SIZE + xChunk * CHUNK_ARR_SIZE * LARGETILE_SIZE;
 
     std::cout << " y: " << y << " ... " << "x: " << x << std::endl;
 
-    if(y % 2 == 0 && x % 2 == 0 || y % 2 == 1 && x % 2 == 1)  
-    {
-        this->texture = new Texture("textures/" + textureName);
-        printf("h1 loaded !\n");
-        this->texture1 = new Texture("textures/" + std::string("h2.png"));
-        printf("h2 loaded !\n");
-    }
-    else            
-    {
-        this->texture = new Texture("textures/" + std::string("h2.png"));
-        printf("h2 loaded !\n");
-        this->texture1 = new Texture("textures/" + textureName);
-        printf("h1 loaded !\n");
-    }
+    //if(y % 2 == 0 && x % 2 == 0 || y % 2 == 1 && x % 2 == 1)  
+    //{
+    //    this->texture = new Texture("textures/" + textureName);
+    //    printf("h1 loaded !\n");
+    //    this->texture1 = new Texture("textures/" + std::string("h2.png"));
+    //    printf("h2 loaded !\n");
+    //}
+    //else            
+    //{
+    //    this->texture = new Texture("textures/" + std::string("h2.png"));
+    //    printf("h2 loaded !\n");
+    //    this->texture1 = new Texture("textures/" + textureName);
+    //    printf("h1 loaded !\n");
+    //}
+
+    this->texture = new Texture("textures/" + textureName);
+    this->texture1 = new Texture("textures/h1.png");
 
     const char* err = NULL;
     int width, height;
@@ -123,6 +127,8 @@ LargeTile::LargeTile(int y, int x, int yChunk, int xChunk, std::string heightmap
     setJunctions();
 
     free(image);
+
+    if (yChunk == 0 && xChunk == 0 && y == 0 && x == 0) std::cout << "\n\n\n VERTEX 0 0 : " << tiles[0][0].getVertex(1, 1).z << "\n\n\n" << std::endl;
 }
 
 void LargeTile::setJunctions()
@@ -219,17 +225,12 @@ void LargeTile::setJunctions()
 
 void LargeTile::render()
 {
+    shaders->use();
 
     if (texture)
     {
         texture->useTexture(GL_TEXTURE0);
         glUniform1i(glGetUniformLocation(shaderProgram, "texture0"), 0);
-    }
-
-    if (texture1)
-    {
-        texture1->useTexture(GL_TEXTURE1);
-        glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 1);
     }
 
     for (int y = 0; y < LARGETILE_ARR_SIZE; ++y)

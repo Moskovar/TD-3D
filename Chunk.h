@@ -6,7 +6,7 @@
 class Chunk
 {
 public:
-	Chunk(int x, int y, GLuint shaderProgram);
+	Chunk(int x, int y, std::map<std::string, Shader>& shaders, LargeTile*** largesTiles = nullptr);
 
 	//--- Getters ---//
 	int getX() { return x; }
@@ -26,6 +26,8 @@ public:
 
 private:
 	GLuint VAO, VBO, IBO;
+
+	Shader* junction_shaders = nullptr;
 
 	int x = 0, y = 0;
 	LargeTile*** largeTiles = nullptr;

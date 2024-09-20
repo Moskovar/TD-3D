@@ -209,9 +209,10 @@ int main()
     glm::mat4* view = camera->getViewMatrixP();
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.5f, 500.0f);
 
-    //--- Création des shaders ---//    
-    Shader shaders        = Shader("shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl", view, &projection);
-    Shader simple_shaders = Shader("shaders/simple_vertex_shader.glsl", "shaders/simple_fragment_shader.glsl", view, &projection);
+    //--- Création des shaders ---//
+    std::map<std::string, Shader> shaders;
+    shaders["AnimatedObject"] = Shader("shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl", view, &projection);
+    shaders[LARGETILES_SHADERS] = Shader("shaders/map/largetile_vertex_shader.glsl", "shaders/map/largetile_fragment_shader.glsl", view, &projection);
 
     GLFWwindow* glfwWindow = window->getGLFWWindow();
     glfwSetKeyCallback(glfwWindow, keyCallback);
@@ -224,7 +225,33 @@ int main()
     if (glIsEnabled(GL_DEPTH_TEST)) std::cout << "Depth test is enabled."     << std::endl;
     else                            std::cout << "Depth test is not enabled." << std::endl;
 
-    world = new Game::Map(simple_shaders.getShaderProgram());
+    Chunk*** chunks = new Chunk * *[MAP_ARR_SIZE];
+    for (int y = 0; y < MAP_ARR_SIZE; ++y)
+    {
+        chunks[y] = new Chunk * [MAP_ARR_SIZE];
+
+        for (int x = 0; x < MAP_ARR_SIZE; ++x)
+            chunks[y][x] = new Chunk(y, x, shaders);
+    }
+
+    //Chunk 0 0
+    LargeTile*** largeTiles = new LargeTile * *[CHUNK_ARR_SIZE];
+
+    for (int y = 0; y < CHUNK_ARR_SIZE; ++y)
+    {
+        largeTiles[y] = new LargeTile * [CHUNK_ARR_SIZE];
+        //for (int x = 0; x < CHUNK_ARR_SIZE; ++x)
+            //largeTiles[y][x] = new LargeTile(y, x, this->y, this->x, "h1.exr", "h1.png", shaderProgram);
+    }
+
+    largeTiles[0][0] = new LargeTile(0, 0, 0, 0, "h1.exr", "h1.png", shaders);
+    largeTiles[1][0] = new LargeTile(1, 0, 0, 0, "h1.exr", "h2.png", shaders);
+    largeTiles[0][1] = new LargeTile(0, 1, 0, 0, "h1.exr", "h3.png", shaders);
+    largeTiles[1][1] = new LargeTile(1, 1, 0, 0, "h1.exr", "h4.png", shaders);
+
+    world = new Game::Map(shaders, chunks);
+
+    world->setChunk(0, 0, new Chunk(0, 0, shaders, largeTiles));
 
     auto  startTime    = std::chrono::high_resolution_clock::now();
     float currentFrame = 0, animationTime = 0, timeSinceStart = 0,
@@ -281,15 +308,15 @@ int main()
         textureTemp.useTexture();
 
         // Utiliser le programme de shaders
-        shaders.use();
+        shaders["AnimatedObject"].use();
         
         for (Entity* e : entities)
-            if(e) e->render(shaders.modelLoc, shaders.bonesTransformsLoc, timeSinceStart);
+            if(e) e->render(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart);
 
         //--- Render terrain ---//
         glm::mat4 modelmtx = glm::mat4(1.0f);
-        simple_shaders.use();
-        glUniformMatrix4fv(simple_shaders.modelLoc, 1, GL_FALSE, glm::value_ptr(modelmtx));
+        shaders[LARGETILES_SHADERS].use();
+        glUniformMatrix4fv(shaders[LARGETILES_SHADERS].modelLoc, 1, GL_FALSE, glm::value_ptr(modelmtx));
         
         //largeTile->render();
         //chunk->render();

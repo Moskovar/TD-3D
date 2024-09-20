@@ -5,6 +5,11 @@
 #include <map>
 #include <string>
 
+//--- Shaders ---//
+#define MAP_JUNCTIONS_SHADERS		"largetiles_shaders"
+#define CHUNKS_JUNCTIONS_SHADERS	"largetiles_shaders"
+#define LARGETILES_SHADERS			"largetiles_shaders"
+
 #define MAX_HEIGHT	255
 #define TURN_SPEED	100		//character turn speed
 #define FALL_SPEED	25.0f	//character fall speed
@@ -17,7 +22,7 @@
 
 #define CHUNK_ARR_SIZE 2 //2x2
 
-#define MAP_ARR_SIZE 2 //2x2
+#define MAP_ARR_SIZE 2 //2x2 donc Map = 2x2x2x2 LargesTiles -> MAP_ARR_SIZE² * CHUNK_ARR_SIZE² 
 
 //nombre de side pour les jointures dans LT (par paires)		 //* 2 car chaque jointure prendre les vertices haut d'une tuile et bas de la suivante (donc pas réutilisable d'une jointure à l'autre)
 #define LT_JUNCTION_VERTICES_SIZE	2 * (LARGETILE_ARR_SIZE - 1)//Il y a TILE_SIZE - 1 joint à faire sur l'axe z (y du tableau) | y: nombre de Tile, x: nombre de vertex sur une rangée X d'une Tile	

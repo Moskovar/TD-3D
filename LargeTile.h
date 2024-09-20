@@ -3,6 +3,7 @@
 #include <vector>
 #include <cmath>
 
+#include "Shader.h"
 #include "Tile.h"
 #include "Texture.h"
 
@@ -11,7 +12,7 @@
 class LargeTile
 {
 	public:
-		LargeTile(int y, int x, int yChunk, int xChunk, std::string heightMapName, std::string textureName, GLuint shaderProgram);
+		LargeTile(int y, int x, int yChunk, int xChunk, std::string heightMapName, std::string textureName, std::map<std::string, Shader>& shaders);
 
 		//--- Getters ---//
 		int getX()								{ return x;																				}
@@ -26,9 +27,11 @@ class LargeTile
 	private:
 		int x = 0, y = 0;
 
-		Texture* texture		= nullptr;
-		Texture* texture1		= nullptr;
+		Shader*  shaders		= nullptr;
 		GLuint   shaderProgram	= 0;
+
+		Texture* texture		= nullptr;
+		Texture* texture1		= nullptr;//
 
 		GLuint VAO, VBO, IBO;
 
