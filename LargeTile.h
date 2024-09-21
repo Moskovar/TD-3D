@@ -1,4 +1,6 @@
 #pragma once
+#include <GLM/gtc/type_ptr.hpp>
+
 #include <iostream>
 #include <vector>
 #include <cmath>
@@ -20,6 +22,9 @@ class LargeTile
 		Tile getTile(int y, int x)				{ return tiles[y][x];																	}
 		HeightMapVertex getVertex(int y, int x) { return tiles[y / TILE_SIZE][x / TILE_SIZE].getVertex(y % TILE_SIZE, x % TILE_SIZE);	}
 
+		void useTexture(GLuint shaderProgram, GLuint textureUnit = GL_TEXTURE0);
+
+
 		void render();
 
 		~LargeTile();
@@ -31,7 +36,7 @@ class LargeTile
 		GLuint   shaderProgram	= 0;
 
 		Texture* texture		= nullptr;
-		Texture* texture1		= nullptr;//
+		//Texture* texture1		= nullptr;//
 
 		GLuint VAO, VBO, IBO;
 

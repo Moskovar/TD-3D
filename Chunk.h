@@ -25,15 +25,18 @@ public:
 	~Chunk();
 
 private:
-	GLuint VAO, VBO, IBO;
+	//junctions
+	GLuint	VAO, VBO, IBO;
 
-	Shader* junction_shaders = nullptr;
+	Shader* junction_shaders = nullptr, * corners_junction_shaders = nullptr;
+	GLuint	shaderProgram	 = 0;
 
 	int x = 0, y = 0;
 	LargeTile*** largeTiles = nullptr;
 	HeightMapVertex junction_vertices[2][CHUNK_ARR_SIZE][CK_JUNCTION_VERTICES_SIZE][LARGETILE_SIZE];//[axes y et x][nombre de lignes et de colonnes][nombre de côté pour les jointures (2 côté pour 1 jointure)][nombre de vertices par côté]
 
+	//junctions
 	std::vector<HeightMapVertex> v_vertices = {};
-	std::vector<unsigned int>	 v_indices = {};
+	std::vector<unsigned int>	 v_indices  = {};
 };
 

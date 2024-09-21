@@ -211,8 +211,10 @@ int main()
 
     //--- Création des shaders ---//
     std::map<std::string, Shader> shaders;
-    shaders["AnimatedObject"] = Shader("shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl", view, &projection);
-    shaders[LARGETILES_SHADERS] = Shader("shaders/map/largetile_vertex_shader.glsl", "shaders/map/largetile_fragment_shader.glsl", view, &projection);
+    shaders["AnimatedObject"]                = Shader("shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl"                          , view, &projection);
+    shaders[MAP_JUNCTIONS_SHADERS]           = Shader("shaders/map/map_vertex_shader.glsl", "shaders/map/map_fragment_shader.glsl"          , view, &projection);
+    shaders[CHUNKS_JUNCTIONS_SHADERS]        = Shader("shaders/map/map_vertex_shader.glsl", "shaders/map/chunks_fragment_shader.glsl"       , view, &projection);
+    shaders[LARGETILES_SHADERS]              = Shader("shaders/map/map_vertex_shader.glsl", "shaders/map/largetiles_fragment_shader.glsl"   , view, &projection);
 
     GLFWwindow* glfwWindow = window->getGLFWWindow();
     glfwSetKeyCallback(glfwWindow, keyCallback);
@@ -258,6 +260,10 @@ int main()
           lastFrame    = glfwGetTime(), deltaTime = 0, now = 0;
 
     Texture textureTemp("textures/basic_texture_1.png");
+
+    GLint maxTextures;
+    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTextures);
+    std::cout << "Max textures supported: " << maxTextures << std::endl;
     
     //Boucle de rendu
     while (!glfwWindowShouldClose(glfwWindow))
@@ -305,7 +311,7 @@ int main()
         // Effacer le buffer de couleur et de profondeur
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        textureTemp.useTexture();
+        textureTemp.useTexture();//??
 
         // Utiliser le programme de shaders
         shaders["AnimatedObject"].use();
@@ -314,9 +320,9 @@ int main()
             if(e) e->render(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart);
 
         //--- Render terrain ---//
-        glm::mat4 modelmtx = glm::mat4(1.0f);
-        shaders[LARGETILES_SHADERS].use();
-        glUniformMatrix4fv(shaders[LARGETILES_SHADERS].modelLoc, 1, GL_FALSE, glm::value_ptr(modelmtx));
+        //glm::mat4 modelmtx = glm::mat4(1.0f);
+        //shaders[LARGETILES_SHADERS].use();
+        //glUniformMatrix4fv(shaders[LARGETILES_SHADERS].modelLoc, 1, GL_FALSE, glm::value_ptr(modelmtx));
         
         //largeTile->render();
         //chunk->render();

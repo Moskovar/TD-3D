@@ -29,7 +29,7 @@ LargeTile::LargeTile(int y, int x, int yChunk, int xChunk, std::string heightmap
     //}
 
     this->texture = new Texture("textures/" + textureName);
-    this->texture1 = new Texture("textures/h1.png");
+    //this->texture1 = new Texture("textures/h1.png");
 
     const char* err = NULL;
     int width, height;
@@ -78,7 +78,7 @@ LargeTile::LargeTile(int y, int x, int yChunk, int xChunk, std::string heightmap
                     globalX = x + cx * TILE_SIZE;
                 int pixelIdx = (globalY * LARGETILE_SIZE + globalX) * 4; // 4 pour RGBA
                 GLfloat heightValue = image[pixelIdx];
-                //heightValue = 0.0f;
+                heightValue = 0.0f;
                 //à améliorer c'est carrément bancale mais ça dépanne le temps
                 if(globalX == 0 || globalY == 0)//à vérifier dynamiquement au chargement des Larges tuiles
                 {
@@ -223,15 +223,22 @@ void LargeTile::setJunctions()
     glBindVertexArray(0);
 }
 
-void LargeTile::render()
+void LargeTile::useTexture(GLuint shaderProgram, GLuint textureUnit)
 {
-    shaders->use();
-
     if (texture)
     {
-        texture->useTexture(GL_TEXTURE0);
-        glUniform1i(glGetUniformLocation(shaderProgram, "texture0"), 0);
+        texture->useTexture(textureUnit);
+        glUniform1i(glGetUniformLocation(shaderProgram, gl_textures_string[textureUnit].c_str()), textureUnit - GL_TEXTURE0);
     }
+}
+
+void LargeTile::render()
+{
+    glm::mat4 modelmtx = glm::mat4(1.0f);
+    shaders->use();
+    glUniformMatrix4fv(shaders->modelLoc, 1, GL_FALSE, glm::value_ptr(modelmtx));
+
+    useTexture(shaderProgram, GL_TEXTURE0);
 
     for (int y = 0; y < LARGETILE_ARR_SIZE; ++y)
         for (int x = 0; x < LARGETILE_ARR_SIZE; ++x)

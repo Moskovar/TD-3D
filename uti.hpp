@@ -6,9 +6,9 @@
 #include <string>
 
 //--- Shaders ---//
-#define MAP_JUNCTIONS_SHADERS		"largetiles_shaders"
-#define CHUNKS_JUNCTIONS_SHADERS	"largetiles_shaders"
-#define LARGETILES_SHADERS			"largetiles_shaders"
+#define MAP_JUNCTIONS_SHADERS				"map_shaders"
+#define CHUNKS_JUNCTIONS_SHADERS			"chunks_shaders"
+#define LARGETILES_SHADERS					"largetiles_shaders"
 
 #define MAX_HEIGHT	255
 #define TURN_SPEED	100		//character turn speed
@@ -32,6 +32,8 @@
 
 //nombre de side pour les jointures dans MP (par paires)
 #define MP_JUNCTION_VERTICES_SIZE	2 * (MAP_ARR_SIZE - 1)
+
+extern std::map <int, std::string> gl_textures_string;
 
 struct AABB
 {

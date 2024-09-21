@@ -5,7 +5,8 @@ Chunk::Chunk(int x, int y, std::map<std::string, Shader>& shaders, LargeTile*** 
     this->y = y;
     this->x = x;
 
-    //this->junction_shaders = shaders[CHUNKS_JUNCTIONS_SHADERS];
+    this->junction_shaders  = &shaders[CHUNKS_JUNCTIONS_SHADERS];
+    shaderProgram           = junction_shaders->getShaderProgram();
 
     if (!largesTiles)
     {
@@ -95,6 +96,7 @@ void Chunk::setJunctions()
         }
     }
 
+    //junctions
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -113,6 +115,26 @@ void Chunk::setJunctions()
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
+    //corners
+    //glBindVertexArray(c_VAO);
+
+    //glBindBuffer(GL_ARRAY_BUFFER, c_VBO);
+    //glBufferData(GL_ARRAY_BUFFER, v_vertices.size() * sizeof(HeightMapVertex), v_vertices.data(), GL_STATIC_DRAW);
+
+    //// Lier et remplir l'EBO (Element Buffer Object)
+    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, c_IBO);
+    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, vc_indices.size() * sizeof(unsigned int), vc_indices.data(), GL_STATIC_DRAW);
+
+    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(HeightMapVertex), (void*)offsetof(HeightMapVertex, x));
+    //glEnableVertexAttribArray(0);
+
+    //// Attribut des coordonnées de texture
+    //glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(HeightMapVertex), (void*)offsetof(HeightMapVertex, texCoords));
+    //glEnableVertexAttribArray(1);
+
+    //glBindBuffer(GL_ARRAY_BUFFER, 0);
+    //glBindVertexArray(0);
 }
 
 void Chunk::render()
@@ -121,6 +143,13 @@ void Chunk::render()
 		for (int x = 0; x < CHUNK_ARR_SIZE; ++x)
             if (largeTiles[y][x])
                 largeTiles[y][x]->render();
+
+    glm::mat4 modelmtx = glm::mat4(1.0f);
+    junction_shaders->use();
+    largeTiles[0][0]->useTexture(shaderProgram, GL_TEXTURE0);  largeTiles[0][1]->useTexture(shaderProgram, GL_TEXTURE1);
+    largeTiles[1][0]->useTexture(shaderProgram, GL_TEXTURE2);  largeTiles[1][1]->useTexture(shaderProgram, GL_TEXTURE3);
+
+    glUniformMatrix4fv(junction_shaders->modelLoc, 1, GL_FALSE, glm::value_ptr(modelmtx));
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, v_indices.size(), GL_UNSIGNED_INT, 0);

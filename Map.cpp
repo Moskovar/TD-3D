@@ -2,7 +2,7 @@
 
 Game::Map::Map(std::map<std::string, Shader>& shaders, Chunk*** chunks)
 {
-    //this->junctions_shaders = &shaders[MAP_JUNCTIONS_SHADERS];
+    this->junctions_shaders = &shaders[MAP_JUNCTIONS_SHADERS];
 
     if (!chunks)
     {
