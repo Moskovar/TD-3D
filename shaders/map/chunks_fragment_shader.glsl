@@ -13,13 +13,16 @@ void main()
     vec4 color2 = texture(textures[2], TexCoords);
     vec4 color3 = texture(textures[3], TexCoords);
 
-    if (int(vPos.z) % 512 >= 511 && int(vPos.x) % 512 >= 511) FragColor = (color0 + color1 + color2 + color3) / 4;
+    int   xCoord = int(TexCoords.x * 512.0f),
+          yCoord = int(TexCoords.y * 512.0f);
+
+    if (int(vPos.z) % 512 >= 511 && int(vPos.x) % 512 >= 511) FragColor =  (texelFetch(textures[0], ivec2(0, 511), 0) + texelFetch(textures[1], ivec2(511, 511), 0)  +
+                                                                            texelFetch(textures[2], ivec2(0, 0)  , 0) + texelFetch(textures[3], ivec2(511, 0)  , 0)) / 4.0f;
     else if (int(vPos.z) % 512 >= 511)  
-         if (int(vPos.x) % 1024 < 511)  FragColor = mix(color0, color2, 0.5);
-         else                           FragColor = mix(color1, color3, 0.5);
+         if (int(vPos.x) % 1024 < 511)  FragColor = mix(texelFetch(textures[0], ivec2(xCoord, 511), 0), texelFetch(textures[2], ivec2(xCoord, 0), 0), 0.5);
+         else                           FragColor = mix(texelFetch(textures[1], ivec2(xCoord, 511), 0), texelFetch(textures[3], ivec2(xCoord, 0), 0), 0.5);
     else if (int(vPos.x) % 512 >= 511)  
-         if (int(vPos.z) % 1024 < 511)  FragColor = mix(color0, color1, 0.5);
-         else                           FragColor = mix(color2, color3, 0.5);
-    else FragColor = texture(textures[0], TexCoords);
-    //FragColor = texture(textures[1], TexCoords);
+         if (int(vPos.z) % 1024 < 511)  FragColor = mix(texelFetch(textures[0], ivec2(0, yCoord), 0), texelFetch(textures[1], ivec2(511, yCoord), 0), 0.5);
+         else                           FragColor = mix(texelFetch(textures[2], ivec2(0, yCoord), 0), texelFetch(textures[3], ivec2(511, yCoord), 0), 0.5);
+    else FragColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
 }

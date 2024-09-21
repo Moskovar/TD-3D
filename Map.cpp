@@ -3,8 +3,9 @@
 Game::Map::Map(std::map<std::string, Shader>& shaders, Chunk*** chunks)
 {
     this->junctions_shaders = &shaders[MAP_JUNCTIONS_SHADERS];
+    shaderProgram           = this->junctions_shaders->getShaderProgram();
 
-    if (!chunks)
+    if (chunks == nullptr)
     {
         this->chunks = new Chunk * *[MAP_ARR_SIZE];
 
@@ -16,13 +17,78 @@ Game::Map::Map(std::map<std::string, Shader>& shaders, Chunk*** chunks)
                 this->chunks[y][x] = new Chunk(y, x, shaders);
         }
     }
-    else this->chunks = chunks;
+    else//marche pas
+    {
+        this->chunks = chunks;
+
+        v_textures.push_back(chunks[0][0]->getLargeTile(0, 1)->getTexture());
+        v_textures.push_back(chunks[0][0]->getLargeTile(1, 1)->getTexture());
+        v_textures.push_back(chunks[0][0]->getLargeTile(1, 0)->getTexture());
+
+        v_textures.push_back(chunks[0][1]->getLargeTile(0, 0)->getTexture());
+        v_textures.push_back(chunks[0][1]->getLargeTile(1, 0)->getTexture());
+        v_textures.push_back(chunks[0][1]->getLargeTile(1, 1)->getTexture());
+
+        v_textures.push_back(chunks[1][0]->getLargeTile(0, 0)->getTexture());
+        v_textures.push_back(chunks[1][0]->getLargeTile(0, 1)->getTexture());
+        v_textures.push_back(chunks[1][0]->getLargeTile(1, 1)->getTexture());
+
+        v_textures.push_back(chunks[1][1]->getLargeTile(0, 1)->getTexture());
+        v_textures.push_back(chunks[1][1]->getLargeTile(0, 0)->getTexture());
+        v_textures.push_back(chunks[1][1]->getLargeTile(1, 0)->getTexture());
+    }
+
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &IBO);
 
     setJunctions();
+}
+
+void Game::Map::setChunk(int y, int x, Chunk* chunk)
+{
+    //A voir si on garde pas le chunk en mémoire pour ne pas avoir à le recharger si le joueur fait demi tour rapidement
+    if (this->chunks[y][x])
+    {
+        delete chunks[y][x];
+        chunks[y][x] = nullptr;
+    }
+
+    this->chunks[y][x] = chunk;
+
+    //On check si la map est complète, si oui on ajoute les textures au vecteur de textures pour le shader (utile pour création et update dynamique de la map)
+    bool mapFull = true;
+
+    for(unsigned int y = 0; y < MAP_ARR_SIZE; ++y)
+        for(unsigned int x = 0; x < MAP_ARR_SIZE; ++x)
+            if (chunks[y][x] == nullptr)
+            {
+                mapFull = false;
+                break;
+            }
+
+    if (mapFull)
+    {
+        v_textures.clear();
+        
+        //Pas très flexible... si la taille de la map change, ça ne fonctionnera plus //en même temps on a besoin de savoir qu'est ce qui correpond à quoi pour l'utiliser dans le shader
+        v_textures.push_back(chunks[0][0]->getLargeTile(0, 1)->getTexture());
+        v_textures.push_back(chunks[0][0]->getLargeTile(1, 1)->getTexture());
+        v_textures.push_back(chunks[0][0]->getLargeTile(1, 0)->getTexture());
+
+        v_textures.push_back(chunks[0][1]->getLargeTile(0, 0)->getTexture());
+        v_textures.push_back(chunks[0][1]->getLargeTile(1, 0)->getTexture());
+        v_textures.push_back(chunks[0][1]->getLargeTile(1, 1)->getTexture());
+
+        v_textures.push_back(chunks[1][0]->getLargeTile(0, 0)->getTexture());
+        v_textures.push_back(chunks[1][0]->getLargeTile(0, 1)->getTexture());
+        v_textures.push_back(chunks[1][0]->getLargeTile(1, 1)->getTexture());
+
+        v_textures.push_back(chunks[1][1]->getLargeTile(0, 1)->getTexture());
+        v_textures.push_back(chunks[1][1]->getLargeTile(0, 0)->getTexture());
+        v_textures.push_back(chunks[1][1]->getLargeTile(1, 0)->getTexture());
+    }
 }
 
 void Game::Map::setJunctions()
@@ -129,6 +195,21 @@ void Game::Map::render()
     for (int y = 0; y < MAP_ARR_SIZE; ++y)
         for (int x = 0; x < MAP_ARR_SIZE; ++x)
             if(chunks[y][x]) chunks[y][x]->render();
+
+    junctions_shaders->use();
+    for (int i = 0; i < v_textures.size(); ++i)
+    {
+        if (v_textures[i])
+        {
+            GLuint textureUnit = GL_TEXTURE0 + i;
+            std::string uniformName = "textures[" + std::to_string(i) + "]";
+            v_textures[i]->useTexture(textureUnit);
+            glUniform1i(glGetUniformLocation(shaderProgram, uniformName.c_str()), textureUnit - GL_TEXTURE0);
+        }
+    }
+
+    glm::mat4 modelmtx = glm::mat4(1.0f);
+    glUniformMatrix4fv(junctions_shaders->modelLoc, 1, GL_FALSE, glm::value_ptr(modelmtx));
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, v_indices.size(), GL_UNSIGNED_INT, 0);

@@ -5,8 +5,8 @@ Chunk::Chunk(int x, int y, std::map<std::string, Shader>& shaders, LargeTile*** 
     this->y = y;
     this->x = x;
 
-    this->junction_shaders  = &shaders[CHUNKS_JUNCTIONS_SHADERS];
-    shaderProgram           = junction_shaders->getShaderProgram();
+    this->junctions_shaders  = &shaders[CHUNKS_JUNCTIONS_SHADERS];
+    shaderProgram           = junctions_shaders->getShaderProgram();
 
     if (!largesTiles)
     {
@@ -148,8 +148,7 @@ void Chunk::render()
             if (largeTiles[y][x])
                 largeTiles[y][x]->render();
 
-    glm::mat4 modelmtx = glm::mat4(1.0f);
-    junction_shaders->use();
+    junctions_shaders->use();
     for (int i = 0; i < v_textures.size(); ++i)
     {
         if(v_textures[i])
@@ -161,7 +160,8 @@ void Chunk::render()
         }
     }
 
-    glUniformMatrix4fv(junction_shaders->modelLoc, 1, GL_FALSE, glm::value_ptr(modelmtx));
+    glm::mat4 modelmtx = glm::mat4(1.0f);
+    glUniformMatrix4fv(junctions_shaders->modelLoc, 1, GL_FALSE, glm::value_ptr(modelmtx));
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, v_indices.size(), GL_UNSIGNED_INT, 0);

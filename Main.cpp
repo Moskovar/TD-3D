@@ -199,7 +199,7 @@ int main()
     window = new Window(800, 600);
     glfwSetWindowPos(window->getGLFWWindow(), 2100, 200);
 
-    entities.push_back(new Entity(0, glm::vec3(256.0f, 5.0f, 256.0f), "models/fbx/doublecube.fbx"));
+    entities.push_back(new Entity(0, glm::vec3(1536, 5.0f, 1024), "models/fbx/doublecube.fbx"));
     entities.push_back(new Entity(1, glm::vec3(300.0f, 6.5f, 300.0f), "models/fbx/doublecube.fbx"));
 
     //entities.push_back(new Entity(2, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/ground.fbx"));
@@ -227,33 +227,62 @@ int main()
     if (glIsEnabled(GL_DEPTH_TEST)) std::cout << "Depth test is enabled."     << std::endl;
     else                            std::cout << "Depth test is not enabled." << std::endl;
 
-    Chunk*** chunks = new Chunk * *[MAP_ARR_SIZE];
-    for (int y = 0; y < MAP_ARR_SIZE; ++y)
-    {
-        chunks[y] = new Chunk * [MAP_ARR_SIZE];
+    world = new Game::Map(shaders);
 
-        for (int x = 0; x < MAP_ARR_SIZE; ++x)
-            chunks[y][x] = new Chunk(y, x, shaders);
-    }
-
-    //Chunk 0 0
+    //Loading chunks
     LargeTile*** largeTiles = new LargeTile * *[CHUNK_ARR_SIZE];
 
     for (int y = 0; y < CHUNK_ARR_SIZE; ++y)
-    {
         largeTiles[y] = new LargeTile * [CHUNK_ARR_SIZE];
-        //for (int x = 0; x < CHUNK_ARR_SIZE; ++x)
-            //largeTiles[y][x] = new LargeTile(y, x, this->y, this->x, "h1.exr", "h1.png", shaderProgram);
-    }
 
+    //Chunk 0 0                                                                     
     largeTiles[0][0] = new LargeTile(0, 0, 0, 0, "h1.exr", "h1.png", shaders);
     largeTiles[1][0] = new LargeTile(1, 0, 0, 0, "h1.exr", "h2.png", shaders);
     largeTiles[0][1] = new LargeTile(0, 1, 0, 0, "h1.exr", "h3.png", shaders);
     largeTiles[1][1] = new LargeTile(1, 1, 0, 0, "h1.exr", "h4.png", shaders);
 
-    world = new Game::Map(shaders, chunks);
-
     world->setChunk(0, 0, new Chunk(0, 0, shaders, largeTiles));
+
+    //Chunk 0 1
+    LargeTile*** largeTiles2 = new LargeTile * *[CHUNK_ARR_SIZE];
+
+    for (int y = 0; y < CHUNK_ARR_SIZE; ++y)
+        largeTiles2[y] = new LargeTile * [CHUNK_ARR_SIZE];
+
+    largeTiles2[0][0] = new LargeTile(0, 0, 0, 1, "h1.exr", "h1.png", shaders);
+    largeTiles2[1][0] = new LargeTile(1, 0, 0, 1, "h1.exr", "h2.png", shaders);
+    largeTiles2[0][1] = new LargeTile(0, 1, 0, 1, "h1.exr", "h3.png", shaders);
+    largeTiles2[1][1] = new LargeTile(1, 1, 0, 1, "h1.exr", "h4.png", shaders);
+
+    world->setChunk(0, 1, new Chunk(0, 1, shaders, largeTiles2));
+
+    //Chunk 1 0
+    LargeTile*** largeTiles3 = new LargeTile * *[CHUNK_ARR_SIZE];
+
+    for (int y = 0; y < CHUNK_ARR_SIZE; ++y)
+        largeTiles3[y] = new LargeTile * [CHUNK_ARR_SIZE];
+
+    largeTiles3[0][0] = new LargeTile(0, 0, 1, 0, "h1.exr", "h1.png", shaders);
+    largeTiles3[1][0] = new LargeTile(1, 0, 1, 0, "h1.exr", "h2.png", shaders);
+    largeTiles3[0][1] = new LargeTile(0, 1, 1, 0, "h1.exr", "h3.png", shaders);
+    largeTiles3[1][1] = new LargeTile(1, 1, 1, 0, "h1.exr", "h4.png", shaders);
+
+    world->setChunk(1, 0, new Chunk(1, 0, shaders, largeTiles3));
+
+    LargeTile*** largeTiles4 = new LargeTile * *[CHUNK_ARR_SIZE];
+
+    for (int y = 0; y < CHUNK_ARR_SIZE; ++y)
+        largeTiles4[y] = new LargeTile * [CHUNK_ARR_SIZE];
+
+    largeTiles4[0][0] = new LargeTile(0, 0, 1, 1, "h1.exr", "h1.png", shaders);
+    largeTiles4[1][0] = new LargeTile(1, 0, 1, 1, "h1.exr", "h2.png", shaders);
+    largeTiles4[0][1] = new LargeTile(0, 1, 1, 1, "h1.exr", "h3.png", shaders);
+    largeTiles4[1][1] = new LargeTile(1, 1, 1, 1, "h1.exr", "h4.png", shaders);
+
+    world->setChunk(1, 1, new Chunk(1, 1, shaders, largeTiles4));
+
+
+
 
     auto  startTime    = std::chrono::high_resolution_clock::now();
     float currentFrame = 0, animationTime = 0, timeSinceStart = 0,
