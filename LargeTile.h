@@ -17,9 +17,10 @@ class LargeTile
 		LargeTile(int y, int x, int yChunk, int xChunk, std::string heightMapName, std::string textureName, std::map<std::string, Shader>& shaders);
 
 		//--- Getters ---//
-		int getX()								{ return x;																				}
-		int getY()								{ return y;																				}
-		Tile getTile(int y, int x)				{ return tiles[y][x];																	}
+		int				getX()					{ return x;																				}
+		int				getY()					{ return y;																				}
+		Tile			getTile(int y, int x)	{ return tiles[y][x];																	}
+		Texture*		getTexture()			{ return this->texture;																	}
 		HeightMapVertex getVertex(int y, int x) { return tiles[y / TILE_SIZE][x / TILE_SIZE].getVertex(y % TILE_SIZE, x % TILE_SIZE);	}
 
 		void useTexture(GLuint shaderProgram, GLuint textureUnit = GL_TEXTURE0);

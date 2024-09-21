@@ -21,6 +21,10 @@ Chunk::Chunk(int x, int y, std::map<std::string, Shader>& shaders, LargeTile*** 
     }
     else this->largeTiles = largesTiles;
 
+    v_textures.push_back(this->largeTiles[0][0]->getTexture());     v_textures.push_back(this->largeTiles[0][1]->getTexture());
+    v_textures.push_back(this->largeTiles[1][0]->getTexture());     v_textures.push_back(this->largeTiles[1][1]->getTexture());
+
+
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &IBO);
@@ -146,8 +150,16 @@ void Chunk::render()
 
     glm::mat4 modelmtx = glm::mat4(1.0f);
     junction_shaders->use();
-    largeTiles[0][0]->useTexture(shaderProgram, GL_TEXTURE0);  largeTiles[0][1]->useTexture(shaderProgram, GL_TEXTURE1);
-    largeTiles[1][0]->useTexture(shaderProgram, GL_TEXTURE2);  largeTiles[1][1]->useTexture(shaderProgram, GL_TEXTURE3);
+    for (int i = 0; i < v_textures.size(); ++i)
+    {
+        if(v_textures[i])
+        {
+            GLuint textureUnit = GL_TEXTURE0 + i;
+            std::string uniformName = "textures[" + std::to_string(i) + "]";
+            v_textures[i]->useTexture(textureUnit);
+            glUniform1i(glGetUniformLocation(shaderProgram, uniformName.c_str()), textureUnit - GL_TEXTURE0);
+        }
+    }
 
     glUniformMatrix4fv(junction_shaders->modelLoc, 1, GL_FALSE, glm::value_ptr(modelmtx));
 

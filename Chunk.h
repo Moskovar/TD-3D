@@ -36,7 +36,8 @@ private:
 	HeightMapVertex junction_vertices[2][CHUNK_ARR_SIZE][CK_JUNCTION_VERTICES_SIZE][LARGETILE_SIZE];//[axes y et x][nombre de lignes et de colonnes][nombre de côté pour les jointures (2 côté pour 1 jointure)][nombre de vertices par côté]
 
 	//junctions
-	std::vector<HeightMapVertex> v_vertices = {};
-	std::vector<unsigned int>	 v_indices  = {};
+	std::vector<HeightMapVertex>	v_vertices	= {};
+	std::vector<unsigned int>		v_indices	= {};
+	std::vector<Texture*>			v_textures	= {};
 };
 
