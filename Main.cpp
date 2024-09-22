@@ -7,6 +7,7 @@
 #include "Camera.h"
 #include "Shader.h"
 
+#include "MapManager.h"
 #include "PhysicsEngine.h"
 #include "Map.h"
 
@@ -16,13 +17,15 @@
 
 Window*         window  = nullptr;
 Camera*         camera  = nullptr;
-Game::Map*      world = nullptr;
+Game::Map*      world   = nullptr;
+MapManager      mapManager;
 PhysicsEngine   physics;
-//float r = 0.5f, g = 0.5f, b = 0.5f;
+
 std::map<char, bool> keyPressed;
 std::map<int , bool> mousePressed;
 
-std::vector<Entity*> entities;
+std::vector<Entity*>  entities;
+std::vector<Element*> elements;
 
 bool checkHeightMap(Element* element, glm::vec3 nextElementPos)//revoir les points comptés dans l'interpolation
 {
@@ -61,14 +64,14 @@ void applyGravity(Element* element, GLfloat deltaTime)
     int z = (int)elementPos->z % LARGETILE_SIZE,
         x = (int)elementPos->x % LARGETILE_SIZE;
 
-    int chunkLength     = (LARGETILE_SIZE * CHUNK_ARR_SIZE),
+    int chunkLength     = LARGETILE_SIZE * CHUNK_ARR_SIZE,
         largeTileLength = TILE_SIZE * LARGETILE_ARR_SIZE;
 
     Chunk*     chunk = world->getChunk(    (int)element->getPosition().z / chunkLength, (int)element->getPosition().x / chunkLength);
-    LargeTile* lt    = chunk->getLargeTile((int)element->getPosition().z / largeTileLength, (int)element->getPosition().x / largeTileLength);
+    LargeTile* lt    = chunk->getLargeTile(((int)element->getPosition().z / largeTileLength) % CHUNK_ARR_SIZE, ((int)element->getPosition().x / largeTileLength) % CHUNK_ARR_SIZE);
 
-    std::cout << "CHUNK: " << (int)element->getPosition().z / chunkLength << " ... " << (int)element->getPosition().x / chunkLength << std::endl;
-    std::cout << "LT: " << (int)element->getPosition().z / largeTileLength << " ... " << (int)element->getPosition().x / largeTileLength << std::endl;
+    //std::cout << "CHUNK: " << (int)element->getPosition().z / chunkLength << " ... " << (int)element->getPosition().x / chunkLength << std::endl;
+    //std::cout << "LT: " << (int)element->getPosition().z / largeTileLength << " ... " << (int)element->getPosition().x / largeTileLength << std::endl;
 
     int nextZ = (z < LARGETILE_SIZE - 1) ? z + 1 : z - 1,
         nextX = (x < LARGETILE_SIZE - 1) ? x + 1 : x - 1;
@@ -77,13 +80,13 @@ void applyGravity(Element* element, GLfloat deltaTime)
 
     GLfloat interpolatedGroundY = 0.0f, y1 = 0.0f, y2 = 0.0f, y3 = 0.0f, y4 = 0.0f;
 
-    y1 = lt->getVertex(nextZ, x).y;      y2 = lt->getVertex(nextZ, nextX).y;
-    y3 = lt->getVertex(z    , x).y;      y4 = lt->getVertex(z    , nextX).y;
+    //y1 = lt->getVertex(nextZ, x).y;      y2 = lt->getVertex(nextZ, nextX).y;
+    //y3 = lt->getVertex(z    , x).y;      y4 = lt->getVertex(z    , nextX).y;
 
-    interpolatedGroundY = (y1 + y2 + y3 + y4) / 4.0f;
-    //interpolatedGroundY = lt->getVertex(z, x).y;
+    //interpolatedGroundY = (y1 + y2 + y3 + y4) / 4.0f;
+    interpolatedGroundY = lt->getVertex(z, x).y;
 
-    std::cout << elementPos->y << " ... " << interpolatedGroundY << std::endl;
+    //std::cout << elementPos->y << " ... " << interpolatedGroundY << std::endl;
     if(elementPos->y > interpolatedGroundY) //Si l'élément n'est pas au sol on le fait tomber
     {
         element->fall(deltaTime);
@@ -117,6 +120,11 @@ bool checkCollision(const AABB& box1, const AABB& box2)
 
     // Les boîtes se chevauchent
     return true;
+}
+
+bool checkCollision(Element* element1, Element* element2)
+{
+    return checkCollision(element1->getRHitbox(), element2->getRHitbox());
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) 
@@ -208,6 +216,8 @@ int main()
     entities.push_back(new Entity(0, glm::vec3(300, 100.0f, 300), "models/fbx/doublecube.fbx"));
     entities.push_back(new Entity(1, glm::vec3(300.0f, 100.0f, 300.0f), "models/fbx/doublecube.fbx"));
 
+    elements.push_back(new Element(0, glm::vec3(310, 100.0f, 300.0f), "models/obj/foundation.obj"));
+
     //entities.push_back(new Entity(2, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/ground.fbx"));
 
     camera = new Camera(entities[0]->getPositionP(), entities[0]->getPYaw(), &keyPressed);
@@ -234,61 +244,7 @@ int main()
     else                            std::cout << "Depth test is not enabled." << std::endl;
 
     world = new Game::Map(shaders);
-
-    //Loading chunks
-    LargeTile*** largeTiles = new LargeTile * *[CHUNK_ARR_SIZE];
-
-    for (int y = 0; y < CHUNK_ARR_SIZE; ++y)
-        largeTiles[y] = new LargeTile * [CHUNK_ARR_SIZE];
-
-    //Chunk 0 0                                                                     
-    largeTiles[0][0] = new LargeTile(0, 0, 0, 0, "00.exr", "h1.png", shaders);
-    largeTiles[1][0] = new LargeTile(1, 0, 0, 0, "10.exr", "h2.png", shaders);
-    largeTiles[0][1] = new LargeTile(0, 1, 0, 0, "01.exr", "h3.png", shaders);
-    largeTiles[1][1] = new LargeTile(1, 1, 0, 0, "11.exr", "h4.png", shaders);
-
-    world->setChunk(0, 0, new Chunk(0, 0, shaders, largeTiles));
-
-    //Chunk 0 1
-    LargeTile*** largeTiles2 = new LargeTile * *[CHUNK_ARR_SIZE];
-
-    for (int y = 0; y < CHUNK_ARR_SIZE; ++y)
-        largeTiles2[y] = new LargeTile * [CHUNK_ARR_SIZE];
-
-    largeTiles2[0][0] = new LargeTile(0, 0, 0, 1, "flat.exr", "h1.png", shaders);
-    largeTiles2[1][0] = new LargeTile(1, 0, 0, 1, "flat.exr", "h2.png", shaders);
-    largeTiles2[0][1] = new LargeTile(0, 1, 0, 1, "flat.exr", "h3.png", shaders);
-    largeTiles2[1][1] = new LargeTile(1, 1, 0, 1, "flat.exr", "h4.png", shaders);
-
-    world->setChunk(0, 1, new Chunk(0, 1, shaders, largeTiles2));
-
-    //Chunk 1 0
-    LargeTile*** largeTiles3 = new LargeTile * *[CHUNK_ARR_SIZE];
-
-    for (int y = 0; y < CHUNK_ARR_SIZE; ++y)
-        largeTiles3[y] = new LargeTile * [CHUNK_ARR_SIZE];
-
-    largeTiles3[0][0] = new LargeTile(0, 0, 1, 0, "flat.exr", "h1.png", shaders);
-    largeTiles3[1][0] = new LargeTile(1, 0, 1, 0, "flat.exr", "h2.png", shaders);
-    largeTiles3[0][1] = new LargeTile(0, 1, 1, 0, "flat.exr", "h3.png", shaders);
-    largeTiles3[1][1] = new LargeTile(1, 1, 1, 0, "flat.exr", "h4.png", shaders);
-
-    world->setChunk(1, 0, new Chunk(1, 0, shaders, largeTiles3));
-
-    LargeTile*** largeTiles4 = new LargeTile * *[CHUNK_ARR_SIZE];
-
-    for (int y = 0; y < CHUNK_ARR_SIZE; ++y)
-        largeTiles4[y] = new LargeTile * [CHUNK_ARR_SIZE];
-
-    largeTiles4[0][0] = new LargeTile(0, 0, 1, 1, "flat.exr", "h1.png", shaders);
-    largeTiles4[1][0] = new LargeTile(1, 0, 1, 1, "flat.exr", "h2.png", shaders);
-    largeTiles4[0][1] = new LargeTile(0, 1, 1, 1, "flat.exr", "h3.png", shaders);
-    largeTiles4[1][1] = new LargeTile(1, 1, 1, 1, "flat.exr", "h4.png", shaders);
-
-    world->setChunk(1, 1, new Chunk(1, 1, shaders, largeTiles4));
-
-
-
+    mapManager.loadMap(world, shaders);
 
     auto  startTime    = std::chrono::high_resolution_clock::now();
     float currentFrame = 0, animationTime = 0, timeSinceStart = 0,
@@ -315,7 +271,6 @@ int main()
 
         applyGravity(entities[0], deltaTime);
 
-
         //--- Personnage ---//
         processKeyPressed(glfwWindow, deltaTime);
         processMousePressed(window, deltaTime);
@@ -334,9 +289,18 @@ int main()
 
             if (entities[0]->isFalling()) factor /= 2;
             
-            if(checkHeightMap(entities[0], entities[0]->anticipateMove(deltaTime * factor)))
+            if(checkHeightMap(entities[0], entities[0]->anticipateMove(deltaTime * factor)))//check si la map ne bloque pas
             {
-                entities[0]->move(deltaTime * factor);
+                bool collision = false;
+
+                for(Element* e : elements)
+                    if (checkCollision(entities[0]->getAnticipatedHitbox(deltaTime), elements[0]->getRHitbox()))
+                    {
+                        collision = true;
+                        break;
+                    }
+
+                if(!collision) entities[0]->move(deltaTime * factor);
             }
 
             if (!mousePressed[GLFW_MOUSE_BUTTON_LEFT] && !mousePressed[GLFW_MOUSE_BUTTON_RIGHT]) camera->resetYaw();
@@ -356,16 +320,13 @@ int main()
         for (Entity* e : entities)
             if(e) e->render(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart);
 
+        //--- Render objects ---//
+        for (Element* e : elements)
+            e->render(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart);
+
         //--- Render terrain ---//
-        //glm::mat4 modelmtx = glm::mat4(1.0f);
-        //shaders[LARGETILES_SHADERS].use();
-        //glUniformMatrix4fv(shaders[LARGETILES_SHADERS].modelLoc, 1, GL_FALSE, glm::value_ptr(modelmtx));
-        
-        //largeTile->render();
-        //chunk->render();
-        //world->render();
-        //largeTiles[0][0]->render();
-        world->getChunk(0, 0)->render();
+        //world->getChunk(0, 0)->render();
+        world->render();
 
         //--- Reset des mouvements souris dans la fenêtre pour traiter les prochains ---//
         window->resetXYChange();
@@ -390,6 +351,13 @@ int main()
     
     for(Entity* e : entities)
         if (e) 
+        {
+            delete e;
+            e = nullptr;
+        }
+
+    for(Element* e : elements)
+        if (e)
         {
             delete e;
             e = nullptr;

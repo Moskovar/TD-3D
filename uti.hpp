@@ -33,8 +33,6 @@
 //nombre de side pour les jointures dans MP (par paires)
 #define MP_JUNCTION_VERTICES_SIZE	2 * (MAP_ARR_SIZE - 1)
 
-extern std::map <int, std::string> gl_textures_string;
-
 struct AABB
 {
 	glm::vec3 min_point = glm::vec3(0.0f, 0.0f, 0.0f), max_point = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -45,4 +43,12 @@ struct HeightMapVertex
 	GLfloat x = 0.0f, y = 0.0f, z = 0.0f;
 	unsigned int indice = 0;
 	glm::vec2 texCoords;
+};
+
+extern std::map <int, std::string>	gl_textures_string;
+extern std::map<int, AABB>			obj_hitboxes;
+
+enum HITBOXES
+{
+	FOUNDATION
 };

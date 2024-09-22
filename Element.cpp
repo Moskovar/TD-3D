@@ -59,6 +59,16 @@ glm::vec3 Element::anticipateMove(GLfloat deltaTime)
 	return glm::vec3(mtx[3].x, mtx[3].y, mtx[3].z);
 }
 
+AABB Element::getAnticipatedHitbox(GLfloat deltaTime)
+{
+	glm::vec3 anticipatedPosition = anticipateMove(deltaTime);
+	AABB anticipatedHitbox;
+	anticipatedHitbox.max_point = anticipatedPosition + halfSize;
+	anticipatedHitbox.min_point = anticipatedPosition - halfSize;
+
+	return anticipatedHitbox;
+}
+
 void Element::move(GLfloat deltaTime)
 {
 	model->translate(modelMatrix, glm::vec3(0.0f, 0.0f, moveSpeed * deltaTime));

@@ -23,6 +23,8 @@ class Element
 		bool		isMoving()		{ return moving;				}
 		bool		isFalling()		{ return falling;				}
 
+		glm::vec3	anticipateMove(GLfloat deltaTime);
+		AABB		getAnticipatedHitbox(GLfloat deltaTime);
 		
 		
 
@@ -33,7 +35,6 @@ class Element
 		void setMove(bool state);
 		void setFall(bool state);
 
-		glm::vec3 anticipateMove(GLfloat deltaTime);
 		void move(GLfloat deltaTime);
 		void moveUp(GLfloat positionY);
 		void turn(GLfloat yaw);
@@ -56,5 +57,6 @@ class Element
 
 
 		void calculateHitBox();
+		void calculateHitBox(glm::vec3 position);
 };
 

@@ -7,3 +7,8 @@ std::map <int, std::string> gl_textures_string =
 	{ GL_TEXTURE2, "texture2" },
 	{ GL_TEXTURE3, "texture3" }
 };
+
+std::map<int, AABB> obj_hitboxes =
+{
+	{}
+};
