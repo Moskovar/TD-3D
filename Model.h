@@ -50,6 +50,8 @@ class Model
 		glm::vec3 getMaxPoint()							{ return maxPoint;												}
 		glm::vec3 getMinPoint()							{ return minPoint;												}
 		
+		//--- Setters ---//
+
 		void translate(glm::mat4& modelMatrix, glm::vec3 translation);
 		
 	private:

@@ -47,6 +47,12 @@ void Element::setFall(bool state)
 	if (!falling) moving = false;
 }
 
+void Element::setModelMtx(glm::mat4 modelMatrix)
+{
+	this->modelMatrix = modelMatrix;
+	updatePosition();
+}
+
 /// <summary>
 /// Récupère la position de l'élément si le mouvement qu'il s'apprête à faire s'effectue
 /// </summary>

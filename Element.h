@@ -22,6 +22,7 @@ class Element
 		AABB&		getRHitbox()	{ return hitBox;				}
 		bool		isMoving()		{ return moving;				}
 		bool		isFalling()		{ return falling;				}
+		glm::mat4	getModelMtx()	{ return modelMatrix;			}
 
 		glm::vec3	anticipateMove(GLfloat deltaTime);
 		AABB		getAnticipatedHitbox(GLfloat deltaTime);
@@ -31,9 +32,11 @@ class Element
 		
 		//--- Setters ---//
 		void setYaw(GLfloat yaw);
-		void setAnimationID(uint8_t id) { animationID = id; }
+		void setAnimationID(uint8_t id)			{ animationID = id;					}
 		void setMove(bool state);
 		void setFall(bool state);
+		void setPosition(glm::vec3 position)	{ this->position	= position;		}
+		void setModelMtx(glm::mat4 modelMatrix);
 
 		void move(GLfloat deltaTime);
 		void moveUp(GLfloat positionY);
@@ -41,7 +44,7 @@ class Element
 		void fall(GLfloat deltaTime);
 		void updatePosition();
 		
-		void render(GLuint& modelLoc, GLuint& bonesTransformsLoc, float& animationTime);
+		void render(GLuint& modelLoc, GLuint& bonesTransformsLoc, float& timeSinceStart);
 
 	protected:
 		uint8_t id = -1, animationID = 0;
@@ -57,6 +60,5 @@ class Element
 
 
 		void calculateHitBox();
-		void calculateHitBox(glm::vec3 position);
 };
 

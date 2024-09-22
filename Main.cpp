@@ -4,6 +4,7 @@
 
 #include "Window.h"
 #include "Entity.h"
+#include "Character.h"
 #include "Camera.h"
 #include "Shader.h"
 
@@ -135,6 +136,12 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
         mousePressed[button] = false;
 
         if (button == GLFW_MOUSE_BUTTON_RIGHT || button == GLFW_MOUSE_BUTTON_LEFT && !keyPressed['W'] && !keyPressed['S']) entities[0]->setMove(false);
+
+        if (static_cast<Character*>(entities[0])->getSelectedBuilding() && button == GLFW_MOUSE_BUTTON_LEFT)
+        {
+            elements.push_back(new Element(0, static_cast<Character*>(entities[0])->getSelectedBuilding()->getPosition(), "models/obj/foundation.obj"));
+        }
+
     }
 }
 
@@ -154,6 +161,14 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         {
             case GLFW_KEY_ESCAPE: glfwSetWindowShouldClose(window, true);   break;
         }
+
+        if (key == GLFW_KEY_Q)
+        {
+            static_cast<Character*>(entities[0])->setSelected();
+            std::cout << "A PRESSED !! " << std::endl;
+        }
+
+        
     }
     else if (action == GLFW_RELEASE)
     {
@@ -165,6 +180,10 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             if(!keyPressed[GLFW_KEY_W] && !keyPressed[GLFW_KEY_S])//Si ni avancer ni reculer n'est pressé, move = false;
                 entities[0]->setMove(false);
         }
+
+        if (key == GLFW_KEY_Q) static_cast<Character*>(entities[0])->clearSelected();
+
+        std::cout << "A RELEASED !! " << std::endl;
     }
 }
 
@@ -213,7 +232,7 @@ int main()
     window = new Window(800, 600);
     glfwSetWindowPos(window->getGLFWWindow(), 2100, 200);
 
-    entities.push_back(new Entity(0, glm::vec3(300, 100.0f, 300), "models/fbx/doublecube.fbx"));
+    entities.push_back(new Character(0, glm::vec3(300, 100.0f, 300)));
     entities.push_back(new Entity(1, glm::vec3(300.0f, 100.0f, 300.0f), "models/fbx/doublecube.fbx"));
 
     elements.push_back(new Element(0, glm::vec3(310, 100.0f, 300.0f), "models/obj/foundation.obj"));
@@ -294,7 +313,7 @@ int main()
                 bool collision = false;
 
                 for(Element* e : elements)
-                    if (checkCollision(entities[0]->getAnticipatedHitbox(deltaTime), elements[0]->getRHitbox()))
+                    if (checkCollision(entities[0]->getAnticipatedHitbox(deltaTime), e->getRHitbox()))
                     {
                         collision = true;
                         break;
@@ -323,6 +342,8 @@ int main()
         //--- Render objects ---//
         for (Element* e : elements)
             e->render(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart);
+
+        static_cast<Character*>(entities[0])->renderSelected(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart);
 
         //--- Render terrain ---//
         //world->getChunk(0, 0)->render();
