@@ -58,13 +58,17 @@ void applyGravity(Element* element, GLfloat deltaTime)
 
     glm::vec3* elementPos = element->getPositionP();
 
-    int chunkLength = (LARGETILE_SIZE * CHUNK_ARR_SIZE);
-
-    Chunk*     chunk = world->getChunk(    (int)element->getPosition().z / chunkLength, (int)element->getPosition().x / chunkLength);
-    LargeTile* lt    = chunk->getLargeTile((int)element->getPosition().z / chunkLength, (int)element->getPosition().x / chunkLength);
-
     int z = (int)elementPos->z % LARGETILE_SIZE,
         x = (int)elementPos->x % LARGETILE_SIZE;
+
+    int chunkLength     = (LARGETILE_SIZE * CHUNK_ARR_SIZE),
+        largeTileLength = TILE_SIZE * LARGETILE_ARR_SIZE;
+
+    Chunk*     chunk = world->getChunk(    (int)element->getPosition().z / chunkLength, (int)element->getPosition().x / chunkLength);
+    LargeTile* lt    = chunk->getLargeTile((int)element->getPosition().z / largeTileLength, (int)element->getPosition().x / largeTileLength);
+
+    std::cout << "CHUNK: " << (int)element->getPosition().z / chunkLength << " ... " << (int)element->getPosition().x / chunkLength << std::endl;
+    std::cout << "LT: " << (int)element->getPosition().z / largeTileLength << " ... " << (int)element->getPosition().x / largeTileLength << std::endl;
 
     int nextZ = (z < LARGETILE_SIZE - 1) ? z + 1 : z - 1,
         nextX = (x < LARGETILE_SIZE - 1) ? x + 1 : x - 1;
@@ -77,7 +81,9 @@ void applyGravity(Element* element, GLfloat deltaTime)
     y3 = lt->getVertex(z    , x).y;      y4 = lt->getVertex(z    , nextX).y;
 
     interpolatedGroundY = (y1 + y2 + y3 + y4) / 4.0f;
+    //interpolatedGroundY = lt->getVertex(z, x).y;
 
+    std::cout << elementPos->y << " ... " << interpolatedGroundY << std::endl;
     if(elementPos->y > interpolatedGroundY) //Si l'élément n'est pas au sol on le fait tomber
     {
         element->fall(deltaTime);
@@ -199,8 +205,8 @@ int main()
     window = new Window(800, 600);
     glfwSetWindowPos(window->getGLFWWindow(), 2100, 200);
 
-    entities.push_back(new Entity(0, glm::vec3(1536, 5.0f, 1024), "models/fbx/doublecube.fbx"));
-    entities.push_back(new Entity(1, glm::vec3(300.0f, 6.5f, 300.0f), "models/fbx/doublecube.fbx"));
+    entities.push_back(new Entity(0, glm::vec3(300, 100.0f, 300), "models/fbx/doublecube.fbx"));
+    entities.push_back(new Entity(1, glm::vec3(300.0f, 100.0f, 300.0f), "models/fbx/doublecube.fbx"));
 
     //entities.push_back(new Entity(2, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/ground.fbx"));
 
@@ -236,10 +242,10 @@ int main()
         largeTiles[y] = new LargeTile * [CHUNK_ARR_SIZE];
 
     //Chunk 0 0                                                                     
-    largeTiles[0][0] = new LargeTile(0, 0, 0, 0, "h1.exr", "h1.png", shaders);
-    largeTiles[1][0] = new LargeTile(1, 0, 0, 0, "h1.exr", "h2.png", shaders);
-    largeTiles[0][1] = new LargeTile(0, 1, 0, 0, "h1.exr", "h3.png", shaders);
-    largeTiles[1][1] = new LargeTile(1, 1, 0, 0, "h1.exr", "h4.png", shaders);
+    largeTiles[0][0] = new LargeTile(0, 0, 0, 0, "00.exr", "h1.png", shaders);
+    largeTiles[1][0] = new LargeTile(1, 0, 0, 0, "10.exr", "h2.png", shaders);
+    largeTiles[0][1] = new LargeTile(0, 1, 0, 0, "01.exr", "h3.png", shaders);
+    largeTiles[1][1] = new LargeTile(1, 1, 0, 0, "11.exr", "h4.png", shaders);
 
     world->setChunk(0, 0, new Chunk(0, 0, shaders, largeTiles));
 
@@ -249,10 +255,10 @@ int main()
     for (int y = 0; y < CHUNK_ARR_SIZE; ++y)
         largeTiles2[y] = new LargeTile * [CHUNK_ARR_SIZE];
 
-    largeTiles2[0][0] = new LargeTile(0, 0, 0, 1, "h1.exr", "h1.png", shaders);
-    largeTiles2[1][0] = new LargeTile(1, 0, 0, 1, "h1.exr", "h2.png", shaders);
-    largeTiles2[0][1] = new LargeTile(0, 1, 0, 1, "h1.exr", "h3.png", shaders);
-    largeTiles2[1][1] = new LargeTile(1, 1, 0, 1, "h1.exr", "h4.png", shaders);
+    largeTiles2[0][0] = new LargeTile(0, 0, 0, 1, "flat.exr", "h1.png", shaders);
+    largeTiles2[1][0] = new LargeTile(1, 0, 0, 1, "flat.exr", "h2.png", shaders);
+    largeTiles2[0][1] = new LargeTile(0, 1, 0, 1, "flat.exr", "h3.png", shaders);
+    largeTiles2[1][1] = new LargeTile(1, 1, 0, 1, "flat.exr", "h4.png", shaders);
 
     world->setChunk(0, 1, new Chunk(0, 1, shaders, largeTiles2));
 
@@ -262,10 +268,10 @@ int main()
     for (int y = 0; y < CHUNK_ARR_SIZE; ++y)
         largeTiles3[y] = new LargeTile * [CHUNK_ARR_SIZE];
 
-    largeTiles3[0][0] = new LargeTile(0, 0, 1, 0, "h1.exr", "h1.png", shaders);
-    largeTiles3[1][0] = new LargeTile(1, 0, 1, 0, "h1.exr", "h2.png", shaders);
-    largeTiles3[0][1] = new LargeTile(0, 1, 1, 0, "h1.exr", "h3.png", shaders);
-    largeTiles3[1][1] = new LargeTile(1, 1, 1, 0, "h1.exr", "h4.png", shaders);
+    largeTiles3[0][0] = new LargeTile(0, 0, 1, 0, "flat.exr", "h1.png", shaders);
+    largeTiles3[1][0] = new LargeTile(1, 0, 1, 0, "flat.exr", "h2.png", shaders);
+    largeTiles3[0][1] = new LargeTile(0, 1, 1, 0, "flat.exr", "h3.png", shaders);
+    largeTiles3[1][1] = new LargeTile(1, 1, 1, 0, "flat.exr", "h4.png", shaders);
 
     world->setChunk(1, 0, new Chunk(1, 0, shaders, largeTiles3));
 
@@ -274,10 +280,10 @@ int main()
     for (int y = 0; y < CHUNK_ARR_SIZE; ++y)
         largeTiles4[y] = new LargeTile * [CHUNK_ARR_SIZE];
 
-    largeTiles4[0][0] = new LargeTile(0, 0, 1, 1, "h1.exr", "h1.png", shaders);
-    largeTiles4[1][0] = new LargeTile(1, 0, 1, 1, "h1.exr", "h2.png", shaders);
-    largeTiles4[0][1] = new LargeTile(0, 1, 1, 1, "h1.exr", "h3.png", shaders);
-    largeTiles4[1][1] = new LargeTile(1, 1, 1, 1, "h1.exr", "h4.png", shaders);
+    largeTiles4[0][0] = new LargeTile(0, 0, 1, 1, "flat.exr", "h1.png", shaders);
+    largeTiles4[1][0] = new LargeTile(1, 0, 1, 1, "flat.exr", "h2.png", shaders);
+    largeTiles4[0][1] = new LargeTile(0, 1, 1, 1, "flat.exr", "h3.png", shaders);
+    largeTiles4[1][1] = new LargeTile(1, 1, 1, 1, "flat.exr", "h4.png", shaders);
 
     world->setChunk(1, 1, new Chunk(1, 1, shaders, largeTiles4));
 
@@ -293,6 +299,8 @@ int main()
     GLint maxTextures;
     glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTextures);
     std::cout << "Max textures supported: " << maxTextures << std::endl;
+
+    std::cout << "VERTEX Y: " << world->getChunk(0, 0)->getLargeTile(0, 0)->getVertex(511, 511).y << std::endl;;
     
     //Boucle de rendu
     while (!glfwWindowShouldClose(glfwWindow))
@@ -355,7 +363,9 @@ int main()
         
         //largeTile->render();
         //chunk->render();
-        world->render();
+        //world->render();
+        //largeTiles[0][0]->render();
+        world->getChunk(0, 0)->render();
 
         //--- Reset des mouvements souris dans la fenêtre pour traiter les prochains ---//
         window->resetXYChange();

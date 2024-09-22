@@ -78,30 +78,8 @@ LargeTile::LargeTile(int y, int x, int yChunk, int xChunk, std::string heightmap
                     globalX = x + cx * TILE_SIZE;
                 int pixelIdx = (globalY * LARGETILE_SIZE + globalX) * 4; // 4 pour RGBA
                 GLfloat heightValue = image[pixelIdx];
-                heightValue = 0.0f;
-                //à améliorer c'est carrément bancale mais ça dépanne le temps
-                if(globalX == 0 || globalY == 0)//à vérifier dynamiquement au chargement des Larges tuiles
-                {
-                    short count = 0;
-
-                    // Vérifier le pixel au-dessus (y-1)
-                    if (y > 0 && image[((y - 1) * width + x) * 4] > 0.0f)           ++count;
- 
-                    // Vérifier le pixel en dessous (y+1)
-                    if (y < height - 1 && image[((y + 1) * width + x) * 4] > 0.0f)  ++count;
-
-                    // Vérifier le pixel à gauche (x-1)
-                    if (x > 0 && image[(y * width + (x - 1)) * 4] > 0.0f)           ++count;
-
-                    // Vérifier le pixel à droite (x+1)
-                    if (x < width - 1 && image[(y * width + (x + 1)) * 4] > 0.0f)   ++count;
-
-                    if (count <= 2) heightValue = 0.0f;
-                }
-
-
-                if (heightValue < 0.01f) heightValue = 0.0f;//pour éliminer les résidus ?? pas propre ...
-
+                //heightValue = 0.0f;
+                
                 glm::vec2 texCoords((GLfloat)globalX / (GLfloat)(LARGETILE_SIZE - 1), (GLfloat)globalY / (GLfloat)(LARGETILE_SIZE - 1));//Attribution des coordonnées de textures
 
                 globalY += largeTileGlobalY;//ajout du offset de la LargeTile
@@ -235,6 +213,8 @@ void LargeTile::useTexture(GLuint shaderProgram, GLuint textureUnit)
 void LargeTile::render()
 {
     glm::mat4 modelmtx = glm::mat4(1.0f);
+    //modelmtx = glm::rotate(modelmtx, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
     shaders->use();
     glUniformMatrix4fv(shaders->modelLoc, 1, GL_FALSE, glm::value_ptr(modelmtx));
 

@@ -16,7 +16,7 @@ Chunk::Chunk(int x, int y, std::map<std::string, Shader>& shaders, LargeTile*** 
         {
             this->largeTiles[y] = new LargeTile * [CHUNK_ARR_SIZE];
             for (int x = 0; x < CHUNK_ARR_SIZE; ++x)
-                this->largeTiles[y][x] = new LargeTile(y, x, this->y, this->x, "h1.exr", "h1.png", shaders);
+                this->largeTiles[y][x] = new LargeTile(y, x, this->y, this->x, "flat.exr", "h1.png", shaders);
         }
     }
     else this->largeTiles = largesTiles;
