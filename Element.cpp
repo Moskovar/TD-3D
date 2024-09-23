@@ -59,14 +59,14 @@ void Element::setModelMtx(glm::mat4 modelMatrix)
 /// </summary>
 /// <param name="deltaTime"></param>
 /// <returns> retourne la position anticipée</returns>
-glm::vec3 Element::anticipateMove(GLfloat deltaTime)
+glm::vec3 Element::getAnticipateMove(GLfloat deltaTime)
 {
 	glm::mat4 mtx = modelMatrix;
 	mtx = glm::translate(mtx, glm::vec3(0.0f, 0.0f, moveSpeed * deltaTime));
 	return glm::vec3(mtx[3].x, mtx[3].y, mtx[3].z);
 }
 
-glm::vec3 Element::anticipateFall(GLfloat deltaTime)
+glm::vec3 Element::getAnticipateFall(GLfloat deltaTime)
 {
 	glm::mat4 mtx = modelMatrix;
 	mtx = glm::translate(mtx, glm::vec3(0.0f, -FALL_SPEED * deltaTime, 0.0f));
@@ -75,7 +75,7 @@ glm::vec3 Element::anticipateFall(GLfloat deltaTime)
 
 AABB Element::getAnticipatedMoveHitbox(GLfloat deltaTime)
 {
-	glm::vec3 anticipatedPosition = anticipateMove(deltaTime);
+	glm::vec3 anticipatedPosition = getAnticipateMove(deltaTime);
 	AABB anticipatedHitbox;
 	anticipatedHitbox.max_point = anticipatedPosition + halfSize;
 	anticipatedHitbox.min_point = anticipatedPosition - halfSize;
@@ -85,12 +85,18 @@ AABB Element::getAnticipatedMoveHitbox(GLfloat deltaTime)
 
 AABB Element::getAnticipatedFallHitbox(GLfloat deltaTime)
 {
-	glm::vec3 anticipatedPosition = anticipateFall(deltaTime);
+	glm::vec3 anticipatedPosition = getAnticipateFall(deltaTime);
 	AABB anticipatedHitbox;
 	anticipatedHitbox.max_point   = anticipatedPosition + halfSize;
 	anticipatedHitbox.min_point   = anticipatedPosition - halfSize;
 
 	return anticipatedHitbox;
+}
+
+void Element::moveForward(GLfloat z)
+{
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, z));
+	updatePosition();
 }
 
 void Element::move(GLfloat deltaTime)

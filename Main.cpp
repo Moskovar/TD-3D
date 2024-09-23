@@ -25,6 +25,8 @@ PhysicsEngine   physics;
 std::map<char, bool> keyPressed;
 std::map<int , bool> mousePressed;
 
+Character* player = nullptr;
+
 std::vector<Entity*>  entities;
 std::vector<Element*> elements;
 
@@ -158,11 +160,11 @@ void applyGravity(Element* element, GLfloat deltaTime)
     if(elementPos->y > interpolatedGroundY) //Si l'élément n'est pas au sol on le fait tomber
     {
         for (Element* e : elements)
-            if (checkCollision(entities[0]->getAnticipatedFallHitbox(deltaTime), e->getRHitbox()))
+            if (checkCollision(player->getAnticipatedFallHitbox(deltaTime), e->getRHitbox()))
             {
                 collision = true;
 
-                GLfloat temp = distanceBetweenHitboxes(entities[0]->getRHitbox(), e->getRHitbox());
+                GLfloat temp = distanceBetweenHitboxes(player->getRHitbox(), e->getRHitbox());
                 if (distance < temp) distance = temp;
 
                 element->setFall(false);
@@ -174,7 +176,7 @@ void applyGravity(Element* element, GLfloat deltaTime)
             element->fall(deltaTime);
             element->setFall(true);
         }
-        //else entities[0]->moveUp(-distance);
+        //else player->moveUp(-distance);
     }
 
     //Si l'élément est tomber plus bas (ou même niveau) que le sol, on le remet au niveau du sol et on lui enlève son état de chute
@@ -197,14 +199,12 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     {
         mousePressed[button] = false;
 
-        if (button == GLFW_MOUSE_BUTTON_RIGHT || button == GLFW_MOUSE_BUTTON_LEFT && !keyPressed['W'] && !keyPressed['S']) entities[0]->setMove(false);
-
-        if (static_cast<Character*>(entities[0])->getSelectedBuilding() && button == GLFW_MOUSE_BUTTON_LEFT)
+        if (player->getSelectedBuilding() && button == GLFW_MOUSE_BUTTON_LEFT)
         {
-            elements.push_back(new Element(0, static_cast<Character*>(entities[0])->getSelectedBuilding()->getPosition(), "models/obj/foundation.obj"));
-            elements[elements.size() - 1]->setModelMtx(static_cast<Character*>(entities[0])->getSelectedBuilding()->getModelMtx());
+            Element* element = new Element(0, player->getSelectedBuilding()->getPosition(), "models/obj/foundation.obj");
+            element->setModelMtx(player->getSelectedBuilding()->getModelMtx());
+            elements.push_back(element);
         }
-
     }
 }
 
@@ -217,7 +217,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
         if (key == GLFW_KEY_W || key == GLFW_KEY_S || key == GLFW_KEY_D || key == GLFW_KEY_A)//sert à quoi ??
         {
-            entities[0]->directionPressed(key);
+            player->directionPressed(key);
         }
 
         switch (key) 
@@ -227,7 +227,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
         if (key == GLFW_KEY_Q)
         {
-            static_cast<Character*>(entities[0])->setSelected();
+            player->setSelected();
             std::cout << "A PRESSED !! " << std::endl;
         }
 
@@ -239,12 +239,12 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
         if (key == GLFW_KEY_W || key == GLFW_KEY_S || key == GLFW_KEY_D || key == GLFW_KEY_A)
         {
-            entities[0]->directionReleased(key);
+            player->directionReleased(key);
             if(!keyPressed[GLFW_KEY_W] && !keyPressed[GLFW_KEY_S])//Si ni avancer ni reculer n'est pressé, move = false;
-                entities[0]->setMove(false);
+                player->setMove(false);
         }
 
-        if (key == GLFW_KEY_Q) static_cast<Character*>(entities[0])->clearSelected();
+        if (key == GLFW_KEY_Q) player->clearSelected();
 
         std::cout << "A RELEASED !! " << std::endl;
     }
@@ -254,18 +254,23 @@ void processKeyPressed(GLFWwindow* window, float deltaTime)
 {
     if(keyPressed[GLFW_KEY_W] || keyPressed[GLFW_KEY_S])
     {
-        entities[0]->setMove(true);
+        player->setMove(true);
     }
 
-    if(!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
+    if (keyPressed[GLFW_KEY_D]) 
     {
-        if (keyPressed[GLFW_KEY_D]) entities[0]->turn(TURN_SPEED * deltaTime);
-        if (keyPressed[GLFW_KEY_A]) entities[0]->turn(TURN_SPEED * -deltaTime);
+        player->turn(TURN_SPEED   * deltaTime);
+        camera->addYaw(TURN_SPEED * deltaTime);
+    }
+    if (keyPressed[GLFW_KEY_A]) 
+    {
+        player->turn(TURN_SPEED   * -deltaTime);
+        camera->addYaw(TURN_SPEED * -deltaTime);
     }
 
-    if (keyPressed[GLFW_KEY_SPACE] && !entities[0]->isFalling())
+    if (keyPressed[GLFW_KEY_SPACE] && !player->isFalling())
     {
-        entities[0]->setJumping(true);
+        player->setJumping(true);
     }
 }
 
@@ -273,57 +278,74 @@ void processMousePressed(Window* window, float deltaTime)
 {
     GLFWwindow* glfwWindow = window->getGLFWWindow();
 
-    if (mousePressed[GLFW_MOUSE_BUTTON_RIGHT])
-    {
-        if (mousePressed[GLFW_MOUSE_BUTTON_LEFT])
-        {
-            GLfloat offsetYaw = camera->getYaw() - entities[0]->getYaw();
-            //std::cout << offsetYaw << std::endl;
-            entities[0]->turn(offsetYaw);
+    //if (mousePressed[GLFW_MOUSE_BUTTON_RIGHT])
+    //{
+    //    if (mousePressed[GLFW_MOUSE_BUTTON_LEFT])
+    //    {
+    //        GLfloat offsetYaw = camera->getYaw() - player->getYaw();
+    //        //std::cout << offsetYaw << std::endl;
+    //        player->turn(offsetYaw);
 
-            entities[0]->setMove(true);
-        }
+    //        player->setMove(true);
+    //    }
 
-        if (window->getXChange() > 0) entities[0]->turn(camera->getSensitivity() * deltaTime);
-        else if (window->getXChange() < 0) entities[0]->turn(camera->getSensitivity() * -deltaTime);
-    }
+    //    if (window->getXChange() > 0) player->turn(camera->getSensitivity() * deltaTime);
+    //    else if (window->getXChange() < 0) player->turn(camera->getSensitivity() * -deltaTime);
+    //}
+}
+
+void processCameraMoved()
+{
+    GLfloat offsetYaw = camera->getYaw() - player->getYaw();
+    if(offsetYaw != 0)  player->turn(offsetYaw);
 }
 
 int main()
 {
+    //--- Chargement du contexte OpenGL ---//
     window = new Window(800, 600);
-    glfwSetWindowPos(window->getGLFWWindow(), 2100, 200);
+    GLFWwindow* glfwWindow = window->getGLFWWindow();
 
-    entities.push_back(new Character(0, glm::vec3(300, 100.0f, 300)));
-    //entities.push_back(new Entity(1, glm::vec3(300.0f, 100.0f, 300.0f), "models/fbx/doublecube.fbx"));
+    glfwSetWindowPos(glfwWindow, 2100, 200);
+    glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+    glfwSetKeyCallback(glfwWindow, keyCallback);
+    glfwSetMouseButtonCallback(glfwWindow, mouse_button_callback);  // Clics de souris
+
+    //--- Chargement du joueur ---//
+    player = new Character(0, glm::vec3(300, 100.0f, 300));
+
+    if(player) entities.push_back(player);
+    else
+    {
+        printf("ERROR: PLAYER ENTITY NOT LOADED\n");
+        return 1;
+    }
+
 
     elements.push_back(new Element(0, glm::vec3(310, 100.0f, 300.0f), "models/obj/foundation.obj"));
 
-    //entities.push_back(new Entity(2, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/ground.fbx"));
-
-    camera = new Camera(entities[0]->getPositionP(), entities[0]->getPYaw(), &keyPressed);
+    //--- Chargement de la caméra ---//
+    camera = new Camera(player->getPositionP(), player->getPYaw(), &keyPressed);
 
     glm::mat4* view = camera->getViewMatrixP();
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.5f, 500.0f);
 
-    //--- Création des shaders ---//
+    //--- Chargement des shaders ---//
     std::map<std::string, Shader> shaders;
-    shaders["AnimatedObject"]                = Shader("shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl"                          , view, &projection);
-    shaders[MAP_JUNCTIONS_SHADERS]           = Shader("shaders/map/map_vertex_shader.glsl", "shaders/map/map_fragment_shader.glsl"          , view, &projection);
-    shaders[CHUNKS_JUNCTIONS_SHADERS]        = Shader("shaders/map/map_vertex_shader.glsl", "shaders/map/chunks_fragment_shader.glsl"       , view, &projection);
-    shaders[LARGETILES_SHADERS]              = Shader("shaders/map/map_vertex_shader.glsl", "shaders/map/largetiles_fragment_shader.glsl"   , view, &projection);
-
-    GLFWwindow* glfwWindow = window->getGLFWWindow();
-    glfwSetKeyCallback(glfwWindow, keyCallback);
-    glfwSetMouseButtonCallback(glfwWindow, mouse_button_callback);  // Clics de souris
+    shaders["AnimatedObject"]           = Shader("shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl"                          , view, &projection);
+    shaders[MAP_JUNCTIONS_SHADERS]      = Shader("shaders/map/map_vertex_shader.glsl", "shaders/map/map_fragment_shader.glsl"          , view, &projection);
+    shaders[CHUNKS_JUNCTIONS_SHADERS]   = Shader("shaders/map/map_vertex_shader.glsl", "shaders/map/chunks_fragment_shader.glsl"       , view, &projection);
+    shaders[LARGETILES_SHADERS]         = Shader("shaders/map/map_vertex_shader.glsl", "shaders/map/largetiles_fragment_shader.glsl"   , view, &projection);
 
     // Activer le test de profondeur
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
-    if (glIsEnabled(GL_DEPTH_TEST)) std::cout << "Depth test is enabled."     << std::endl;
-    else                            std::cout << "Depth test is not enabled." << std::endl;
+    //if (glIsEnabled(GL_DEPTH_TEST)) std::cout << "Depth test is enabled."     << std::endl;
+    //else                            std::cout << "Depth test is not enabled." << std::endl;
 
+    //--- Chargement de la map ---//
     world = new Game::Map(shaders);
     mapManager.loadMap(world, shaders);
 
@@ -332,12 +354,6 @@ int main()
           lastFrame    = glfwGetTime(), deltaTime = 0, now = 0;
 
     Texture textureTemp("textures/basic_texture_1.png");
-
-    GLint maxTextures;
-    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTextures);
-    std::cout << "Max textures supported: " << maxTextures << std::endl;
-
-    std::cout << "VERTEX Y: " << world->getChunk(0, 0)->getLargeTile(0, 0)->getVertex(511, 511).y << std::endl;;
     
     //Boucle de rendu
     while (!glfwWindowShouldClose(glfwWindow))
@@ -349,51 +365,53 @@ int main()
         now       = glfwGetTime();
         deltaTime = now - lastFrame;
         lastFrame = now;
-        applyGravity(entities[0], deltaTime);
-        //std::cout << "Collision a " << distanceBetweenHitboxes(entities[0]->getRHitbox(), elements[0]->getRHitbox()) << "f" << std::endl;
+
+        //applyGravity(player, deltaTime);
+
+        //--- Caméra ---//
+        camera->mouseControl(window->getGLFWWindow(), window->getXChange(), window->getYChange(), window->getScrollValue(), deltaTime);
+
         //--- Personnage ---//
-        processKeyPressed(glfwWindow, deltaTime);
-        processMousePressed(window, deltaTime);
+        //if (player->isJumping()) player->jump(deltaTime);
 
-        if(entities[0]->isJumping()) entities[0]->jump(deltaTime);
+        std::cout << "MOVE: " << player->isMoving() << std::endl;
 
-        if(entities[0]->isMoving())
+        if (player->isMoving())
         {
             GLfloat factor = 1;
 
-            if (keyPressed['S'] && (!mousePressed[GLFW_MOUSE_BUTTON_LEFT] || !mousePressed[GLFW_MOUSE_BUTTON_RIGHT]) && !keyPressed['W'])//Si on recule
+            if (keyPressed['S'] && !keyPressed['W'])//Si on recule
             {
                 factor = -0.5;//Vitesse divisée par 2 en reculant
             }
             else if (keyPressed['W'] && keyPressed['S']) factor = 0;//si Z et S sont appuyés, on bouge pas
 
-            if (entities[0]->isFalling()) factor /= 2;
-            
-            if(checkHeightMap(entities[0], entities[0]->anticipateMove(deltaTime * factor)))//check si la map ne bloque pas
+            if (player->isFalling()) factor /= 2;
+
+            if (checkHeightMap(player, player->getAnticipateMove(deltaTime * factor)))//check si la map ne bloque pas
             {
                 bool collision = false;
                 GLfloat distance = 0.0f;
-                for(Element* e : elements)
-                    if (checkCollision(entities[0]->getAnticipatedMoveHitbox(deltaTime), e->getRHitbox()))
+                for (Element* e : elements)
+                    if (checkCollision(player->getAnticipatedMoveHitbox(deltaTime), e->getRHitbox()))
                     {
-                        
 
-                        GLfloat temp = distanceBetweenHitboxes(entities[0]->getRHitbox(), e->getRHitbox());
+
+                        GLfloat temp = distanceBetweenHitboxes(player->getRHitbox(), e->getRHitbox());
                         std::cout << "DIST: " << temp << std::endl;
                         if (distance < temp) distance = temp;
 
                         collision = true;
                     }
 
-                if (!collision) entities[0]->move(deltaTime * factor);
-                else            entities[0]->moveForward(distance);
+                if (!collision) player->move(deltaTime * factor);
+                else            player->moveForward(distance);
             }
-
-            if (!mousePressed[GLFW_MOUSE_BUTTON_LEFT] && !mousePressed[GLFW_MOUSE_BUTTON_RIGHT]) camera->resetYaw();
         }
 
-        //--- Caméra ---//
-        camera->mouseControl(window->getGLFWWindow(), window->getXChange(), window->getYChange(), window->getScrollValue(), deltaTime);
+        processCameraMoved();
+        processKeyPressed(glfwWindow, deltaTime);
+        processMousePressed(window, deltaTime);
 
         // Effacer le buffer de couleur et de profondeur
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -410,10 +428,9 @@ int main()
         for (Element* e : elements)
             e->render(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart);
 
-        static_cast<Character*>(entities[0])->renderSelected(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart);
+        player->renderSelected(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart);
 
         //--- Render terrain ---//
-        //world->getChunk(0, 0)->render();
         world->render();
 
         //--- Reset des mouvements souris dans la fenêtre pour traiter les prochains ---//

@@ -25,22 +25,22 @@ class Element
 		glm::mat4	getModelMtx()		{ return modelMatrix;			}
 		uint8_t		getDirectionValue() { return directionValue;		}
 
-		glm::vec3	anticipateMove(GLfloat deltaTime);
-		glm::vec3   anticipateFall(GLfloat deltaTime);
+		glm::vec3	getAnticipateMove(GLfloat deltaTime);
+		glm::vec3   getAnticipateFall(GLfloat deltaTime);
 		AABB		getAnticipatedMoveHitbox(GLfloat deltaTime);
 		AABB		getAnticipatedFallHitbox(GLfloat deltaTime);
 		
 		
 		//--- Setters ---//
-		void setYaw(GLfloat yaw);
 		void setAnimationID(uint8_t id)			{ animationID = id;					}
+		void setPosition(glm::vec3 position)	{ this->position	= position;		}
+		void setYaw(GLfloat yaw);
 		void setMove(bool state);
 		void setFall(bool state);
-		void setPosition(glm::vec3 position)	{ this->position	= position;		}
 		void setModelMtx(glm::mat4 modelMatrix);
 
+		void moveForward(GLfloat z);
 		void move(GLfloat deltaTime);
-		void moveForward(GLfloat z) { modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, z)); updatePosition(); }
 		void moveUp(GLfloat positionY);
 		void turn(GLfloat yaw);
 		void fall(GLfloat deltaTime);
@@ -49,7 +49,9 @@ class Element
 		void render(GLuint& modelLoc, GLuint& bonesTransformsLoc, float& timeSinceStart);
 
 	protected:
-		uint8_t id = -1, animationID = 0;
+		uint8_t id = -1, animationID = 0, directionValue = 0;//entier non signé de 0 à 255 -> à mettre dans une autre classe qui gère les entrées claviers ?
+
+		//--- POSITION ---//
 		Model*    model       = nullptr;
 		glm::mat4 modelMatrix = glm::mat4(1.0f);
 		glm::vec3 position	  = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -57,10 +59,9 @@ class Element
 		GLfloat moveSpeed = 25;
 		bool moving = false, falling = false;
 
-		uint8_t directionValue = 0;//entier non signé de 0 à 255 -> à mettre dans une autre classe qui gère les entrées claviers ?
-
-		glm::vec3 halfSize = glm::vec3(0.0f, 0.0f, 0.0f);
+		//--- HITBOX ---//
 		AABB hitBox;
+		glm::vec3 halfSize = glm::vec3(0.0f, 0.0f, 0.0f);
 
 		void calculateHitBox();
 };

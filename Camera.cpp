@@ -66,29 +66,11 @@ void Camera::mouseControl(GLFWwindow* window, GLfloat xChange, GLfloat yChange, 
 {
 	//xChange *= turnSpeed;//USE TURNSPEED OU VELOCITY ???
 
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) || glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT)) 
-	{
-		if		(xChange > 0) addYaw(deltaTime * sensitivity);
-		else if (xChange < 0) addYaw(-deltaTime * sensitivity);
+	if		(xChange > 0) addYaw(deltaTime * sensitivity);
+	else if (xChange < 0) addYaw(-deltaTime * sensitivity);
 
-		if		(yChange > 0) addPitch(-deltaTime * sensitivity / 2);//pour clique gauche et droit
-		else if (yChange < 0) addPitch(deltaTime * sensitivity / 2);
-	}
-
-	if(!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT))
-	{
-		if ((*keyPressed)[GLFW_KEY_D])
-		{
-			resetYaw();
-			addYaw(TURN_SPEED * deltaTime);
-		}
-
-		if ((*keyPressed)[GLFW_KEY_A])
-		{
-			resetYaw();
-			addYaw(TURN_SPEED * -deltaTime);
-		}
-	}
+	if		(yChange > 0) addPitch(-deltaTime * sensitivity / 2);//pour clique gauche et droit
+	else if (yChange < 0) addPitch(deltaTime * sensitivity / 2);
 
 	if (scrollValue != 0)
 	{

@@ -11,7 +11,7 @@
 #define LARGETILES_SHADERS					"largetiles_shaders"
 
 #define MAX_HEIGHT	500
-#define TURN_SPEED	100		//character turn speed
+#define TURN_SPEED	300		//character turn speed
 #define FALL_SPEED	25.0f	//character fall speed
 #define JUMP_HIGH	4.0f
 
