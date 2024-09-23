@@ -13,22 +13,23 @@ class Element
 		~Element();
 
 		//--- Getters ---//
-		Model*		getModel()		{ return model;					}
-		glm::vec3	getPosition()	{ return position;				}
-		glm::vec3*	getPositionP()	{ return &position;				}
-		GLfloat		getY()			{ return position.y;			}
-		GLfloat		getYaw()		{ return yaw;					}
-		GLfloat*	getPYaw()		{ return &yaw;					}
-		AABB&		getRHitbox()	{ return hitBox;				}
-		bool		isMoving()		{ return moving;				}
-		bool		isFalling()		{ return falling;				}
-		glm::mat4	getModelMtx()	{ return modelMatrix;			}
+		Model*		getModel()			{ return model;					}
+		glm::vec3	getPosition()		{ return position;				}
+		glm::vec3*	getPositionP()		{ return &position;				}
+		GLfloat		getY()				{ return position.y;			}
+		GLfloat		getYaw()			{ return yaw;					}
+		GLfloat*	getPYaw()			{ return &yaw;					}
+		AABB&		getRHitbox()		{ return hitBox;				}
+		bool		isMoving()			{ return moving;				}
+		bool		isFalling()			{ return falling;				}
+		glm::mat4	getModelMtx()		{ return modelMatrix;			}
+		uint8_t		getDirectionValue() { return directionValue;		}
 
 		glm::vec3	anticipateMove(GLfloat deltaTime);
-		AABB		getAnticipatedHitbox(GLfloat deltaTime);
+		glm::vec3   anticipateFall(GLfloat deltaTime);
+		AABB		getAnticipatedMoveHitbox(GLfloat deltaTime);
+		AABB		getAnticipatedFallHitbox(GLfloat deltaTime);
 		
-		
-
 		
 		//--- Setters ---//
 		void setYaw(GLfloat yaw);
@@ -39,6 +40,7 @@ class Element
 		void setModelMtx(glm::mat4 modelMatrix);
 
 		void move(GLfloat deltaTime);
+		void moveForward(GLfloat z) { modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, z)); updatePosition(); }
 		void moveUp(GLfloat positionY);
 		void turn(GLfloat yaw);
 		void fall(GLfloat deltaTime);
@@ -52,12 +54,13 @@ class Element
 		glm::mat4 modelMatrix = glm::mat4(1.0f);
 		glm::vec3 position	  = glm::vec3(0.0f, 0.0f, 0.0f);
 		GLfloat yaw = -90;//à descendre dans entity ? avec render en méthode abstraite ?
-		GLfloat moveSpeed = 100;
+		GLfloat moveSpeed = 25;
 		bool moving = false, falling = false;
+
+		uint8_t directionValue = 0;//entier non signé de 0 à 255 -> à mettre dans une autre classe qui gère les entrées claviers ?
 
 		glm::vec3 halfSize = glm::vec3(0.0f, 0.0f, 0.0f);
 		AABB hitBox;
-
 
 		void calculateHitBox();
 };

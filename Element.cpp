@@ -6,7 +6,8 @@ Element::Element(short id, glm::vec3 position, const std::string& filePath)
 	this->id	   = id;
 
 	this->position = position;
-	halfSize = (model->getMaxPoint() - model->getMinPoint()) / 2.0f;
+
+	halfSize = (model->getMaxPoint() - model->getMinPoint()) * 0.5f;
 
 	model->translate(modelMatrix, position);
 	calculateHitBox();
@@ -65,12 +66,29 @@ glm::vec3 Element::anticipateMove(GLfloat deltaTime)
 	return glm::vec3(mtx[3].x, mtx[3].y, mtx[3].z);
 }
 
-AABB Element::getAnticipatedHitbox(GLfloat deltaTime)
+glm::vec3 Element::anticipateFall(GLfloat deltaTime)
+{
+	glm::mat4 mtx = modelMatrix;
+	mtx = glm::translate(mtx, glm::vec3(0.0f, -FALL_SPEED * deltaTime, 0.0f));
+	return glm::vec3(mtx[3].x, mtx[3].y, mtx[3].z);
+}
+
+AABB Element::getAnticipatedMoveHitbox(GLfloat deltaTime)
 {
 	glm::vec3 anticipatedPosition = anticipateMove(deltaTime);
 	AABB anticipatedHitbox;
 	anticipatedHitbox.max_point = anticipatedPosition + halfSize;
 	anticipatedHitbox.min_point = anticipatedPosition - halfSize;
+
+	return anticipatedHitbox;
+}
+
+AABB Element::getAnticipatedFallHitbox(GLfloat deltaTime)
+{
+	glm::vec3 anticipatedPosition = anticipateFall(deltaTime);
+	AABB anticipatedHitbox;
+	anticipatedHitbox.max_point   = anticipatedPosition + halfSize;
+	anticipatedHitbox.min_point   = anticipatedPosition - halfSize;
 
 	return anticipatedHitbox;
 }
@@ -108,9 +126,6 @@ void Element::calculateHitBox()
 {
 	hitBox.max_point = position + halfSize;
 	hitBox.min_point = position - halfSize;
-
-	//hitBox.max_point = position + model->getMaxPoint();
-	//hitBox.min_point = position - model->getMinPoint();
 }
 
 void Element::updatePosition()
