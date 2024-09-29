@@ -16,8 +16,8 @@ class Entity : public Element
 
 		//--- Setters ---//
 		void setJumping(bool state)					{ jumping = state;														}
-		void directionPressed(uint8_t keyPressed)	{ directionValue += directionsValue[keyPressed]; updateAnimationID();	}
-		void directionReleased(uint8_t keyPressed)	{ directionValue -= directionsValue[keyPressed]; updateAnimationID();	}
+		void directionPressed(uint8_t keyPressed)	{ movingValue += directionsValue[keyPressed]; updateAnimationID();	}
+		void directionReleased(uint8_t keyPressed)	{ movingValue -= directionsValue[keyPressed]; updateAnimationID();	}
 
 		void jump(GLfloat deltaTime);
 

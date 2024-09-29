@@ -4,6 +4,8 @@
 
 #include <map>
 #include <string>
+#include <array>
+#include <iostream>
 
 //--- Shaders ---//
 #define MAP_JUNCTIONS_SHADERS				"map_shaders"
@@ -36,6 +38,53 @@
 struct AABB
 {
 	glm::vec3 min_point = glm::vec3(0.0f, 0.0f, 0.0f), max_point = glm::vec3(0.0f, 0.0f, 0.0f);
+};
+
+struct OBB 
+{
+	glm::vec3 center;  // Position centrale de la hitbox
+	glm::mat3 orientation;  // Matrice 3x3 définissant les axes locaux (orientations)
+	glm::vec3 halfSize;  // Moitié de la taille sur chaque axe
+	glm::vec3 minPoint;
+	glm::vec3 maxPoint;
+
+	void updateBounds() 
+	{
+		glm::vec3 localMin = -halfSize;
+		glm::vec3 localMax = halfSize;
+
+		// Calculer les coins transformés (appliquer l'orientation sur chaque axe)
+		glm::vec3 xAxis = orientation[0] * halfSize.x;
+		glm::vec3 yAxis = orientation[1] * halfSize.y;
+		glm::vec3 zAxis = orientation[2] * halfSize.z;
+
+		// Calculer les 8 coins de l'OBB dans l'espace monde
+		std::array<glm::vec3, 8> corners = 
+		{
+			center - xAxis - yAxis - zAxis,  // Coin inférieur arrière gauche
+			center + xAxis - yAxis - zAxis,  // Coin inférieur arrière droit
+			center - xAxis + yAxis - zAxis,  // Coin supérieur arrière gauche
+			center + xAxis + yAxis - zAxis,  // Coin supérieur arrière droit
+			center - xAxis - yAxis + zAxis,  // Coin inférieur avant gauche
+			center + xAxis - yAxis + zAxis,  // Coin inférieur avant droit
+			center - xAxis + yAxis + zAxis,  // Coin supérieur avant gauche
+			center + xAxis + yAxis + zAxis   // Coin supérieur avant droit
+		};
+
+		// Initialiser minPoint et maxPoint à la première valeur
+		minPoint = corners[0];
+		maxPoint = corners[0];
+
+		// Trouver les min et max sur chaque axe
+		for (const auto& corner : corners) 
+		{
+			minPoint = glm::min(minPoint, corner);  // Trouve les composantes minimales
+			maxPoint = glm::max(maxPoint, corner);  // Trouve les composantes maximales
+		}
+
+		//std::cout << "MP: " << maxPoint.x << " : " << maxPoint.y << " : " << maxPoint.z << std::endl;
+		//std::cout << "mp: " << minPoint.x << " : " << minPoint.y << " : " << minPoint.z << std::endl;
+	}
 };
 
 struct HeightMapVertex

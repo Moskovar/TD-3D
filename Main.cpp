@@ -30,50 +30,66 @@ Character* player = nullptr;
 std::vector<Entity*>  entities;
 std::vector<Element*> elements;
 
-GLfloat distanceBetweenHitboxes(const AABB& playerHitbox, const AABB& objectHitbox) {
+GLfloat distanceBetweenHitboxes(Element* e1, Element* e2) 
+{
     GLfloat distanceX = 0.0f;
     GLfloat distanceY = 0.0f;
     GLfloat distanceZ = 0.0f;
 
+    glm::vec3 e1_maxPoint = e1->getRHitbox().maxPoint;
+    glm::vec3 e1_minPoint = e1->getRHitbox().minPoint;
+    glm::vec3 e2_maxPoint = e2->getRHitbox().maxPoint;
+    glm::vec3 e2_minPoint = e2->getRHitbox().minPoint;
+
     // Axe X
-    if (playerHitbox.max_point.x < objectHitbox.min_point.x)
+    if (e1_maxPoint.x < e2_minPoint.x) 
     {
-        // Le joueur est à gauche de l'objet
-        distanceX = objectHitbox.min_point.x - playerHitbox.max_point.x;
+        distanceX = e2_minPoint.x - e1_maxPoint.x;  // À gauche
     }
-    else if (playerHitbox.min_point.x > objectHitbox.max_point.x)
+    else if (e1_minPoint.x > e2_maxPoint.x) 
     {
-        // Le joueur est à droite de l'objet
-        distanceX = playerHitbox.min_point.x - objectHitbox.max_point.x;
+        distanceX = e1_minPoint.x - e2_maxPoint.x;  // À droite
     }
 
     // Axe Y
-    if (playerHitbox.max_point.y < objectHitbox.min_point.y)
+    if (e1_maxPoint.y < e2_minPoint.y) 
     {
-        // Le joueur est en-dessous de l'objet
-        distanceY = objectHitbox.min_point.y - playerHitbox.max_point.y;
+        distanceY = e2_minPoint.y - e1_maxPoint.y;  // En-dessous
     }
-    else if (playerHitbox.min_point.y > objectHitbox.max_point.y)
+    else if (e1_minPoint.y > e2_maxPoint.y) 
     {
-        // Le joueur est au-dessus de l'objet
-        distanceY = playerHitbox.min_point.y - objectHitbox.max_point.y;
+        distanceY = e1_minPoint.y - e2_maxPoint.y;  // Au-dessus
     }
 
     // Axe Z
-    if (playerHitbox.max_point.z < objectHitbox.min_point.z)
+    if (e1_maxPoint.z < e2_minPoint.z) 
     {
-        // Le joueur est derrière l'objet
-        distanceZ = objectHitbox.min_point.z - playerHitbox.max_point.z;
+        distanceZ = e2_minPoint.z - e1_maxPoint.z;  // Derrière
     }
-    else if (playerHitbox.min_point.z > objectHitbox.max_point.z) {
-        // Le joueur est devant l'objet
-        distanceZ = playerHitbox.min_point.z - objectHitbox.max_point.z;
+    else if (e1_minPoint.z > e2_maxPoint.z) 
+    {
+        distanceZ = e1_minPoint.z - e2_maxPoint.z;  // Devant
     }
 
-    std::cout << "DX: " << distanceX << " DY: " << distanceY << "DZ: " << distanceZ << std::endl;
+    // Si les hitboxes se chevauchent, retourner 0
+    if (distanceX <= 0.0f && distanceY <= 0.0f && distanceZ <= 0.0f) 
+    {
+        return 0.0f;  // Collision
+    }
 
     // Calculer la distance totale entre les deux hitboxes en 3D
     return glm::sqrt(distanceX * distanceX + distanceY * distanceY + distanceZ * distanceZ);
+}
+
+glm::vec3 applyTransformation(const glm::mat4& transformMatrix, const glm::vec3& point) {
+    // Convertir glm::vec3 en glm::vec4
+    glm::vec4 point4D = glm::vec4(point, 1.0f); // Composante homogène = 1.0
+
+    // Appliquer la matrice de transformation
+    glm::vec4 transformedPoint = transformMatrix * point4D;
+
+    // Retourner le point transformé en glm::vec3
+    return glm::vec3(transformedPoint); // Ignore la composante homogène
 }
 
 bool checkHeightMap(Element* element, glm::vec3 nextElementPos)//revoir les points comptés dans l'interpolation
@@ -104,30 +120,9 @@ bool checkHeightMap(Element* element, glm::vec3 nextElementPos)//revoir les poin
     return true;
 }
 
-bool checkCollision(const AABB& box1, const AABB& box2)
-{
-    //std::cout << box1.max_point.x << " < " << box2.min_point.x << " || " << box1.min_point.x << " > " << box2.max_point.x << std::endl;
-    // Vérifier l'axe x
-    if (box1.max_point.x < box2.min_point.x || box1.min_point.x > box2.max_point.x)
-        return false; // Pas de collision sur l'axe x
-
-    //std::cout << box1.max_point.y << " < " << box2.min_point.y << " || " << box1.min_point.y << " > " << box2.max_point.y << std::endl;
-    // Vérifier l'axe y
-    if (box1.max_point.y < box2.min_point.y || box1.min_point.y > box2.max_point.y)
-        return false; // Pas de collision sur l'axe y
-
-    //std::cout << box1.max_point.z << " < " << box2.min_point.z << " || " << box1.min_point.z << " > " << box2.max_point.z << std::endl;
-    //// Vérifier l'axe z
-    if (box1.max_point.z < box2.min_point.z || box1.min_point.z > box2.max_point.z)
-        return false; // Pas de collision sur l'axe z
-
-    // Les boîtes se chevauchent
-    return true;
-}
-
 void applyGravity(Element* element, GLfloat deltaTime)
 {
-    if (static_cast<Entity*>(element) && static_cast<Entity*>(element)->isJumping()) return;
+    if (static_cast<Entity*>(element) && static_cast<Entity*>(element)->isJumping()) return;//?? why entity
 
     glm::vec3* elementPos = element->getPositionP();
 
@@ -140,38 +135,26 @@ void applyGravity(Element* element, GLfloat deltaTime)
     Chunk*     chunk = world->getChunk(    (int)element->getPosition().z / chunkLength, (int)element->getPosition().x / chunkLength);
     LargeTile* lt    = chunk->getLargeTile(((int)element->getPosition().z / largeTileLength) % CHUNK_ARR_SIZE, ((int)element->getPosition().x / largeTileLength) % CHUNK_ARR_SIZE);
 
-    int nextZ = (z < LARGETILE_SIZE - 1) ? z + 1 : z - 1,
-        nextX = (x < LARGETILE_SIZE - 1) ? x + 1 : x - 1;
-
-    //std::cout << "NextZ: " << nextZ << " ... " << "NextX: " << nextX << std::endl;
-
-    GLfloat interpolatedGroundY = 0.0f, y1 = 0.0f, y2 = 0.0f, y3 = 0.0f, y4 = 0.0f;
-
-    //y1 = lt->getVertex(nextZ, x).y;      y2 = lt->getVertex(nextZ, nextX).y;
-    //y3 = lt->getVertex(z    , x).y;      y4 = lt->getVertex(z    , nextX).y;
-
-    //interpolatedGroundY = (y1 + y2 + y3 + y4) / 4.0f;
-    interpolatedGroundY = lt->getVertex(z, x).y;
+    GLfloat yGround = lt->getVertex(z, x).y;;
 
     bool collision = false;
     GLfloat distance = 0.0f;
 
-    //std::cout << elementPos->y << " ... " << interpolatedGroundY << std::endl;
-    if(elementPos->y > interpolatedGroundY) //Si l'élément n'est pas au sol on le fait tomber
+    if(elementPos->y > yGround) //Si l'élément n'est pas au sol
     {
-        for (Element* e : elements)
-            if (checkCollision(player->getAnticipatedFallHitbox(deltaTime), e->getRHitbox()))
-            {
-                collision = true;
+        //for (Element* e : elements)
+        //    if (checkCollision(player->getAnticipatedFallHitbox(deltaTime), e->getRHitbox2()))
+        //    {
+        //        collision = true;
 
-                GLfloat temp = distanceBetweenHitboxes(player->getRHitbox(), e->getRHitbox());
-                if (distance < temp) distance = temp;
+        //        //GLfloat temp = distanceBetweenHitboxes(player->getRHitbox(), e->getRHitbox());
+        //        //if (distance < temp) distance = temp;
+        //        std::cout << "OH COLLISION!" << std::endl;
+        //        element->setFall(false);
+        //        break;
+        //    }
 
-                element->setFall(false);
-                break;
-            }
-
-        if(!collision)
+        if(!collision)//s'il n'y a pas collision avec un elément alors on le fait tomber vers le sol
         {
             element->fall(deltaTime);
             element->setFall(true);
@@ -179,12 +162,59 @@ void applyGravity(Element* element, GLfloat deltaTime)
         //else player->moveUp(-distance);
     }
 
-    //Si l'élément est tomber plus bas (ou même niveau) que le sol, on le remet au niveau du sol et on lui enlève son état de chute
-    if (elementPos->y <= interpolatedGroundY && !collision)
+    //Si l'élément est tomber plus bas que le sol, on le remet au niveau du sol et on lui enlève son état de chute
+    if (elementPos->y < yGround)
     {
-        elementPos->y = interpolatedGroundY;
+        elementPos->y = yGround;
         element->setFall(false);
     }
+}
+
+bool testAxis(const glm::vec3& axis, const OBB& obb1, const OBB& obb2, const glm::vec3& centerVector) {
+    // Projeter la distance entre les centres sur cet axe
+    float distanceCenters = fabs(glm::dot(centerVector, axis));
+
+    // Projeter la taille des OBB sur cet axe
+    float projection1 = obb1.halfSize.x * fabs(glm::dot(obb1.orientation[0], axis)) +
+        obb1.halfSize.y * fabs(glm::dot(obb1.orientation[1], axis)) +
+        obb1.halfSize.z * fabs(glm::dot(obb1.orientation[2], axis));
+
+    float projection2 = obb2.halfSize.x * fabs(glm::dot(obb2.orientation[0], axis)) +
+        obb2.halfSize.y * fabs(glm::dot(obb2.orientation[1], axis)) +
+        obb2.halfSize.z * fabs(glm::dot(obb2.orientation[2], axis));
+
+    // Vérifier s'il y a séparation
+    const float epsilon = 0.0001f;  // Tolérance numérique
+    return distanceCenters <= (projection1 + projection2 + epsilon);
+}
+
+bool checkCollision(const OBB& obb1, const OBB& obb2) {
+    // Les axes locaux des deux OBB (trois pour chaque)
+    glm::vec3 axes1[3] = { obb1.orientation[0], obb1.orientation[1], obb1.orientation[2] };
+    glm::vec3 axes2[3] = { obb2.orientation[0], obb2.orientation[1], obb2.orientation[2] };
+
+    // Vecteur entre les centres des deux OBB
+    glm::vec3 centerVector = obb2.center - obb1.center;
+
+    // Tester les 15 axes potentiels de séparation (axes locaux + produits croisés)
+    for (int i = 0; i < 3; ++i) {
+        // Tester les axes locaux de obb1
+        if (!testAxis(axes1[i], obb1, obb2, centerVector)) return false;
+
+        // Tester les axes locaux de obb2
+        if (!testAxis(axes2[i], obb1, obb2, centerVector)) return false;
+
+        // Tester les produits croisés entre les axes locaux de obb1 et obb2
+        for (int j = 0; j < 3; ++j) {
+            glm::vec3 crossAxis = glm::cross(axes1[i], axes2[j]);
+            if (glm::length(crossAxis) > 0.0001f) {  // Tolérance pour ignorer les vecteurs nuls
+                if (!testAxis(crossAxis, obb1, obb2, centerVector)) return false;
+            }
+        }
+    }
+
+    // Si aucune séparation n'a été trouvée, il y a collision
+    return true;
 }
 
 bool checkCollision(Element* element1, Element* element2)
@@ -201,8 +231,8 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 
         if (player->getSelectedBuilding() && button == GLFW_MOUSE_BUTTON_LEFT)
         {
-            Element* element = new Element(0, player->getSelectedBuilding()->getPosition(), "models/obj/foundation.obj");
-            element->setModelMtx(player->getSelectedBuilding()->getModelMtx());
+            Element* element = new Element(0, player->getSelectedBuilding()->getModelMtx(), "models/obj/foundation.obj");
+            //element->setModelMtx(player->getSelectedBuilding()->getModelMtx());
             elements.push_back(element);
         }
     }
@@ -246,7 +276,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
         if (key == GLFW_KEY_Q) player->clearSelected();
 
-        std::cout << "A RELEASED !! " << std::endl;
+        if (key == GLFW_KEY_E) elements[0]->turn(45.0f);
     }
 }
 
@@ -322,14 +352,13 @@ int main()
         return 1;
     }
 
-
     elements.push_back(new Element(0, glm::vec3(310, 100.0f, 300.0f), "models/obj/foundation.obj"));
 
     //--- Chargement de la caméra ---//
     camera = new Camera(player->getPositionP(), player->getPYaw(), &keyPressed);
 
-    glm::mat4* view = camera->getViewMatrixP();
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.5f, 500.0f);
+    glm::mat4* view         = camera->getViewMatrixP();
+    glm::mat4 projection    = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.5f, 500.0f);
 
     //--- Chargement des shaders ---//
     std::map<std::string, Shader> shaders;
@@ -366,7 +395,7 @@ int main()
         deltaTime = now - lastFrame;
         lastFrame = now;
 
-        //applyGravity(player, deltaTime);
+        applyGravity(player, deltaTime);
 
         //--- Caméra ---//
         camera->mouseControl(window->getGLFWWindow(), window->getXChange(), window->getYChange(), window->getScrollValue(), deltaTime);
@@ -374,7 +403,7 @@ int main()
         //--- Personnage ---//
         //if (player->isJumping()) player->jump(deltaTime);
 
-        std::cout << "MOVE: " << player->isMoving() << std::endl;
+        //std::cout << "MOVE: " << player->isMoving() << std::endl;
 
         if (player->isMoving())
         {
@@ -386,24 +415,25 @@ int main()
             }
             else if (keyPressed['W'] && keyPressed['S']) factor = 0;//si Z et S sont appuyés, on bouge pas
 
-            if (player->isFalling()) factor /= 2;
+            //if (player->isFalling()) factor /= 2;
 
-            if (checkHeightMap(player, player->getAnticipateMove(deltaTime * factor)))//check si la map ne bloque pas
+            if (checkHeightMap(player, player->getAnticipatedMove(deltaTime * factor)[3]))//check si la map ne bloque pas
             {
                 bool collision = false;
                 GLfloat distance = 0.0f;
                 for (Element* e : elements)
-                    if (checkCollision(player->getAnticipatedMoveHitbox(deltaTime), e->getRHitbox()))
+                {
+                    if (checkCollision(player->getAnticipatedMoveHitbox(deltaTime * factor), e->getRHitbox()))
                     {
-
-
-                        GLfloat temp = distanceBetweenHitboxes(player->getRHitbox(), e->getRHitbox());
-                        std::cout << "DIST: " << temp << std::endl;
+                        GLfloat temp = distanceBetweenHitboxes(player, e);
+                        //std::cout << "DIST: " << temp << std::endl;
                         if (distance < temp) distance = temp;
+                        std::cout << "COLLISION AT: " << distance << std::endl;
 
                         collision = true;
                     }
-
+                }
+                //player->move(deltaTime * factor);
                 if (!collision) player->move(deltaTime * factor);
                 else            player->moveForward(distance);
             }
@@ -429,6 +459,11 @@ int main()
             e->render(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart);
 
         player->renderSelected(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart);
+
+        //std::cout << player->getRHitbox().orientation[2].x << " : " << player->getRHitbox().orientation[2].y << " : " << player->getRHitbox().orientation[2].z << std::endl;
+        //std::cout << elements[0]->getRHitbox().orientation[0].x << " : " << elements[0]->getRHitbox().orientation[0].y << " : " << elements[0]->getRHitbox().orientation[0].z << std::endl;
+        //std::cout << elements[0]->getRHitbox().orientation[1].x << " : " << elements[0]->getRHitbox().orientation[1].y << " : " << elements[0]->getRHitbox().orientation[1].z << std::endl;
+        //std::cout << elements[0]->getRHitbox().orientation[2].x << " : " << elements[0]->getRHitbox().orientation[2].y << " : " << elements[0]->getRHitbox().orientation[2].z << std::endl;
 
         //--- Render terrain ---//
         world->render();

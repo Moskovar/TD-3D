@@ -19,7 +19,7 @@ Texture::Texture(std::string filePath)
     // Vérifie si l'image a été chargée avec succès
     if (data)
     {
-        printf("||--- Texture loaded ---||\n");
+        //printf("||--- Texture loaded ---||\n");
         // Déclare une variable pour stocker le format de l'image
         GLenum format;
 

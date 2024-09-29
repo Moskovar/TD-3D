@@ -293,6 +293,8 @@ void Model::loadMesh(aiMesh* mesh, const aiScene* scene, std::vector<Mesh*>& mes
 		}
 	}
 
+	std::cout << "MAXPOINT: " << maxPoint.x << " ... " << maxPoint.y << " ... " << maxPoint.z << std::endl;
+
 	for (size_t i = 0; i < mesh->mNumFaces; i++)
 	{
 		aiFace face = mesh->mFaces[i];

@@ -9,6 +9,7 @@ class Element
 	public:
 		Element() {};
 		Element(short id, glm::vec3 position, const std::string& filePath);
+		Element(short id, glm::mat4 modelMtx, const std::string& filePath);
 
 		~Element();
 
@@ -19,16 +20,18 @@ class Element
 		GLfloat		getY()				{ return position.y;			}
 		GLfloat		getYaw()			{ return yaw;					}
 		GLfloat*	getPYaw()			{ return &yaw;					}
-		AABB&		getRHitbox()		{ return hitBox;				}
+		OBB&		getRHitbox()		{ return hitbox;				}
+		glm::vec3   getMaxPoint()		{ return hitbox.maxPoint;		}
+		glm::vec3   getMinPoint()		{ return hitbox.minPoint;		}
 		bool		isMoving()			{ return moving;				}
 		bool		isFalling()			{ return falling;				}
 		glm::mat4	getModelMtx()		{ return modelMatrix;			}
-		uint8_t		getDirectionValue() { return directionValue;		}
+		uint8_t		getDirectionValue() { return movingValue;			}
 
-		glm::vec3	getAnticipateMove(GLfloat deltaTime);
-		glm::vec3   getAnticipateFall(GLfloat deltaTime);
-		AABB		getAnticipatedMoveHitbox(GLfloat deltaTime);
-		AABB		getAnticipatedFallHitbox(GLfloat deltaTime);
+		glm::mat4	getAnticipatedMove(GLfloat deltaTime);
+		glm::mat4   getAnticipatedFall(GLfloat deltaTime);
+		OBB		getAnticipatedMoveHitbox(GLfloat deltaTime);
+		OBB		getAnticipatedFallHitbox(GLfloat deltaTime);
 		
 		
 		//--- Setters ---//
@@ -49,19 +52,21 @@ class Element
 		void render(GLuint& modelLoc, GLuint& bonesTransformsLoc, float& timeSinceStart);
 
 	protected:
-		uint8_t id = -1, animationID = 0, directionValue = 0;//entier non signé de 0 à 255 -> à mettre dans une autre classe qui gère les entrées claviers ?
+		uint8_t id = -1, animationID = 0, movingValue = 0;//entier non signé de 0 à 255 -> à mettre dans une autre classe qui gère les entrées claviers ?
 
 		//--- POSITION ---//
 		Model*    model       = nullptr;
 		glm::mat4 modelMatrix = glm::mat4(1.0f);
 		glm::vec3 position	  = glm::vec3(0.0f, 0.0f, 0.0f);
 		GLfloat yaw = -90;//à descendre dans entity ? avec render en méthode abstraite ?
-		GLfloat moveSpeed = 25;
+		GLfloat moveSpeed = 10.0f;
 		bool moving = false, falling = false;
 
 		//--- HITBOX ---//
-		AABB hitBox;
+		AABB hitBox2;
 		glm::vec3 halfSize = glm::vec3(0.0f, 0.0f, 0.0f);
+
+		OBB hitbox;
 
 		void calculateHitBox();
 };

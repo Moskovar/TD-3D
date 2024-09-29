@@ -10,13 +10,17 @@ Element::Element(short id, glm::vec3 position, const std::string& filePath)
 	halfSize = (model->getMaxPoint() - model->getMinPoint()) * 0.5f;
 
 	model->translate(modelMatrix, position);
-	calculateHitBox();
-	if (id == 2)
-	{
-		hitBox.max_point = model->getMaxPoint();
-		hitBox.min_point = model->getMinPoint();
-		std::cout << "HB MAXP Y: " << hitBox.max_point.y << std::endl;
- 	}
+	
+	updatePosition();
+}
+
+Element::Element(short id, glm::mat4 modelMtx, const std::string& filePath)
+{
+	model = new Model(filePath);
+	this->id = id;
+
+	this->modelMatrix = glm::mat4(modelMtx);
+
 	updatePosition();
 }
 
@@ -45,7 +49,7 @@ void Element::setMove(bool state)
 void Element::setFall(bool state)
 {
 	falling = state;
-	if (!falling) moving = false;
+	if (!falling && movingValue == 0) moving = false;
 }
 
 void Element::setModelMtx(glm::mat4 modelMatrix)
@@ -59,36 +63,68 @@ void Element::setModelMtx(glm::mat4 modelMatrix)
 /// </summary>
 /// <param name="deltaTime"></param>
 /// <returns> retourne la position anticipée</returns>
-glm::vec3 Element::getAnticipateMove(GLfloat deltaTime)
+glm::mat4 Element::getAnticipatedMove(GLfloat deltaTime)
 {
 	glm::mat4 mtx = modelMatrix;
 	mtx = glm::translate(mtx, glm::vec3(0.0f, 0.0f, moveSpeed * deltaTime));
-	return glm::vec3(mtx[3].x, mtx[3].y, mtx[3].z);
+	return mtx;
 }
 
-glm::vec3 Element::getAnticipateFall(GLfloat deltaTime)
+glm::mat4 Element::getAnticipatedFall(GLfloat deltaTime)
 {
 	glm::mat4 mtx = modelMatrix;
 	mtx = glm::translate(mtx, glm::vec3(0.0f, -FALL_SPEED * deltaTime, 0.0f));
-	return glm::vec3(mtx[3].x, mtx[3].y, mtx[3].z);
+	return mtx;
 }
 
-AABB Element::getAnticipatedMoveHitbox(GLfloat deltaTime)
+OBB Element::getAnticipatedMoveHitbox(GLfloat deltaTime)
 {
-	glm::vec3 anticipatedPosition = getAnticipateMove(deltaTime);
-	AABB anticipatedHitbox;
-	anticipatedHitbox.max_point = anticipatedPosition + halfSize;
-	anticipatedHitbox.min_point = anticipatedPosition - halfSize;
+    glm::mat4 anticipatedMtx = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, moveSpeed * deltaTime));
+    
+    OBB anticipatedHitbox;
+    anticipatedHitbox.center = glm::vec3(anticipatedMtx[3].x, anticipatedMtx[3].y, anticipatedMtx[3].z);
 
-	return anticipatedHitbox;
+    // Assurer que l'orientation est correcte
+    anticipatedHitbox.orientation = glm::mat3(anticipatedMtx);
+
+	//std::cout << "HITBOX: " << std::endl;
+
+	//std::cout << hitbox.orientation[0].x << " : " << hitbox.orientation[0].y << " : " << hitbox.orientation[0].z << std::endl;
+	//std::cout << hitbox.orientation[1].x << " : " << hitbox.orientation[1].y << " : " << hitbox.orientation[1].z << std::endl;
+	//std::cout << hitbox.orientation[2].x << " : " << hitbox.orientation[2].y << " : " << hitbox.orientation[2].z << "\n" << std::endl;
+
+	//std::cout << hitbox.center.x << " ... " << hitbox.center.y << " ... " << hitbox.center.z << "\n\n\n" << std::endl;
+
+	//std::cout << "ANTICIPATEDHITBOX: " << std::endl;
+
+	//std::cout << anticipatedHitbox.orientation[0].x << " : " << anticipatedHitbox.orientation[0].y << " : " << anticipatedHitbox.orientation[0].z << std::endl;
+	//std::cout << anticipatedHitbox.orientation[1].x << " : " << anticipatedHitbox.orientation[1].y << " : " << anticipatedHitbox.orientation[1].z << std::endl;
+	//std::cout << anticipatedHitbox.orientation[2].x << " : " << anticipatedHitbox.orientation[2].y << " : " << anticipatedHitbox.orientation[2].z << "\n" << std::endl;
+
+	//std::cout << anticipatedHitbox.center.x << " ... " << anticipatedHitbox.center.y << " ... " << anticipatedHitbox.center.z << "\n\n\n" << std::endl;
+
+	glm::vec3 scale = glm::vec3(
+		glm::length(this->modelMatrix[0]),
+		glm::length(this->modelMatrix[1]),
+		glm::length(this->modelMatrix[2])
+	);
+
+    // Recalculer halfSize en tenant compte des transformations
+    anticipatedHitbox.halfSize = (model->getMaxPoint() - model->getMinPoint()) * 0.5f * scale;
+
+	anticipatedHitbox.updateBounds();
+
+    return anticipatedHitbox;
 }
 
-AABB Element::getAnticipatedFallHitbox(GLfloat deltaTime)
+OBB Element::getAnticipatedFallHitbox(GLfloat deltaTime)
 {
-	glm::vec3 anticipatedPosition = getAnticipateFall(deltaTime);
-	AABB anticipatedHitbox;
-	anticipatedHitbox.max_point   = anticipatedPosition + halfSize;
-	anticipatedHitbox.min_point   = anticipatedPosition - halfSize;
+	glm::mat4 anticipatedMtx = getAnticipatedFall(deltaTime);
+	OBB anticipatedHitbox;
+	anticipatedHitbox.center = glm::vec3(anticipatedMtx[3].x, anticipatedMtx[3].y, anticipatedMtx[3].z);
+	anticipatedHitbox.orientation = glm::mat3(anticipatedMtx);
+	anticipatedHitbox.halfSize		= (model->getMaxPoint() - model->getMinPoint()) * 0.5f;//useless car bouge pas ?
+
 
 	return anticipatedHitbox;
 }
@@ -130,15 +166,35 @@ void Element::fall(GLfloat deltaTime)
 
 void Element::calculateHitBox()
 {
-	hitBox.max_point = position + halfSize;
-	hitBox.min_point = position - halfSize;
+	// Mettre à jour le centre de l'OBB
+	hitbox.center = this->position;
+
+	// Extraire l'orientation depuis la matrice de modèle
+	hitbox.orientation = glm::mat3(this->modelMatrix);
+
+	// Calculer l'échelle à partir des colonnes de la matrice de modèle
+	glm::vec3 scale(
+		glm::length(this->modelMatrix[0]),  // Échelle sur l'axe X
+		glm::length(this->modelMatrix[1]),  // Échelle sur l'axe Y
+		glm::length(this->modelMatrix[2])   // Échelle sur l'axe Z
+	);
+
+	// Calculer halfSize en prenant en compte l'échelle
+	hitbox.halfSize = (model->getMaxPoint() - model->getMinPoint()) * 0.5f * scale;
+
+	//std::cout << hitbox.orientation[0].x << " : " << hitbox.orientation[0].y << " : " << hitbox.orientation[0].z << std::endl;
+	//std::cout << hitbox.orientation[1].x << " : " << hitbox.orientation[1].y << " : " << hitbox.orientation[1].z << std::endl;
+	//std::cout << hitbox.orientation[2].x << " : " << hitbox.orientation[2].y << " : " << hitbox.orientation[2].z << std::endl;
+
+	hitbox.updateBounds();
 }
+
 
 void Element::updatePosition()
 {
-	position.x = modelMatrix[3].x;
-	position.y = modelMatrix[3].y;
-	position.z = modelMatrix[3].z;
+	this->position.x = this->modelMatrix[3].x;
+	this->position.y = this->modelMatrix[3].y;
+	this->position.z = this->modelMatrix[3].z;
 
 	calculateHitBox();
 }

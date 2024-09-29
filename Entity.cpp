@@ -28,7 +28,7 @@ void Entity::jump(GLfloat deltaTime)
 
 void Entity::updateAnimationID()
 {
-	switch (directionValue)
+	switch (movingValue)
 	{
 		//--- Aucune touche appuyée ---//
 		case DirectionValue::NONE				: animationID = 0;	break;

@@ -11,7 +11,7 @@ LargeTile::LargeTile(int y, int x, int yChunk, int xChunk, std::string heightmap
     int largeTileGlobalY = y * LARGETILE_SIZE + yChunk * CHUNK_ARR_SIZE * LARGETILE_SIZE,//On ajoute le offset du chunk dans la map également
         largeTileGlobalX = x * LARGETILE_SIZE + xChunk * CHUNK_ARR_SIZE * LARGETILE_SIZE;
 
-    std::cout << " y: " << y << " ... " << "x: " << x << std::endl;
+    //std::cout << " y: " << y << " ... " << "x: " << x << std::endl;
 
     //if(y % 2 == 0 && x % 2 == 0 || y % 2 == 1 && x % 2 == 1)  
     //{
@@ -42,7 +42,7 @@ LargeTile::LargeTile(int y, int x, int yChunk, int xChunk, std::string heightmap
         fprintf(stderr, "File [ %s ] not found or given file is not a EXR format. code %d\n", heightmapPath.c_str(), ret);
         exit(-1);
     }
-    else std::cout << "ok its exr file" << std::endl;
+    //else std::cout << "ok its exr file" << std::endl;
 
     
 
@@ -59,7 +59,7 @@ LargeTile::LargeTile(int y, int x, int yChunk, int xChunk, std::string heightmap
         FreeEXRErrorMessage(err);
         return;
     }
-    else std::cout << "Success loading exr" << std::endl;
+    //else std::cout << "Success loading exr" << std::endl;
 
     unsigned int indice = 0,//indice du vertex
                  cy     = 0,//coordonnée y de la Tile dans le tableau de la LargeTile
@@ -106,7 +106,7 @@ LargeTile::LargeTile(int y, int x, int yChunk, int xChunk, std::string heightmap
 
     free(image);
 
-    if (yChunk == 0 && xChunk == 0 && y == 0 && x == 0) std::cout << "\n\n\n VERTEX 0 0 : " << tiles[0][0].getVertex(1, 1).z << "\n\n\n" << std::endl;
+    //if (yChunk == 0 && xChunk == 0 && y == 0 && x == 0) std::cout << "\n\n\n VERTEX 0 0 : " << tiles[0][0].getVertex(1, 1).z << "\n\n\n" << std::endl;
 }
 
 void LargeTile::setJunctions()
