@@ -26,6 +26,21 @@ void Entity::jump(GLfloat deltaTime)
 	}
 }
 
+void Entity::handleMovement(GLfloat deltaTime)
+{
+	switch (movementState)
+	{
+	case MovementState::IDLE:
+		break;
+	case MovementState::MOVING:
+		break;
+	}
+}
+
+void Entity::handleGravity(GLfloat deltaTime))
+{
+}
+
 void Entity::updateAnimationID()
 {
 	switch (movingValue)

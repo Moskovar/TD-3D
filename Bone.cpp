@@ -33,7 +33,7 @@ void Bone::interpolateTransform(unsigned short animationID, double animationTime
     // Vérifier si le pointeur est nul ou si l'adresse est spécifique
     if (&keyFrames == nullptr || reinterpret_cast<uintptr_t>(&keyFrames) == specificAddress)//pourquoi ça fait ça ??
     {
-        std::cout << "Pointeur est nul ou egale a l'adresse specifique : 0x30" << std::endl;
+        //std::cout << "Pointeur est nul ou egale a l'adresse specifique : 0x30" << std::endl;
         return;
     }
 

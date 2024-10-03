@@ -7,8 +7,6 @@ Element::Element(short id, glm::vec3 position, const std::string& filePath)
 
 	this->position = position;
 
-	halfSize = (model->getMaxPoint() - model->getMinPoint()) * 0.5f;
-
 	model->translate(modelMatrix, position);
 	
 	updatePosition();
@@ -70,14 +68,7 @@ glm::mat4 Element::getAnticipatedMove(GLfloat deltaTime)
 	return mtx;
 }
 
-glm::mat4 Element::getAnticipatedFall(GLfloat deltaTime)
-{
-	glm::mat4 mtx = modelMatrix;
-	mtx = glm::translate(mtx, glm::vec3(0.0f, -FALL_SPEED * deltaTime, 0.0f));
-	return mtx;
-}
-
-OBB Element::getAnticipatedMoveHitbox(GLfloat deltaTime)
+OBB Element::getAnticipatedMoveHitbox(GLfloat deltaTime)//duplication code avec fall
 {
     glm::mat4 anticipatedMtx = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, moveSpeed * deltaTime));
     
@@ -86,22 +77,6 @@ OBB Element::getAnticipatedMoveHitbox(GLfloat deltaTime)
 
     // Assurer que l'orientation est correcte
     anticipatedHitbox.orientation = glm::mat3(anticipatedMtx);
-
-	//std::cout << "HITBOX: " << std::endl;
-
-	//std::cout << hitbox.orientation[0].x << " : " << hitbox.orientation[0].y << " : " << hitbox.orientation[0].z << std::endl;
-	//std::cout << hitbox.orientation[1].x << " : " << hitbox.orientation[1].y << " : " << hitbox.orientation[1].z << std::endl;
-	//std::cout << hitbox.orientation[2].x << " : " << hitbox.orientation[2].y << " : " << hitbox.orientation[2].z << "\n" << std::endl;
-
-	//std::cout << hitbox.center.x << " ... " << hitbox.center.y << " ... " << hitbox.center.z << "\n\n\n" << std::endl;
-
-	//std::cout << "ANTICIPATEDHITBOX: " << std::endl;
-
-	//std::cout << anticipatedHitbox.orientation[0].x << " : " << anticipatedHitbox.orientation[0].y << " : " << anticipatedHitbox.orientation[0].z << std::endl;
-	//std::cout << anticipatedHitbox.orientation[1].x << " : " << anticipatedHitbox.orientation[1].y << " : " << anticipatedHitbox.orientation[1].z << std::endl;
-	//std::cout << anticipatedHitbox.orientation[2].x << " : " << anticipatedHitbox.orientation[2].y << " : " << anticipatedHitbox.orientation[2].z << "\n" << std::endl;
-
-	//std::cout << anticipatedHitbox.center.x << " ... " << anticipatedHitbox.center.y << " ... " << anticipatedHitbox.center.z << "\n\n\n" << std::endl;
 
 	glm::vec3 scale = glm::vec3(
 		glm::length(this->modelMatrix[0]),
@@ -117,14 +92,26 @@ OBB Element::getAnticipatedMoveHitbox(GLfloat deltaTime)
     return anticipatedHitbox;
 }
 
-OBB Element::getAnticipatedFallHitbox(GLfloat deltaTime)
+OBB Element::getAnticipatedFallHitbox(GLfloat deltaTime)//duplication code avec getAntiMoveBoxe
 {
-	glm::mat4 anticipatedMtx = getAnticipatedFall(deltaTime);
+	glm::mat4 anticipatedMtx = glm::translate(modelMatrix, glm::vec3(0.0f, -FALL_SPEED * deltaTime, 0.0f));
+
 	OBB anticipatedHitbox;
 	anticipatedHitbox.center = glm::vec3(anticipatedMtx[3].x, anticipatedMtx[3].y, anticipatedMtx[3].z);
-	anticipatedHitbox.orientation = glm::mat3(anticipatedMtx);
-	anticipatedHitbox.halfSize		= (model->getMaxPoint() - model->getMinPoint()) * 0.5f;//useless car bouge pas ?
 
+	// Assurer que l'orientation est correcte
+	anticipatedHitbox.orientation = glm::mat3(anticipatedMtx);
+
+	glm::vec3 scale = glm::vec3(
+		glm::length(this->modelMatrix[0]),
+		glm::length(this->modelMatrix[1]),
+		glm::length(this->modelMatrix[2])
+	);
+
+	// Recalculer halfSize en tenant compte des transformations
+	anticipatedHitbox.halfSize = (model->getMaxPoint() - model->getMinPoint()) * 0.5f * scale;
+
+	anticipatedHitbox.updateBounds();
 
 	return anticipatedHitbox;
 }
@@ -141,9 +128,15 @@ void Element::move(GLfloat deltaTime)
 	updatePosition();
 }
 
-void Element::moveUp(GLfloat positionY)
+void Element::moveAtY(GLfloat positionY)
 {
 	model->translate(modelMatrix, glm::vec3(0.0f, positionY - position.y, 0.0f));
+	updatePosition();
+}
+
+void Element::translate(glm::vec3 translation)
+{
+	model->translate(modelMatrix, translation);
 	updatePosition();
 }
 

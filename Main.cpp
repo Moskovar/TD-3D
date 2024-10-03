@@ -157,7 +157,7 @@ int main()
         return 1;
     }
 
-    elements.push_back(new Element(0, glm::vec3(310, 100.0f, 300.0f), "models/obj/foundation.obj"));
+    elements.push_back(new Element(0, glm::vec3(300, 100.0f, 300.0f), "models/obj/foundation.obj"));
 
     //--- Chargement de la caméra ---//
     camera = new Camera(player->getPositionP(), player->getPYaw(), &keyPressed);
@@ -181,7 +181,7 @@ int main()
 
     //--- Chargement de la map ---//
     world   = new Game::Map(shaders);
-    physics = new PhysicsEngine(world);
+    physics = new PhysicsEngine(world, &elements);
     mapManager.loadMap(world, shaders);
 
     auto  startTime    = std::chrono::high_resolution_clock::now();

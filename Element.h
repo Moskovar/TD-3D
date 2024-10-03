@@ -44,7 +44,8 @@ class Element
 
 		void moveForward(GLfloat z);
 		void move(GLfloat deltaTime);
-		void moveUp(GLfloat positionY);
+		void moveAtY(GLfloat positionY);
+		void translate(glm::vec3 translation);
 		void turn(GLfloat yaw);
 		void fall(GLfloat deltaTime);
 		void updatePosition();
@@ -61,10 +62,6 @@ class Element
 		GLfloat yaw = -90;//à descendre dans entity ? avec render en méthode abstraite ?
 		GLfloat moveSpeed = 10.0f;
 		bool moving = false, falling = false;
-
-		//--- HITBOX ---//
-		AABB hitBox2;
-		glm::vec3 halfSize = glm::vec3(0.0f, 0.0f, 0.0f);
 
 		OBB hitbox;
 

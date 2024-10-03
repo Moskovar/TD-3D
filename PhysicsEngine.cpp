@@ -1,8 +1,9 @@
 #include "PhysicsEngine.h"
 
-PhysicsEngine::PhysicsEngine(Game::Map* world)
+PhysicsEngine::PhysicsEngine(Game::Map* world, std::vector<Element*>* elements)
 {
-	this->world = world;
+	this->world     = world;
+    this->elements  = elements;
 }
 
 PhysicsEngine::~PhysicsEngine()
@@ -88,7 +89,7 @@ bool PhysicsEngine::checkHeightMap(Element* element, glm::vec3 nextElementPos)//
 
     if (interpolatedY - nextElementPos.y > 2) return false;
 
-    if (nextElementPos.y < interpolatedY) element->moveUp(interpolatedY);
+    if (nextElementPos.y < interpolatedY) element->translate(glm::vec3(0.0f, element->getPosition().y - interpolatedY, 0.0f));
 
     return true;
 }
@@ -105,8 +106,8 @@ void PhysicsEngine::applyGravity(Element* element, GLfloat deltaTime)
     int chunkLength = LARGETILE_SIZE * CHUNK_ARR_SIZE,
         largeTileLength = TILE_SIZE * LARGETILE_ARR_SIZE;
 
-    Chunk* chunk = world->getChunk((int)element->getPosition().z / chunkLength, (int)element->getPosition().x / chunkLength);
-    LargeTile* lt = chunk->getLargeTile(((int)element->getPosition().z / largeTileLength) % CHUNK_ARR_SIZE, ((int)element->getPosition().x / largeTileLength) % CHUNK_ARR_SIZE);
+    Chunk*      chunk   = world->getChunk((int)element->getPosition().z / chunkLength, (int)element->getPosition().x / chunkLength);
+    LargeTile*  lt      = chunk->getLargeTile(((int)element->getPosition().z / largeTileLength) % CHUNK_ARR_SIZE, ((int)element->getPosition().x / largeTileLength) % CHUNK_ARR_SIZE);
 
     GLfloat yGround = lt->getVertex(z, x).y;;
 
@@ -115,24 +116,30 @@ void PhysicsEngine::applyGravity(Element* element, GLfloat deltaTime)
 
     if (elementPos->y > yGround) //Si l'élément n'est pas au sol
     {
-        //for (Element* e : elements)
-        //    if (checkCollision(player->getAnticipatedFallHitbox(deltaTime), e->getRHitbox2()))
-        //    {
-        //        collision = true;
+        //std::cout << "y > yGround : elements size -> " << elements->size() << std::endl;
+        for (Element* e : *elements)
+        {
+            if (checkCollision(element->getAnticipatedFallHitbox(deltaTime), e->getRHitbox()))
+            {
+                collision = true;
 
-        //        //GLfloat temp = distanceBetweenHitboxes(player->getRHitbox(), e->getRHitbox());
-        //        //if (distance < temp) distance = temp;
-        //        std::cout << "OH COLLISION!" << std::endl;
-        //        element->setFall(false);
-        //        break;
-        //    }
+                GLfloat temp = distanceBetweenHitboxes(element, e);
+                if (distance < temp) distance = temp;
+                break;
+            }
+        }
 
         if (!collision)//s'il n'y a pas collision avec un elément alors on le fait tomber vers le sol
         {
             element->fall(deltaTime);
             element->setFall(true);
         }
-        //else player->moveUp(-distance);
+        else if (collision && element->isFalling())
+        {
+            std::cout << "OH FALL COLLISION AT: " << distance << std::endl;
+            element->translate(glm::vec3(0.0f, -distance + 0.001, 0.0f));
+            element->setFall(false);
+        }
     }
 
     //Si l'élément est tomber plus bas que le sol, on le remet au niveau du sol et on lui enlève son état de chute
@@ -162,7 +169,8 @@ bool PhysicsEngine::checkCollision(const OBB& obb1, const OBB& obb2) {
         // Tester les produits croisés entre les axes locaux de obb1 et obb2
         for (int j = 0; j < 3; ++j) {
             glm::vec3 crossAxis = glm::cross(axes1[i], axes2[j]);
-            if (glm::length(crossAxis) > 0.0001f) {  // Tolérance pour ignorer les vecteurs nuls
+            if (glm::length(crossAxis) > 0.0001f) 
+            {  // Tolérance pour ignorer les vecteurs nuls
                 if (!testAxis(crossAxis, obb1, obb2, centerVector)) return false;
             }
         }
