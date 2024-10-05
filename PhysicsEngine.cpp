@@ -89,7 +89,9 @@ bool PhysicsEngine::checkHeightMap(Element* element, glm::vec3 nextElementPos)//
 
     if (interpolatedY - nextElementPos.y > 2) return false;
 
-    if (nextElementPos.y < interpolatedY) element->translate(glm::vec3(0.0f, element->getPosition().y - interpolatedY, 0.0f));
+    std::cout << interpolatedY - element->getPosition().y << std::endl;
+
+    if (nextElementPos.y < interpolatedY) element->translate(glm::vec3(0.0f, interpolatedY - element->getPosition().y, 0.0f));
 
     return true;
 }
