@@ -37,7 +37,7 @@ void Entity::handleMovement(GLfloat deltaTime)
 	}
 }
 
-void Entity::handleGravity(GLfloat deltaTime))
+void Entity::handleGravity(GLfloat deltaTime)
 {
 }
 
