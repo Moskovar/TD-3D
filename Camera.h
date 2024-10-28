@@ -13,17 +13,18 @@ class Camera
 {
 	public:
 		Camera(glm::vec3* target, GLfloat* targetYaw, map<char, bool>* keyPressed);
+		~Camera();
 
 		//--- Getters ---//
 		GLfloat		getYaw()				{ return yaw;							}
 		glm::mat4*	getViewMatrixP()		{ return &viewMatrix;					}
 		GLfloat		getSensitivity()		{ return sensitivity;					}
 		glm::vec3	getUp()					{ return glm::vec3(0.0f, 1.0f, 0.0f);	}
+		glm::vec3	getPosition()			{ return position;						}
 
 		void addYaw(GLfloat yaw);
 		void addPitch(GLfloat pitch);
 		void setRadius(GLfloat radius);
-		void resetYaw() { this->yaw = *targetYaw; }
 
 		void mouseControl(GLFWwindow* window, GLfloat xChange, GLfloat yChange, GLfloat& scrollValue, const float& deltaTime);
 		void update();
@@ -32,8 +33,7 @@ class Camera
 		glm::mat4  viewMatrix;
 		glm::vec3  position, front, right;
 		glm::vec3* target;
-		GLfloat yaw = -90.0f, pitch = 0.0f, radius = 30.0f, sensitivity = 300.0f;
-		GLfloat* targetYaw = nullptr;
+		GLfloat yaw = -90.0f, pitch = 0.0f, radius = 100.0f, sensitivity = 150.0f;
 		map<char, bool>* keyPressed = nullptr;
 
 

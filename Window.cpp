@@ -125,6 +125,42 @@ void Window::resetXYChange()
     yChange = 0;
 }
 
+void Window::keepCursorInWindow()
+{
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_CAPTURED);
+}
+
+void Window::fullScreen()
+{
+    // Récupérer tous les moniteurs disponibles
+    int count;
+    GLFWmonitor** monitors = glfwGetMonitors(&count);
+
+    // Vérifier qu'il y a bien au moins deux moniteurs
+    if (count < 2) {
+        std::cout << "Il n'y a pas de deuxième moniteur disponible." << std::endl;
+        return;
+    }
+
+    // Sélectionner le deuxième moniteur
+    GLFWmonitor* secondMonitor = monitors[1];  // Le deuxième moniteur est à l'indice 1
+
+    // Récupérer la résolution du deuxième moniteur
+    const GLFWvidmode* mode = glfwGetVideoMode(secondMonitor);
+
+    // Supprimer les bordures et la barre de titre de la fenêtre existante
+    glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_FALSE);  // Fenêtre sans bordures
+
+    // Déplacer la fenêtre sur le deuxième moniteur
+    glfwSetWindowPos(window, 0, 0);  // Placer dans le coin supérieur gauche du deuxième écran
+
+    // Ajuster la taille de la fenêtre pour correspondre à la résolution du deuxième écran
+    glfwSetWindowSize(window, mode->width, mode->height);
+
+    // Si besoin, rendre la fenêtre active
+    glfwMakeContextCurrent(window);
+}
+
 void Window::createCallbacks()
 {
     glfwSetErrorCallback(glfwErrorCallback);

@@ -16,9 +16,13 @@
 
 #include <tinyexr.h>
 
+GLfloat width = 1920.0f, height = 1080.0f;
+
 Window*         window  = nullptr;
 Camera*         camera  = nullptr;
 Game::Map*      world   = nullptr;
+glm::mat4* view         = nullptr;
+glm::mat4 projection;
 MapManager      mapManager;
 PhysicsEngine*  physics;
 
@@ -36,13 +40,6 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     else if (action == GLFW_RELEASE) 
     {
         mousePressed[button] = false;
-
-        if (player->getSelectedBuilding() && button == GLFW_MOUSE_BUTTON_LEFT)
-        {
-            Element* element = new Element(0, player->getSelectedBuilding()->getModelMtx(), "models/obj/foundation.obj");
-            //element->setModelMtx(player->getSelectedBuilding()->getModelMtx());
-            elements.push_back(element);
-        }
     }
 }
 
@@ -53,35 +50,14 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     {
         keyPressed[key] = true;
 
-        if (key == GLFW_KEY_W || key == GLFW_KEY_S || key == GLFW_KEY_D || key == GLFW_KEY_A)//sert à quoi ??
-        {
-            player->directionPressed(key);
-        }
-
         switch (key) 
         {
             case GLFW_KEY_ESCAPE: glfwSetWindowShouldClose(window, true);   break;
-        }
-
-        if (key == GLFW_KEY_Q)
-            player->setSelected();
-
-        
+        }      
     }
     else if (action == GLFW_RELEASE)
     {
         keyPressed[key] = false;
-
-        if (key == GLFW_KEY_W || key == GLFW_KEY_S || key == GLFW_KEY_D || key == GLFW_KEY_A)
-        {
-            player->directionReleased(key);
-            if(!keyPressed[GLFW_KEY_W] && !keyPressed[GLFW_KEY_S])//Si ni avancer ni reculer n'est pressé, move = false;
-                player->setMove(false);
-        }
-
-        if (key == GLFW_KEY_Q) player->clearSelected();
-
-        if (key == GLFW_KEY_E) elements[0]->turn(45.0f);
     }
 }
 
@@ -112,43 +88,123 @@ void processKeyPressed(GLFWwindow* window, float deltaTime)
 void processMousePressed(Window* window, float deltaTime)
 {
     GLFWwindow* glfwWindow = window->getGLFWWindow();
-
-    //if (mousePressed[GLFW_MOUSE_BUTTON_RIGHT])
-    //{
-    //    if (mousePressed[GLFW_MOUSE_BUTTON_LEFT])
-    //    {
-    //        GLfloat offsetYaw = camera->getYaw() - player->getYaw();
-    //        //std::cout << offsetYaw << std::endl;
-    //        player->turn(offsetYaw);
-
-    //        player->setMove(true);
-    //    }
-
-    //    if (window->getXChange() > 0) player->turn(camera->getSensitivity() * deltaTime);
-    //    else if (window->getXChange() < 0) player->turn(camera->getSensitivity() * -deltaTime);
-    //}
 }
 
-void processCameraMoved()
+glm::vec3 generateRayFromCursor(GLFWwindow* window)
 {
-    GLfloat offsetYaw = camera->getYaw() - player->getYaw();
-    if(offsetYaw != 0)  player->turn(offsetYaw);
+    // 1. Récupérer la position du curseur
+    double xpos, ypos;
+    glfwGetCursorPos(window, &xpos, &ypos);
+
+    // 2. Convertir en coordonnées NDC
+    int width, height;
+    glfwGetWindowSize(window, &width, &height);
+    float xNDC = (2.0f * xpos) / width - 1.0f;
+    float yNDC = 1.0f - (2.0f * ypos) / height;  // Inverser Y
+
+    // 3. Passer à l'espace vue
+    glm::vec4 clipCoords = glm::vec4(xNDC, yNDC, -1.0f, 1.0f);
+    glm::vec4 eyeCoords = glm::inverse(projection) * clipCoords;
+    eyeCoords = glm::vec4(eyeCoords.x, eyeCoords.y, -1.0f, 0.0f);
+
+    // 4. Passer à l'espace monde
+    glm::vec4 worldCoords = glm::inverse(*view) * eyeCoords;
+    glm::vec3 rayDirection = glm::normalize(glm::vec3(worldCoords));
+
+    // Maintenant rayDirection est la direction dans le monde vers laquelle le curseur pointe.
+    //std::cout << "RayDirection: " << rayDirection.x << " : " << rayDirection.y << " : " << rayDirection.z << std::endl;
+    return rayDirection;
 }
+
+bool rayIntersectsTriangle(const glm::vec3& rayOrigin, const glm::vec3& rayDir, const glm::vec3& v0, const glm::vec3& v1, const glm::vec3& v2, glm::vec3& outIntersection) {
+    const float EPSILON = 0.0000001;
+    glm::vec3 edge1, edge2, h, s, q;
+    float a, f, u, v;
+    edge1 = v1 - v0;
+    edge2 = v2 - v0;
+    h = glm::cross(rayDir, edge2);
+    a = glm::dot(edge1, h);
+
+    if (a > -EPSILON && a < EPSILON)
+        return false;    // Le rayon est parallèle au triangle
+
+    f = 1.0 / a;
+    s = rayOrigin - v0;
+    u = f * glm::dot(s, h);
+
+    if (u < 0.0 || u > 1.0)
+        return false;
+
+    q = glm::cross(s, edge1);
+    v = f * glm::dot(rayDir, q);
+
+    if (v < 0.0 || u + v > 1.0)
+        return false;
+
+    // Calculer la distance de l'intersection
+    float t = f * glm::dot(edge2, q);
+    if (t > EPSILON) // Si t > EPSILON, il y a une intersection
+    {
+        outIntersection = rayOrigin + rayDir * t;
+        return true;
+    }
+
+    return false;
+}
+
+void checkWorldInteractions()
+{
+    GLFWwindow* glfwWindow = window->getGLFWWindow();
+    LargeTile* lt = world->getChunk(0, 0)->getLargeTile(1, 1);
+    
+    std::vector<HeightMapVertex> v_vertices = lt->getTile(15, 15)->getVertices();
+    std::vector<unsigned int>	 v_indices  = lt->getTile(15, 15)->getIndices();
+
+    for (unsigned int i = 0; i < v_indices.size() - 2; i += 3)
+    {
+        glm::vec3   v_pos1 = glm::vec3(v_vertices[v_indices[i    ]].x, v_vertices[v_indices[i    ]].y, v_vertices[v_indices[i    ]].z),
+                    v_pos2 = glm::vec3(v_vertices[v_indices[i + 1]].x, v_vertices[v_indices[i + 1]].y, v_vertices[v_indices[i + 1]].z),
+                    v_pos3 = glm::vec3(v_vertices[v_indices[i + 2]].x, v_vertices[v_indices[i + 2]].y, v_vertices[v_indices[i + 2]].z),
+                    intersection;
+        std::cout << rayIntersectsTriangle(camera->getPosition(), generateRayFromCursor(glfwWindow), v_pos1, v_pos2, v_pos3, intersection) << std::endl;
+    }
+}
+
+bool findRayIntersectionWithMap(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, glm::vec3& worldPos) {
+    // Vérifie que le rayon n'est pas parallèle au plan
+    const float epsilon = 0.0001f;
+    if (fabs(rayDirection.y) < epsilon || rayDirection.y >= 0.0f) {
+        return false;
+    }
+
+    // Calcul de t
+    float t = -rayOrigin.y / rayDirection.y;
+
+    // Calcul du point d'intersection
+    worldPos = rayOrigin + t * rayDirection;
+    return true;
+}
+
 
 int main()
 {
     //--- Chargement du contexte OpenGL ---//
-    window = new Window(800, 600);
+    window = new Window(width, height);
+    window->fullScreen();
+    window->keepCursorInWindow();
     GLFWwindow* glfwWindow = window->getGLFWWindow();
 
-    glfwSetWindowPos(glfwWindow, 2100, 200);
-    glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetWindowPos(glfwWindow, 1920, 0);
+    //glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     glfwSetKeyCallback(glfwWindow, keyCallback);
     glfwSetMouseButtonCallback(glfwWindow, mouse_button_callback);  // Clics de souris
 
     //--- Chargement du joueur ---//
-    player = new Character(0, glm::vec3(300, 120.0f, 300));
+    player = new Character(0, glm::vec3(1024.0f, 20.0f, 1024.0f));
+
+    GLfloat yaw = -90.0f;
+    glm::vec3 target = glm::vec3(1024.0f, 0.0f, 1024.0f);
 
     if(player) entities.push_back(player);
     else
@@ -157,13 +213,13 @@ int main()
         return 1;
     }
 
-    elements.push_back(new Element(0, glm::vec3(300, 100.0f, 300.0f), "models/obj/foundation.obj"));
+    elements.push_back(new Element(0, glm::vec3(1024.0f, 0.0f, 1024.0f), "models/obj/foundation.obj"));
 
     //--- Chargement de la caméra ---//
-    camera = new Camera(player->getPositionP(), player->getPYaw(), &keyPressed);
+    camera = new Camera(&target, &yaw, &keyPressed);
 
-    glm::mat4* view         = camera->getViewMatrixP();
-    glm::mat4 projection    = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.5f, 500.0f);
+    view        = camera->getViewMatrixP();
+    projection  = glm::perspective(glm::radians(45.0f), width / height, 0.5f, 2000.0f);
 
     //--- Chargement des shaders ---//
     std::map<std::string, Shader> shaders;
@@ -203,9 +259,19 @@ int main()
 
         //applyGravity(player, deltaTime);
         physics->applyGravity(player, deltaTime);
+        //checkWorldInteractions();
+        
+        glm::vec3 worldPos;
+        if (findRayIntersectionWithMap(camera->getPosition(), generateRayFromCursor(glfwWindow), worldPos))
+            std::cout << "WORLD POS: " << worldPos.x << " ... " << worldPos.y << " ... " << worldPos.z << std::endl;
+        else
+            std::cout << "RayDir >= 0" << std::endl;
+
+        shaders[LARGETILES_SHADERS].use();
+        glUniform3f(glGetUniformLocation(shaders[LARGETILES_SHADERS].getShaderProgram(), "worldPos"), worldPos.x, worldPos.y, worldPos.z);
 
         //--- Caméra ---//
-        camera->mouseControl(window->getGLFWWindow(), window->getXChange(), window->getYChange(), window->getScrollValue(), deltaTime);
+        camera->mouseControl(window->getGLFWWindow(), window->getMouseX(), window->getMouseY(), window->getScrollValue(), deltaTime);
 
         //--- Personnage ---//
         //if (player->isJumping()) player->jump(deltaTime);
@@ -246,7 +312,6 @@ int main()
             }
         }
 
-        processCameraMoved();
         processKeyPressed(glfwWindow, deltaTime);
         processMousePressed(window, deltaTime);
 

@@ -20,12 +20,13 @@ class LargeTile
 		//--- Getters ---//
 		int				getX()					{ return x;																				}
 		int				getY()					{ return y;																				}
-		Tile			getTile(int y, int x)	{ return tiles[y][x];																	}
+		Tile*			getTile(int y, int x)	{ return &tiles[y][x];																	}
 		Texture*		getTexture()			{ return this->texture;																	}
 		HeightMapVertex getVertex(int y, int x) { return tiles[y / TILE_SIZE][x / TILE_SIZE].getVertex(y % TILE_SIZE, x % TILE_SIZE);	}
+		auto			getVertices()			{ return this->v_vertices;																}
+		auto			getIndices()			{ return this->v_indices;																}
 
 		void useTexture(GLuint shaderProgram, GLuint textureUnit = GL_TEXTURE0);
-
 
 		void render();
 

@@ -3,20 +3,24 @@
 
 Camera::Camera(glm::vec3* target, GLfloat* targetYaw, map<char, bool>* keyPressed)
 {
-	position = glm::vec3(0.0f, 0.0f, 0.0f);
-    position.x = target->x + radius * cos(glm::radians(pitch)) * cos(glm::radians(yaw));
-    position.y = target->y + radius * sin(glm::radians(pitch));
-    position.z = target->z + radius * cos(glm::radians(pitch)) * sin(glm::radians(yaw));
+	this->position = glm::vec3(0.0f, 0.0f, 0.0f);
+	this->position.x = target->x + radius * cos(glm::radians(pitch)) * cos(glm::radians(yaw));
+	this->position.y = target->y + radius * sin(glm::radians(pitch));
+	this->position.z = target->z + radius * cos(glm::radians(pitch)) * sin(glm::radians(yaw));
 
-	this->targetYaw  = targetYaw;
+	this->target = target;
+
 	this->keyPressed = keyPressed;
 
-	this->target     = target;
-	this->target->y += 3.0f;
-    this->front      = glm::normalize(position - *target);
+	//this->target->y += 3.0f;
+    this->front      = glm::normalize(this->position - *target);
     this->right      = glm::normalize(glm::cross(getUp(), front));
 
     viewMatrix = glm::lookAt(position, *target, getUp());
+}
+
+Camera::~Camera()
+{
 }
 
 void Camera::update()
@@ -26,12 +30,9 @@ void Camera::update()
     position.y = target->y + radius * sin(glm::radians(pitch));
     position.z = target->z + radius * cos(glm::radians(pitch)) * sin(glm::radians(yaw));
 
-	//float time = static_cast<float>(glfwGetTime());
-	//std::cout << up.x << " ... " << up.y << " ... " << up.z << std::endl;
-	//position.x = sin(time) * 20;
-	//position.z = cos(time) * 20;
-
 	
+	this->front = glm::normalize(this->position - *target);
+	this->right = glm::normalize(glm::cross(getUp(), front));
     viewMatrix = glm::lookAt(position, *target, getUp());
 }
 
@@ -58,19 +59,26 @@ void Camera::setRadius(GLfloat radius)
 {
 	this->radius -= radius;
 
-	if      (this->radius > 30) this->radius = 30;
+	if      (this->radius > 100) this->radius = 100;
 	else if (this->radius < 0 ) this->radius = 0;
 }
 
-void Camera::mouseControl(GLFWwindow* window, GLfloat xChange, GLfloat yChange, GLfloat& scrollValue, const float& deltaTime)
+void Camera::mouseControl(GLFWwindow* window, GLfloat mouseX, GLfloat mouseY, GLfloat& scrollValue, const float& deltaTime)
 {
 	//xChange *= turnSpeed;//USE TURNSPEED OU VELOCITY ???
 
-	if		(xChange > 0) addYaw(deltaTime * sensitivity);
-	else if (xChange < 0) addYaw(-deltaTime * sensitivity);
+	//if		(mouseX > 0) addYaw(deltaTime * sensitivity);
+	//else if (mouseX < 0) addYaw(-deltaTime * sensitivity);
 
-	if		(yChange > 0) addPitch(-deltaTime * sensitivity / 2);//pour clique gauche et droit
-	else if (yChange < 0) addPitch(deltaTime * sensitivity / 2);
+	//if		(mouseY > 0) addPitch(-deltaTime * sensitivity / 2);//pour clique gauche et droit
+	//else if (mouseY < 0) addPitch(deltaTime * sensitivity / 2);
+
+	if		(mouseX <= 5)		addYaw(deltaTime * sensitivity); 
+	else if (mouseX >= 1915)	addYaw(-deltaTime * sensitivity);
+
+	if (mouseY <= 5)		addPitch(deltaTime * sensitivity / 2);
+	else if (mouseY >= 1075)	addPitch(-deltaTime * sensitivity / 2);
+
 
 	if (scrollValue != 0)
 	{

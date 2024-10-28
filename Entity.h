@@ -34,8 +34,8 @@ class Entity : public Element
 
 		void jump(GLfloat deltaTime);
 
-		void handleMovement(GLfloat deltaTime));
-		void handleGravity(GLfloat deltaTime));
+		void handleMovement(GLfloat deltaTime);
+		void handleGravity(GLfloat deltaTime);
 
 	private:
 		bool jumping = false;

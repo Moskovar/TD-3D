@@ -62,9 +62,9 @@ void Tile::setIndices()
 
 void Tile::render()
 {
-    //glBindVertexArray(VAO);
-    //glDrawElements(GL_TRIANGLES, v_indices.size(), GL_UNSIGNED_INT, 0);
-    //glBindVertexArray(0);
+    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, v_indices.size(), GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
 }
 
 Tile::~Tile()

@@ -85,7 +85,8 @@ LargeTile::LargeTile(int y, int x, int yChunk, int xChunk, std::string heightmap
                 globalY += largeTileGlobalY;//ajout du offset de la LargeTile
                 globalX += largeTileGlobalX;//Après récup de la heightValue car la heightValue se situe dans la heightmap de la LargeTile et pas dans le chunk
 
-                tiles[cy][cx].setVertex(y % TILE_SIZE, x % TILE_SIZE, { (GLfloat) globalX, heightValue * MAX_HEIGHT, (GLfloat)globalY, indice, texCoords});
+                //on descend toute la map de 100 (WORLD_Y_OFFSET), 0 est tout noir dans la heightmap, donc pour faire des creux il faut que l'altitude 0 soit y > 0 dans blender
+                tiles[cy][cx].setVertex(y % TILE_SIZE, x % TILE_SIZE, { (GLfloat) globalX, (heightValue * MAX_HEIGHT) - WORLD_Y_OFFSET, (GLfloat)globalY, indice, texCoords});
                 indice++;
             }
         }
