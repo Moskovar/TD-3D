@@ -7,6 +7,8 @@
 #include <array>
 #include <iostream>
 
+#define CAM_MAX_DISTANCE 125
+
 //--- Shaders ---//
 #define MAP_JUNCTIONS_SHADERS				"map_shaders"
 #define CHUNKS_JUNCTIONS_SHADERS			"chunks_shaders"

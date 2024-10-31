@@ -36,6 +36,13 @@ void Camera::update()
     viewMatrix = glm::lookAt(position, *target, getUp());
 }
 
+void Camera::updateViewMatrix()
+{
+	this->front = glm::normalize(this->position - *target);
+	this->right = glm::normalize(glm::cross(getUp(), front));
+	viewMatrix = glm::lookAt(position, *target, getUp());
+}
+
 void Camera::addYaw(GLfloat yaw)
 {
 	//std::cout << "addYaw" << std::endl;
@@ -59,7 +66,7 @@ void Camera::setRadius(GLfloat radius)
 {
 	this->radius -= radius;
 
-	if      (this->radius > 100) this->radius = 100;
+	if      (this->radius > CAM_MAX_DISTANCE) this->radius = CAM_MAX_DISTANCE;
 	else if (this->radius < 0 ) this->radius = 0;
 }
 
@@ -67,17 +74,14 @@ void Camera::mouseControl(GLFWwindow* window, GLfloat mouseX, GLfloat mouseY, GL
 {
 	//xChange *= turnSpeed;//USE TURNSPEED OU VELOCITY ???
 
-	//if		(mouseX > 0) addYaw(deltaTime * sensitivity);
-	//else if (mouseX < 0) addYaw(-deltaTime * sensitivity);
+	//if		(mouseX <= 5)		addYaw(deltaTime * sensitivity); 
+	//else if (mouseX >= 1915)	addYaw(-deltaTime * sensitivity);
 
-	//if		(mouseY > 0) addPitch(-deltaTime * sensitivity / 2);//pour clique gauche et droit
-	//else if (mouseY < 0) addPitch(deltaTime * sensitivity / 2);
+	//if (mouseY <= 5)		addPitch(deltaTime * sensitivity / 2);
+	//else if (mouseY >= 1075)	addPitch(-deltaTime * sensitivity / 2);
 
-	if		(mouseX <= 5)		addYaw(deltaTime * sensitivity); 
-	else if (mouseX >= 1915)	addYaw(-deltaTime * sensitivity);
-
-	if (mouseY <= 5)		addPitch(deltaTime * sensitivity / 2);
-	else if (mouseY >= 1075)	addPitch(-deltaTime * sensitivity / 2);
+	if		(mouseX <= 5    && this->target->z < 1088)	this->target->z +=  deltaTime * sensitivity;
+	else if (mouseX >= 1915 && this->target->z > 964 )	this->target->z += -deltaTime * sensitivity;
 
 
 	if (scrollValue != 0)

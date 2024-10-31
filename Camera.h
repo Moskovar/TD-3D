@@ -28,12 +28,13 @@ class Camera
 
 		void mouseControl(GLFWwindow* window, GLfloat xChange, GLfloat yChange, GLfloat& scrollValue, const float& deltaTime);
 		void update();
+		void updateViewMatrix();
 
 	private:
 		glm::mat4  viewMatrix;
 		glm::vec3  position, front, right;
 		glm::vec3* target;
-		GLfloat yaw = -90.0f, pitch = 0.0f, radius = 100.0f, sensitivity = 150.0f;
+		GLfloat yaw = 0.0f, pitch = 25.0f, radius = 125.0f, sensitivity = 150.0f;
 		map<char, bool>* keyPressed = nullptr;
 
 

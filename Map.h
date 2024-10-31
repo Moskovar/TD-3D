@@ -2,7 +2,6 @@
 #include "Chunk.h"
 namespace Game
 {
-
 	class Map
 	{
 		public:

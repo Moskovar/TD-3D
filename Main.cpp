@@ -4,6 +4,7 @@
 
 #include "Window.h"
 #include "Entity.h"
+#include "Tower.h"
 #include "Character.h"
 #include "Camera.h"
 #include "Shader.h"
@@ -11,6 +12,7 @@
 #include "MapManager.h"
 #include "PhysicsEngine.h"
 #include "Map.h"
+#include "Cell.h"
 
 #include "stb_image.h"
 
@@ -29,10 +31,53 @@ PhysicsEngine*  physics;
 std::map<char, bool> keyPressed;
 std::map<int , bool> mousePressed;
 
+std::vector<Cell> cells;
+
 Character* player = nullptr;
 
 std::vector<Entity*>  entities;
 std::vector<Element*> elements;
+
+glm::vec3 generateRayFromCursor(GLFWwindow* window)
+{
+    // 1. Récupérer la position du curseur
+    double xpos, ypos;
+    glfwGetCursorPos(window, &xpos, &ypos);
+
+    // 2. Convertir en coordonnées NDC
+    int width, height;
+    glfwGetWindowSize(window, &width, &height);
+    float xNDC = (2.0f * xpos) / width - 1.0f;
+    float yNDC = 1.0f - (2.0f * ypos) / height;  // Inverser Y
+
+    // 3. Passer à l'espace vue
+    glm::vec4 clipCoords = glm::vec4(xNDC, yNDC, -1.0f, 1.0f);
+    glm::vec4 eyeCoords = glm::inverse(projection) * clipCoords;
+    eyeCoords = glm::vec4(eyeCoords.x, eyeCoords.y, -1.0f, 0.0f);
+
+    // 4. Passer à l'espace monde
+    glm::vec4 worldCoords = glm::inverse(*view) * eyeCoords;
+    glm::vec3 rayDirection = glm::normalize(glm::vec3(worldCoords));
+
+    // Maintenant rayDirection est la direction dans le monde vers laquelle le curseur pointe.
+    //std::cout << "RayDirection: " << rayDirection.x << " : " << rayDirection.y << " : " << rayDirection.z << std::endl;
+    return rayDirection;
+}
+
+bool findRayIntersectionWithMap(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, glm::vec3& worldPos) {
+    // Vérifie que le rayon n'est pas parallèle au plan
+    const float epsilon = 0.0001f;
+    if (fabs(rayDirection.y) < epsilon || rayDirection.y >= 0.0f) {
+        return false;
+    }
+
+    // Calcul de t
+    float t = -rayOrigin.y / rayDirection.y;
+
+    // Calcul du point d'intersection
+    worldPos = rayOrigin + t * rayDirection;
+    return true;
+}
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) 
 {
@@ -40,6 +85,29 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     else if (action == GLFW_RELEASE) 
     {
         mousePressed[button] = false;
+        if (button == GLFW_MOUSE_BUTTON_LEFT)
+        {
+            glm::vec3 worldPos;
+            if (findRayIntersectionWithMap(camera->getPosition(), generateRayFromCursor(window), worldPos));
+
+            bool isCellTargeted = false;
+            for (Cell& cell : cells)
+            {
+                if ((int)worldPos.x / 8 == (int)cell.getX() / 8 && (int)worldPos.z / 8 == (int)cell.getZ() / 8)
+                {
+                    isCellTargeted = true;
+                    std::cout << "IN CELL!!" << std::endl;
+                    if(cell.isBuildable())
+                    {
+                        std::cout << "BUIDL !!" << std::endl;
+                        Tower* tower = new Tower(0, glm::vec3(((int)worldPos.x / 8) * 8 + 4, 0.0f, ((int)worldPos.z / 8) * 8 + 4), "models/fbx/doublecube.fbx");
+                        elements.push_back(tower);
+                        cell.setTower(tower);
+                    }
+                    break;
+                }
+            }
+        }
     }
 }
 
@@ -88,32 +156,11 @@ void processKeyPressed(GLFWwindow* window, float deltaTime)
 void processMousePressed(Window* window, float deltaTime)
 {
     GLFWwindow* glfwWindow = window->getGLFWWindow();
-}
 
-glm::vec3 generateRayFromCursor(GLFWwindow* window)
-{
-    // 1. Récupérer la position du curseur
-    double xpos, ypos;
-    glfwGetCursorPos(window, &xpos, &ypos);
+    //if (mousePressed[GLFW_MOUSE_BUTTON_LEFT])
+    //{
 
-    // 2. Convertir en coordonnées NDC
-    int width, height;
-    glfwGetWindowSize(window, &width, &height);
-    float xNDC = (2.0f * xpos) / width - 1.0f;
-    float yNDC = 1.0f - (2.0f * ypos) / height;  // Inverser Y
-
-    // 3. Passer à l'espace vue
-    glm::vec4 clipCoords = glm::vec4(xNDC, yNDC, -1.0f, 1.0f);
-    glm::vec4 eyeCoords = glm::inverse(projection) * clipCoords;
-    eyeCoords = glm::vec4(eyeCoords.x, eyeCoords.y, -1.0f, 0.0f);
-
-    // 4. Passer à l'espace monde
-    glm::vec4 worldCoords = glm::inverse(*view) * eyeCoords;
-    glm::vec3 rayDirection = glm::normalize(glm::vec3(worldCoords));
-
-    // Maintenant rayDirection est la direction dans le monde vers laquelle le curseur pointe.
-    //std::cout << "RayDirection: " << rayDirection.x << " : " << rayDirection.y << " : " << rayDirection.z << std::endl;
-    return rayDirection;
+    //}
 }
 
 bool rayIntersectsTriangle(const glm::vec3& rayOrigin, const glm::vec3& rayDir, const glm::vec3& v0, const glm::vec3& v1, const glm::vec3& v2, glm::vec3& outIntersection) {
@@ -170,21 +217,6 @@ void checkWorldInteractions()
     }
 }
 
-bool findRayIntersectionWithMap(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, glm::vec3& worldPos) {
-    // Vérifie que le rayon n'est pas parallèle au plan
-    const float epsilon = 0.0001f;
-    if (fabs(rayDirection.y) < epsilon || rayDirection.y >= 0.0f) {
-        return false;
-    }
-
-    // Calcul de t
-    float t = -rayOrigin.y / rayDirection.y;
-
-    // Calcul du point d'intersection
-    worldPos = rayOrigin + t * rayDirection;
-    return true;
-}
-
 
 int main()
 {
@@ -213,7 +245,7 @@ int main()
         return 1;
     }
 
-    elements.push_back(new Element(0, glm::vec3(1024.0f, 0.0f, 1024.0f), "models/obj/foundation.obj"));
+    //elements.push_back(new Tower(0, glm::vec3(1024.0f, 0.0f, 1024.0f), "models/fbx/doublecube.fbx"));
 
     //--- Chargement de la caméra ---//
     camera = new Camera(&target, &yaw, &keyPressed);
@@ -240,6 +272,21 @@ int main()
     physics = new PhysicsEngine(world, &elements);
     mapManager.loadMap(world, shaders);
 
+    for (GLfloat z = 960; z < 1088; z += 8)
+    {
+        for(int x = 0; x < 3; ++x)
+        {
+            cells.push_back(Cell(1024.0f + x       * 8, z));
+            cells.push_back(Cell(1024.0f - (x + 1) * 8, z));//x + 1 sinon on a 2 rangé sur le même x
+        }
+
+        for (int x = 4; x < 6; ++x)
+        {
+            cells.push_back(Cell(1024.0f +  x      * 8, z));
+            cells.push_back(Cell(1024.0f - (x + 1) * 8, z));//x + 1 sinon on a 2 rangé sur le même x
+        }
+    }
+
     auto  startTime    = std::chrono::high_resolution_clock::now();
     float currentFrame = 0, animationTime = 0, timeSinceStart = 0,
           lastFrame    = glfwGetTime(), deltaTime = 0, now = 0;
@@ -262,13 +309,27 @@ int main()
         //checkWorldInteractions();
         
         glm::vec3 worldPos;
-        if (findRayIntersectionWithMap(camera->getPosition(), generateRayFromCursor(glfwWindow), worldPos))
-            std::cout << "WORLD POS: " << worldPos.x << " ... " << worldPos.y << " ... " << worldPos.z << std::endl;
-        else
-            std::cout << "RayDir >= 0" << std::endl;
+        if (findRayIntersectionWithMap(camera->getPosition(), generateRayFromCursor(glfwWindow), worldPos));
+        //    std::cout << "WORLD POS: " << worldPos.x << " ... " << worldPos.y << " ... " << worldPos.z << std::endl;
+        //else
+        //    std::cout << "RayDir >= 0" << std::endl;
+
+        //std::cout << (int)worldPos.x / 8 << " : " << (int)cells[0].x / 8 << " ... " << 
+        bool isCellTargeted = false;
+        for (Cell& cell : cells)
+        {
+            if ((int)worldPos.x / 8 == (int)cell.getX() / 8 && (int)worldPos.z / 8 == (int)cell.getZ() / 8)
+            {
+                isCellTargeted = true;
+                //std::cout << "Send mouse !" << std::endl;
+                break;
+            }
+        }
 
         shaders[LARGETILES_SHADERS].use();
+        glUniform1i(glGetUniformLocation(shaders[LARGETILES_SHADERS].getShaderProgram(), "isCellTargeted"), isCellTargeted ? 1 : 0); // 1 si true, 0 si false
         glUniform3f(glGetUniformLocation(shaders[LARGETILES_SHADERS].getShaderProgram(), "worldPos"), worldPos.x, worldPos.y, worldPos.z);
+
 
         //--- Caméra ---//
         camera->mouseControl(window->getGLFWWindow(), window->getMouseX(), window->getMouseY(), window->getScrollValue(), deltaTime);
@@ -278,41 +339,41 @@ int main()
 
         //std::cout << "MOVE: " << player->isMoving() << std::endl;
 
-        if (player->isMoving())
-        {
-            GLfloat factor = 1;
+        //if (player->isMoving())
+        //{
+        //    GLfloat factor = 1;
 
-            if (keyPressed['S'] && !keyPressed['W'])//Si on recule
-            {
-                factor = -0.5;//Vitesse divisée par 2 en reculant
-            }
-            else if (keyPressed['W'] && keyPressed['S']) factor = 0;//si Z et S sont appuyés, on bouge pas
+        //    if (keyPressed['S'] && !keyPressed['W'])//Si on recule
+        //    {
+        //        factor = -0.5;//Vitesse divisée par 2 en reculant
+        //    }
+        //    else if (keyPressed['W'] && keyPressed['S']) factor = 0;//si Z et S sont appuyés, on bouge pas
 
-            //if (player->isFalling()) factor /= 2;
+        //    //if (player->isFalling()) factor /= 2;
 
-            if (physics->checkHeightMap(player, player->getAnticipatedMove(deltaTime * factor)[3]))//check si la map ne bloque pas
-            {
-                bool collision = false;
-                GLfloat distance = 0.0f;
-                for (Element* e : elements)
-                {
-                    if (physics->checkCollision(player->getAnticipatedMoveHitbox(deltaTime * factor), e->getRHitbox()))
-                    {
-                        GLfloat temp = physics->distanceBetweenHitboxes(player, e);
-                        //std::cout << "DIST: " << temp << std::endl;
-                        if (distance < temp) distance = temp;
-                        std::cout << "COLLISION AT: " << distance << std::endl;
+        //    if (physics->checkHeightMap(player, player->getAnticipatedMove(deltaTime * factor)[3]))//check si la map ne bloque pas
+        //    {
+        //        bool collision = false;
+        //        GLfloat distance = 0.0f;
+        //        for (Element* e : elements)
+        //        {
+        //            if (physics->checkCollision(player->getAnticipatedMoveHitbox(deltaTime * factor), e->getRHitbox()))
+        //            {
+        //                GLfloat temp = physics->distanceBetweenHitboxes(player, e);
+        //                //std::cout << "DIST: " << temp << std::endl;
+        //                if (distance < temp) distance = temp;
+        //                std::cout << "COLLISION AT: " << distance << std::endl;
 
-                        collision = true;
-                    }
-                }
-                //player->move(deltaTime * factor);
-                if (!collision) player->move(deltaTime * factor);
-                else            player->moveForward(distance);
-            }
-        }
+        //                collision = true;
+        //            }
+        //        }
+        //        //player->move(deltaTime * factor);
+        //        if (!collision) player->move(deltaTime * factor);
+        //        else            player->moveForward(distance);
+        //    }
+        //}
 
-        processKeyPressed(glfwWindow, deltaTime);
+        //processKeyPressed(glfwWindow, deltaTime);
         processMousePressed(window, deltaTime);
 
         // Effacer le buffer de couleur et de profondeur
@@ -323,8 +384,8 @@ int main()
         // Utiliser le programme de shaders
         shaders["AnimatedObject"].use();
         
-        for (Entity* e : entities)
-            if(e) e->render(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart);
+        //for (Entity* e : entities)
+        //    if(e) e->render(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart);
 
         //--- Render objects ---//
         for (Element* e : elements)
