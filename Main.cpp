@@ -35,14 +35,16 @@ std::vector<Cell> cells;
 
 Character* player = nullptr;
 
-std::vector<Entity*>  entities;
-std::vector<Element*> elements;
+std::vector<Entity*>    entities;
+std::vector<Element*>   elements;
+std::vector<Tower*>     towers;
 
 glm::vec3 generateRayFromCursor(GLFWwindow* window)
 {
     // 1. Récupérer la position du curseur
     double xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
+    //std::cout << xpos << " : " << ypos << std::endl;
 
     // 2. Convertir en coordonnées NDC
     int width, height;
@@ -101,7 +103,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
                     {
                         std::cout << "BUIDL !!" << std::endl;
                         Tower* tower = new Tower(0, glm::vec3(((int)worldPos.x / 8) * 8 + 4, 0.0f, ((int)worldPos.z / 8) * 8 + 4), "models/fbx/doublecube.fbx");
-                        elements.push_back(tower);
+                        towers.push_back(tower);
                         cell.setTower(tower);
                     }
                     break;
@@ -121,6 +123,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         switch (key) 
         {
             case GLFW_KEY_ESCAPE: glfwSetWindowShouldClose(window, true);   break;
+            case GLFW_KEY_Q: entities.push_back(new Character(0, glm::vec3((int)1052.0f / 8 * 8 + 4, 0.0f, (int)956.0f / 8 * 8 + 4))); break;
         }      
     }
     else if (action == GLFW_RELEASE)
@@ -217,6 +220,23 @@ void checkWorldInteractions()
     }
 }
 
+void manageEntities()
+{
+    entities.erase(
+        std::remove_if(entities.begin(), entities.end(), [](Entity* entity) 
+            {
+                if (entity && !entity->isAlive())
+                {
+                    delete entity;
+                    entity = nullptr;
+                }
+                    return entity == nullptr; 
+            }),
+        entities.end()
+    );
+    //std::cout << entities.size() << std::endl;
+}
+
 
 int main()
 {
@@ -233,17 +253,17 @@ int main()
     glfwSetMouseButtonCallback(glfwWindow, mouse_button_callback);  // Clics de souris
 
     //--- Chargement du joueur ---//
-    player = new Character(0, glm::vec3(1024.0f, 20.0f, 1024.0f));
+    //player = new Character(0, glm::vec3(1024.0f, 20.0f, 1024.0f));
 
     GLfloat yaw = -90.0f;
     glm::vec3 target = glm::vec3(1024.0f, 0.0f, 1024.0f);
 
-    if(player) entities.push_back(player);
-    else
-    {
-        printf("ERROR: PLAYER ENTITY NOT LOADED\n");
-        return 1;
-    }
+    //if(player) entities.push_back(player);
+    //else
+    //{
+    //    printf("ERROR: PLAYER ENTITY NOT LOADED\n");
+    //    return 1;
+    //}
 
     //elements.push_back(new Tower(0, glm::vec3(1024.0f, 0.0f, 1024.0f), "models/fbx/doublecube.fbx"));
 
@@ -304,24 +324,22 @@ int main()
         deltaTime = now - lastFrame;
         lastFrame = now;
 
+        manageEntities();
+        
         //applyGravity(player, deltaTime);
         physics->applyGravity(player, deltaTime);
         //checkWorldInteractions();
         
         glm::vec3 worldPos;
-        if (findRayIntersectionWithMap(camera->getPosition(), generateRayFromCursor(glfwWindow), worldPos));
-        //    std::cout << "WORLD POS: " << worldPos.x << " ... " << worldPos.y << " ... " << worldPos.z << std::endl;
-        //else
-        //    std::cout << "RayDir >= 0" << std::endl;
+        findRayIntersectionWithMap(camera->getPosition(), generateRayFromCursor(glfwWindow), worldPos);
+        //std::cout << worldPos.x << " : " << worldPos.z << std::endl;
 
-        //std::cout << (int)worldPos.x / 8 << " : " << (int)cells[0].x / 8 << " ... " << 
         bool isCellTargeted = false;
         for (Cell& cell : cells)
         {
             if ((int)worldPos.x / 8 == (int)cell.getX() / 8 && (int)worldPos.z / 8 == (int)cell.getZ() / 8)
             {
                 isCellTargeted = true;
-                //std::cout << "Send mouse !" << std::endl;
                 break;
             }
         }
@@ -329,7 +347,6 @@ int main()
         shaders[LARGETILES_SHADERS].use();
         glUniform1i(glGetUniformLocation(shaders[LARGETILES_SHADERS].getShaderProgram(), "isCellTargeted"), isCellTargeted ? 1 : 0); // 1 si true, 0 si false
         glUniform3f(glGetUniformLocation(shaders[LARGETILES_SHADERS].getShaderProgram(), "worldPos"), worldPos.x, worldPos.y, worldPos.z);
-
 
         //--- Caméra ---//
         camera->mouseControl(window->getGLFWWindow(), window->getMouseX(), window->getMouseY(), window->getScrollValue(), deltaTime);
@@ -384,14 +401,23 @@ int main()
         // Utiliser le programme de shaders
         shaders["AnimatedObject"].use();
         
-        //for (Entity* e : entities)
-        //    if(e) e->render(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart);
-
-        //--- Render objects ---//
-        for (Element* e : elements)
+        for (Entity* e : entities)
+        {
+            if (!e || !e->isAlive()) continue;
+            if (e->getPosition().z < (int)1091 / 8 * 8 + 4) e->move(deltaTime);
             e->render(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart);
+        }
 
-        player->renderSelected(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart);
+        auto endTime    = std::chrono::high_resolution_clock::now();
+        auto duration   = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
+        //--- Render objects ---//
+        for (Tower* t : towers)
+        {
+            t->attack(entities, duration.count());
+            t->render(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart);
+        }
+
+        //player->renderSelected(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart);
 
         //--- Render terrain ---//
         world->render();

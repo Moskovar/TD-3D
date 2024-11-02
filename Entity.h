@@ -23,6 +23,7 @@ class Entity : public Element
 
 		//--- Getters ---//
 		bool	isJumping()							{ return jumping;				}
+		bool	isAlive()							{ return alive;					}
 
 		//--- Setters ---//
 		void setMovementState(MovementState state)	{ this->movementState = state;	}
@@ -32,13 +33,15 @@ class Entity : public Element
 		void directionPressed(uint8_t keyPressed)	{ movingValue += directionsValue[keyPressed]; updateAnimationID();	}
 		void directionReleased(uint8_t keyPressed)	{ movingValue -= directionsValue[keyPressed]; updateAnimationID();	}
 
+		void takeDamages(int damages);
 		void jump(GLfloat deltaTime);
 
 		void handleMovement(GLfloat deltaTime);
 		void handleGravity(GLfloat deltaTime);
 
 	private:
-		bool jumping = false;
+		int hp = 100;
+		bool alive = true, jumping = false;
 		GLfloat jumpValue = 0.0f;
 		MovementState movementState = MovementState::IDLE;
 		GravityState gravityState	= GravityState::GROUNDED;

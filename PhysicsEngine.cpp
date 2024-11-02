@@ -98,6 +98,8 @@ bool PhysicsEngine::checkHeightMap(Element* element, glm::vec3 nextElementPos)//
 
 void PhysicsEngine::applyGravity(Element* element, GLfloat deltaTime)
 {
+    if (!element) return;
+
     if (static_cast<Entity*>(element) && static_cast<Entity*>(element)->isJumping()) return;
 
     glm::vec3* elementPos = element->getPositionP();

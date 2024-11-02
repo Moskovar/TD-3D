@@ -5,6 +5,16 @@ Entity::Entity(short id, glm::vec3 position, const std::string& filePath) : Elem
 	//std::cout << "MAXPOINT: " << model->getMaxPoint().x << std::endl;
 }
 
+void Entity::takeDamages(int damages)
+{
+	this->hp -= damages;
+	if (hp <= 0)
+	{
+		std::cout << "Entity is dead RIP !" << std::endl;
+		alive = false;
+	}
+}
+
 void Entity::jump(GLfloat deltaTime)
 {
 	GLfloat value = moveSpeed * deltaTime / 2;
