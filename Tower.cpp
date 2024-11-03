@@ -4,11 +4,11 @@ Tower::Tower(short id, glm::vec3 position, const std::string& filePath) : Elemen
 {
 }
 
-void Tower::attack(std::vector<Entity*>& entities, GLfloat timeSinceStart)
+void Tower::attack(std::vector<Entity*>* entities, GLfloat timeSinceStart)
 {
 	if (timeSinceStart - lastAttackTime < attackSpeed) return;
 
-	for (Entity* e : entities)
+	for (Entity* e : *entities)
 	{
 		if (isInRange(e))
 		{

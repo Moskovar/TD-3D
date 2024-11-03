@@ -7,7 +7,7 @@ Element::Element(short id, glm::vec3 position, const std::string& filePath)
 
 	this->position = position;
 
-	model->translate(modelMatrix, position);
+	translate(position);
 	
 	updatePosition();
 }
@@ -22,13 +22,28 @@ Element::Element(short id, glm::mat4 modelMtx, const std::string& filePath)
 	updatePosition();
 }
 
+Element::Element(short id, glm::vec3 position, Model* model)
+{
+	this->id		= id;
+	this->position	= position;
+	this->model		= model;
+
+	//std::cout << "MODEL ADDR: " << model << std::endl;
+
+	translate(position);
+
+	updatePosition();
+
+	//std::cout << "COPIE" << std::endl;
+}
+
 Element::~Element()
 {
-	if (model)
-	{
-		delete model;
-		model = nullptr;
-	}
+	//if (model)
+	//{
+	//	delete model;
+	//	model = nullptr;
+	//}
 	printf("||--- Element is cleared ---||\n");
 }
 
@@ -124,19 +139,20 @@ void Element::moveForward(GLfloat z)
 
 void Element::move(GLfloat deltaTime)
 {
-	model->translate(modelMatrix, glm::vec3(0.0f, 0.0f, moveSpeed * deltaTime));
+	translate(glm::vec3(0.0f, 0.0f, moveSpeed * deltaTime));
 	updatePosition();
 }
 
 void Element::moveAtY(GLfloat positionY)
 {
-	model->translate(modelMatrix, glm::vec3(0.0f, positionY - position.y, 0.0f));
+	translate( glm::vec3(0.0f, positionY - position.y, 0.0f));
 	updatePosition();
 }
 
 void Element::translate(glm::vec3 translation)
 {
-	model->translate(modelMatrix, translation);
+	//model->translate(modelMatrix, translation);
+	modelMatrix = glm::translate(modelMatrix, translation);
 	updatePosition();
 }
 
@@ -153,7 +169,7 @@ void Element::turn(GLfloat yaw)//et le deltatime ??
 
 void Element::fall(GLfloat deltaTime)
 {
-	model->translate(modelMatrix, glm::vec3(0.0f, -FALL_SPEED * deltaTime, 0.0f));
+	translate(glm::vec3(0.0f, -FALL_SPEED * deltaTime, 0.0f));
 	updatePosition();
 }
 
@@ -190,6 +206,15 @@ void Element::updatePosition()
 	this->position.z = this->modelMatrix[3].z;
 
 	calculateHitBox();
+}
+
+void Element::clear()
+{
+	if (model)
+	{
+		delete model;
+		model = nullptr;
+	}
 }
 
 void Element::render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc, const float& timeSinceStart)

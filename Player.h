@@ -10,6 +10,9 @@ class Player
 		Player(bool rightSide);//z le plus petit = true
 		~Player();
 
+		//--- Getters ---//
+		std::vector<Entity*>* getEntities() { return nexus->getEntities(); }
+
 		void nexusSpawn(const GLfloat& timeSinceStart);
 		void render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc, const float& timeSinceStart, const float& deltaTime);
 

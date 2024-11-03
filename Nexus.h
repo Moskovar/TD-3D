@@ -6,9 +6,13 @@ class Nexus : public Element
 {
 
 	public:
-		Nexus(short id, glm::vec3 position, std::vector<Entity*>* entities, const std::string& filePath);
+		Nexus(short id, glm::vec3 position, const bool& rightSide, std::vector<Entity*>* entities, const std::string& filePath);
+		~Nexus();
 
-		void spawn(const bool& rightSide, const GLfloat& timeSinceStart);
+		//--- Getters ---//
+		std::vector<Entity*>* getEntities() { return this->entities; }
+
+		void play(const bool& rightSide, const GLfloat& timeSinceStart);
 		void cleanEntities();
 
 		void start(bool rightSide, const GLboolean& run);
@@ -18,5 +22,6 @@ class Nexus : public Element
 		unsigned short nbSpawned			  = 0      , nbPerWave = 5;
 		std::vector<Entity*>* entities		  = nullptr;
 		std::vector<Entity*>  entities_loaded = {};
+		std::vector<Character> entities_model = {};
 };
 

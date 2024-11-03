@@ -161,12 +161,6 @@ void Model::clearModel()
 	
 }
 
-void Model::translate(glm::mat4& modelMatrix, glm::vec3 translation)
-{
-	modelMatrix = glm::translate(modelMatrix, translation);
-	//translateHitBox(translation);
-}
-
 Model::~Model()
 {
 	for (size_t i = 0; i < meshList.size(); i++)

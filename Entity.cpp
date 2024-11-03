@@ -5,6 +5,10 @@ Entity::Entity(short id, glm::vec3 position, const std::string& filePath) : Elem
 	//std::cout << "MAXPOINT: " << model->getMaxPoint().x << std::endl;
 }
 
+Entity::Entity(short id, glm::vec3 position, Model* model) : Element(id, position, model)
+{
+}
+
 void Entity::takeDamages(int damages)
 {
 	this->hp -= damages;
@@ -24,7 +28,7 @@ void Entity::jump(GLfloat deltaTime)
 	jumpValue += value;
 
 	//checker le mouvement anticipé avant de le réaliser [A FAIRE]
-	model->translate(modelMatrix, glm::vec3(0.0f, value, 0.0f));
+	translate(glm::vec3(0.0f, value, 0.0f));
 	updatePosition();
 
 	//std::cout << position.y << " ... " << jumpValue << std::endl;

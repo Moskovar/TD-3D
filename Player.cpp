@@ -8,7 +8,7 @@ Player::Player(bool rightSide)
 	{
 		character = new Character(0, glm::vec3(getCellCenter(996), 0.0f, getCellCenter(930)));
 
-		nexus = new Nexus(0, glm::vec3(getCellCenter(1050), 0.0f, getCellCenter(930)), &entities, "models/obj/r5.obj");
+		nexus = new Nexus(0, glm::vec3(getCellCenter(1050), 0.0f, getCellCenter(930)), rightSide, &entities, "models/obj/r5.obj");
 		nexus->turn(90.0f);
 
 		entities_mutex = &r_entities_mutex;
@@ -17,7 +17,7 @@ Player::Player(bool rightSide)
 	{
 		character = new Character(0, glm::vec3(getCellCenter(1052), 0.0f, getCellCenter(1118)));
 
-		nexus = new Nexus(0, glm::vec3(getCellCenter(998), 0.0f, getCellCenter(1118)), &entities, "models/obj/r5.obj");
+		nexus = new Nexus(0, glm::vec3(getCellCenter(998), 0.0f, getCellCenter(1118)), rightSide, &entities, "models/obj/r5.obj");
 		nexus->turn(-90.0f);
 
 		entities_mutex = &l_entities_mutex;
@@ -59,7 +59,7 @@ Player::~Player()
 
 void Player::nexusSpawn(const GLfloat& timeSinceStart)
 {
-	nexus->spawn(rightSide, timeSinceStart);
+	nexus->play(rightSide, timeSinceStart);
 }
 
 void Player::render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc, const float& timeSinceStart, const float& deltaTime)
@@ -72,7 +72,6 @@ void Player::render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc, co
 
 	//std::cout << entities.size() << std::endl;
 
-	entities_mutex->lock();
 	for (Entity* e : entities)
 	{
 		if (!e || !e->isAlive()) continue;
@@ -87,5 +86,4 @@ void Player::render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc, co
 		}
 		e->render(modelLoc, bonesTransformsLoc, timeSinceStart);
 	}
-	entities_mutex->unlock();
 }

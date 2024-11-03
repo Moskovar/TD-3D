@@ -20,6 +20,7 @@ class Entity : public Element
 	public:
 		Entity() {}
 		Entity(short id, glm::vec3 position, const std::string& filePath);
+		Entity(short id, glm::vec3 position, Model* model);
 
 		//--- Getters ---//
 		bool	isJumping()							{ return jumping;				}

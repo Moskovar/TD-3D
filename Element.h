@@ -10,6 +10,7 @@ class Element
 		Element() {};
 		Element(short id, glm::vec3 position, const std::string& filePath);
 		Element(short id, glm::mat4 modelMtx, const std::string& filePath);
+		Element(short id, glm::vec3 position, Model* model);
 
 		~Element();
 
@@ -49,6 +50,8 @@ class Element
 		void turn(GLfloat yaw);
 		void fall(GLfloat deltaTime);
 		void updatePosition();
+
+		void clear();
 		
 		void render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc, const float& timeSinceStart);
 

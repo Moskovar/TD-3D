@@ -320,7 +320,7 @@ int main()
         deltaTime = now - lastFrame;
         lastFrame = now;
 
-        manageEntities();
+        //manageEntities();
         
         //applyGravity(player, deltaTime);
         //physics->applyGravity(player, deltaTime);
@@ -370,7 +370,7 @@ int main()
         //--- Render objects ---//
         for (Tower* t : towers)
         {
-            t->attack(entities, duration.count());
+            t->attack(rPlayer->getEntities(), duration.count());
             t->render(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart);
         }
 
