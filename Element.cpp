@@ -192,7 +192,7 @@ void Element::updatePosition()
 	calculateHitBox();
 }
 
-void Element::render(GLuint& modelLoc, GLuint& bonesTransformsLoc, float& timeSinceStart)
+void Element::render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc, const float& timeSinceStart)
 {
 	float ticksPerSecond = 0, duration = 0 , animationTime = 0;
 	glm::mat4 bonesTransform[NUM_BONES] = {};

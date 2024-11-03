@@ -11,7 +11,7 @@ class Tower : public Element
 		GLfloat getDamages() { return damages; }
 
 		virtual void attack(std::vector<Entity*>& entities, GLfloat timeSinceStart);
-
+		
 	private:
 		GLfloat range			= 50;
 		GLfloat damages			= 10;

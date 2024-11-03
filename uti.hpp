@@ -6,6 +6,7 @@
 #include <string>
 #include <array>
 #include <iostream>
+#include <mutex>
 
 #define CAM_MAX_DISTANCE 125
 
@@ -128,3 +129,9 @@ enum DirectionValue
 
 	ALL = 15
 };
+
+int getCellCenter(GLfloat xOrZ, int cellWidth = 8);
+
+//--- Mutex ---//
+extern std::mutex r_entities_mutex;//right player entities mutex
+extern std::mutex l_entities_mutex;//left  player entities mutex

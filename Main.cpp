@@ -3,7 +3,9 @@
 #include <chrono>
 
 #include "Window.h"
+#include "Player.h"
 #include "Entity.h"
+#include "Nexus.h"
 #include "Tower.h"
 #include "Character.h"
 #include "Camera.h"
@@ -23,6 +25,8 @@ GLfloat width = 1920.0f, height = 1080.0f;
 Window*         window  = nullptr;
 Camera*         camera  = nullptr;
 Game::Map*      world   = nullptr;
+Player*         rPlayer = nullptr;
+Player*         lPlayer = nullptr;
 glm::mat4* view         = nullptr;
 glm::mat4 projection;
 MapManager      mapManager;
@@ -33,7 +37,7 @@ std::map<int , bool> mousePressed;
 
 std::vector<Cell> cells;
 
-Character* player = nullptr;
+//Character* player = nullptr;
 
 std::vector<Entity*>    entities;
 std::vector<Element*>   elements;
@@ -123,7 +127,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         switch (key) 
         {
             case GLFW_KEY_ESCAPE: glfwSetWindowShouldClose(window, true);   break;
-            case GLFW_KEY_Q: entities.push_back(new Character(0, glm::vec3((int)1052.0f / 8 * 8 + 4, 0.0f, (int)956.0f / 8 * 8 + 4))); break;
+            case GLFW_KEY_Q: entities.push_back(new Character(0, glm::vec3(getCellCenter(1052), 0.0f, getCellCenter(930)))); break;
         }      
     }
     else if (action == GLFW_RELEASE)
@@ -134,26 +138,26 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 void processKeyPressed(GLFWwindow* window, float deltaTime)
 {
-    if(keyPressed[GLFW_KEY_W] || keyPressed[GLFW_KEY_S])
-    {
-        player->setMove(true);
-    }
+    //if(keyPressed[GLFW_KEY_W] || keyPressed[GLFW_KEY_S])
+    //{
+    //    player->setMove(true);
+    //}
 
-    if (keyPressed[GLFW_KEY_D]) 
-    {
-        player->turn(TURN_SPEED   * deltaTime);
-        camera->addYaw(TURN_SPEED * deltaTime);
-    }
-    if (keyPressed[GLFW_KEY_A]) 
-    {
-        player->turn(TURN_SPEED   * -deltaTime);
-        camera->addYaw(TURN_SPEED * -deltaTime);
-    }
+    //if (keyPressed[GLFW_KEY_D]) 
+    //{
+    //    player->turn(TURN_SPEED   * deltaTime);
+    //    camera->addYaw(TURN_SPEED * deltaTime);
+    //}
+    //if (keyPressed[GLFW_KEY_A]) 
+    //{
+    //    player->turn(TURN_SPEED   * -deltaTime);
+    //    camera->addYaw(TURN_SPEED * -deltaTime);
+    //}
 
-    if (keyPressed[GLFW_KEY_SPACE] && !player->isFalling())
-    {
-        player->setJumping(true);
-    }
+    //if (keyPressed[GLFW_KEY_SPACE] && !player->isFalling())
+    //{
+    //    player->setJumping(true);
+    //}
 }
 
 void processMousePressed(Window* window, float deltaTime)
@@ -252,20 +256,11 @@ int main()
     glfwSetKeyCallback(glfwWindow, keyCallback);
     glfwSetMouseButtonCallback(glfwWindow, mouse_button_callback);  // Clics de souris
 
-    //--- Chargement du joueur ---//
-    //player = new Character(0, glm::vec3(1024.0f, 20.0f, 1024.0f));
+    rPlayer = new Player(true);
+    lPlayer = new Player(false);
 
     GLfloat yaw = -90.0f;
     glm::vec3 target = glm::vec3(1024.0f, 0.0f, 1024.0f);
-
-    //if(player) entities.push_back(player);
-    //else
-    //{
-    //    printf("ERROR: PLAYER ENTITY NOT LOADED\n");
-    //    return 1;
-    //}
-
-    //elements.push_back(new Tower(0, glm::vec3(1024.0f, 0.0f, 1024.0f), "models/fbx/doublecube.fbx"));
 
     //--- Chargement de la caméra ---//
     camera = new Camera(&target, &yaw, &keyPressed);
@@ -275,7 +270,7 @@ int main()
 
     //--- Chargement des shaders ---//
     std::map<std::string, Shader> shaders;
-    shaders["AnimatedObject"]           = Shader("shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl"                          , view, &projection);
+    shaders["AnimatedObject"]           = Shader("shaders/vertex_shader.glsl"        , "shaders/fragment_shader.glsl"                  , view, &projection);
     shaders[MAP_JUNCTIONS_SHADERS]      = Shader("shaders/map/map_vertex_shader.glsl", "shaders/map/map_fragment_shader.glsl"          , view, &projection);
     shaders[CHUNKS_JUNCTIONS_SHADERS]   = Shader("shaders/map/map_vertex_shader.glsl", "shaders/map/chunks_fragment_shader.glsl"       , view, &projection);
     shaders[LARGETILES_SHADERS]         = Shader("shaders/map/map_vertex_shader.glsl", "shaders/map/largetiles_fragment_shader.glsl"   , view, &projection);
@@ -310,11 +305,12 @@ int main()
     auto  startTime    = std::chrono::high_resolution_clock::now();
     float currentFrame = 0, animationTime = 0, timeSinceStart = 0,
           lastFrame    = glfwGetTime(), deltaTime = 0, now = 0;
+    GLboolean run = true;
 
-    Texture textureTemp("textures/basic_texture_1.png");
+    Texture textureTemp("textures/basic_texture_1.png");//??
     
     //Boucle de rendu
-    while (!glfwWindowShouldClose(glfwWindow))
+    while (!glfwWindowShouldClose(glfwWindow) && run)
     {   //AnimationTime
         auto currentTime = std::chrono::high_resolution_clock::now();
         timeSinceStart = std::chrono::duration<float>(currentTime - startTime).count();
@@ -327,7 +323,7 @@ int main()
         manageEntities();
         
         //applyGravity(player, deltaTime);
-        physics->applyGravity(player, deltaTime);
+        //physics->applyGravity(player, deltaTime);
         //checkWorldInteractions();
         
         glm::vec3 worldPos;
@@ -351,45 +347,6 @@ int main()
         //--- Caméra ---//
         camera->mouseControl(window->getGLFWWindow(), window->getMouseX(), window->getMouseY(), window->getScrollValue(), deltaTime);
 
-        //--- Personnage ---//
-        //if (player->isJumping()) player->jump(deltaTime);
-
-        //std::cout << "MOVE: " << player->isMoving() << std::endl;
-
-        //if (player->isMoving())
-        //{
-        //    GLfloat factor = 1;
-
-        //    if (keyPressed['S'] && !keyPressed['W'])//Si on recule
-        //    {
-        //        factor = -0.5;//Vitesse divisée par 2 en reculant
-        //    }
-        //    else if (keyPressed['W'] && keyPressed['S']) factor = 0;//si Z et S sont appuyés, on bouge pas
-
-        //    //if (player->isFalling()) factor /= 2;
-
-        //    if (physics->checkHeightMap(player, player->getAnticipatedMove(deltaTime * factor)[3]))//check si la map ne bloque pas
-        //    {
-        //        bool collision = false;
-        //        GLfloat distance = 0.0f;
-        //        for (Element* e : elements)
-        //        {
-        //            if (physics->checkCollision(player->getAnticipatedMoveHitbox(deltaTime * factor), e->getRHitbox()))
-        //            {
-        //                GLfloat temp = physics->distanceBetweenHitboxes(player, e);
-        //                //std::cout << "DIST: " << temp << std::endl;
-        //                if (distance < temp) distance = temp;
-        //                std::cout << "COLLISION AT: " << distance << std::endl;
-
-        //                collision = true;
-        //            }
-        //        }
-        //        //player->move(deltaTime * factor);
-        //        if (!collision) player->move(deltaTime * factor);
-        //        else            player->moveForward(distance);
-        //    }
-        //}
-
         //processKeyPressed(glfwWindow, deltaTime);
         processMousePressed(window, deltaTime);
 
@@ -400,13 +357,13 @@ int main()
 
         // Utiliser le programme de shaders
         shaders["AnimatedObject"].use();
-        
-        for (Entity* e : entities)
-        {
-            if (!e || !e->isAlive()) continue;
-            if (e->getPosition().z < (int)1091 / 8 * 8 + 4) e->move(deltaTime);
-            e->render(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart);
-        }
+
+        //--- Joueur ---//
+        rPlayer->nexusSpawn(timeSinceStart);
+        lPlayer->nexusSpawn(timeSinceStart);
+
+        rPlayer->render(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart, deltaTime);
+        lPlayer->render(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart, deltaTime);
 
         auto endTime    = std::chrono::high_resolution_clock::now();
         auto duration   = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
@@ -417,7 +374,6 @@ int main()
             t->render(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart);
         }
 
-        //player->renderSelected(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart);
 
         //--- Render terrain ---//
         world->render();
@@ -429,6 +385,8 @@ int main()
         glfwSwapBuffers(glfwWindow);
         glfwPollEvents();
     }
+
+    run = false;
 
     // Nettoyer et quitter
     if (window)

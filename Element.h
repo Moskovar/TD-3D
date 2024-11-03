@@ -50,7 +50,7 @@ class Element
 		void fall(GLfloat deltaTime);
 		void updatePosition();
 		
-		void render(GLuint& modelLoc, GLuint& bonesTransformsLoc, float& timeSinceStart);
+		void render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc, const float& timeSinceStart);
 
 	protected:
 		uint8_t id = -1, animationID = 0, movingValue = 0;//entier non signé de 0 à 255 -> à mettre dans une autre classe qui gère les entrées claviers ?

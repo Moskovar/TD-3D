@@ -15,7 +15,7 @@ void Tower::attack(std::vector<Entity*>& entities, GLfloat timeSinceStart)
 			//std::cout << "Element in range !!" << std::endl;
 			e->takeDamages(this->damages);
 			lastAttackTime = timeSinceStart;
-			std::cout << "ATTACK!!" << std::endl;
+			//std::cout << "ATTACK!!" << std::endl;
 			break;
 		}
 	}
