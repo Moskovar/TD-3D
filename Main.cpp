@@ -102,13 +102,11 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
                 if ((int)worldPos.x / 8 == (int)cell.getX() / 8 && (int)worldPos.z / 8 == (int)cell.getZ() / 8)
                 {
                     isCellTargeted = true;
-                    std::cout << "IN CELL!!" << std::endl;
+                    //std::cout << "IN CELL!!" << std::endl;
                     if(cell.isBuildable())
                     {
-                        std::cout << "BUIDL !!" << std::endl;
-                        Tower* tower = new Tower(0, glm::vec3(((int)worldPos.x / 8) * 8 + 4, 0.0f, ((int)worldPos.z / 8) * 8 + 4), "models/fbx/doublecube.fbx");
-                        towers.push_back(tower);
-                        cell.setTower(tower);
+                        //std::cout << "BUIDL !!" << std::endl;
+                        lPlayer->addTower(HumanTowers::ArcherTower, cell, worldPos);
                     }
                     break;
                 }
@@ -224,24 +222,6 @@ void checkWorldInteractions()
     }
 }
 
-void manageEntities()
-{
-    entities.erase(
-        std::remove_if(entities.begin(), entities.end(), [](Entity* entity) 
-            {
-                if (entity && !entity->isAlive())
-                {
-                    delete entity;
-                    entity = nullptr;
-                }
-                    return entity == nullptr; 
-            }),
-        entities.end()
-    );
-    //std::cout << entities.size() << std::endl;
-}
-
-
 int main()
 {
     //--- Chargement du contexte OpenGL ---//
@@ -256,8 +236,8 @@ int main()
     glfwSetKeyCallback(glfwWindow, keyCallback);
     glfwSetMouseButtonCallback(glfwWindow, mouse_button_callback);  // Clics de souris
 
-    rPlayer = new Player(true);
-    lPlayer = new Player(false);
+    rPlayer = new Player(true , lPlayer);
+    lPlayer = new Player(false, rPlayer);
 
     GLfloat yaw = -90.0f;
     glm::vec3 target = glm::vec3(1024.0f, 0.0f, 1024.0f);
@@ -319,12 +299,9 @@ int main()
         now       = glfwGetTime();
         deltaTime = now - lastFrame;
         lastFrame = now;
-
-        //manageEntities();
         
         //applyGravity(player, deltaTime);
         //physics->applyGravity(player, deltaTime);
-        //checkWorldInteractions();
         
         glm::vec3 worldPos;
         findRayIntersectionWithMap(camera->getPosition(), generateRayFromCursor(glfwWindow), worldPos);
@@ -364,16 +341,6 @@ int main()
 
         rPlayer->render(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart, deltaTime);
         lPlayer->render(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart, deltaTime);
-
-        auto endTime    = std::chrono::high_resolution_clock::now();
-        auto duration   = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
-        //--- Render objects ---//
-        for (Tower* t : towers)
-        {
-            t->attack(rPlayer->getEntities(), duration.count());
-            t->render(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart);
-        }
-
 
         //--- Render terrain ---//
         world->render();

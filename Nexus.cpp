@@ -2,9 +2,9 @@
 #include <thread>
 #include <chrono>
 
-Nexus::Nexus(short id, glm::vec3 position, const bool& rightSide, std::vector<Entity*>* entities, const std::string& filePath) : Element(id, position, filePath)
+Nexus::Nexus(short id, glm::vec3 position, const bool& rightSide, const std::string& filePath) : Element(id, position, filePath)
 {
-	this->entities = entities;
+	this->rightSide = rightSide;
 
 	if (rightSide)
 	{
@@ -20,6 +20,15 @@ Nexus::Nexus(short id, glm::vec3 position, const bool& rightSide, std::vector<En
 
 Nexus::~Nexus()
 {
+	for (Entity* e : entities)
+	{
+		if (e)
+		{
+			delete e;
+			e = nullptr;
+		}
+	}
+
 	for (Character c : entities_model)
 		c.clear();
 }
@@ -27,7 +36,7 @@ Nexus::~Nexus()
 void Nexus::play(const bool& rightSide, const GLfloat& timeSinceStart)
 {
 	//std::cout << timeSinceStart - lastWaveTime << " : " << spawnFrequency << std::endl;
-	if (entities_loaded.size() < 5)
+	if (entities_loaded.size() < nbPerWave)
 	{
 		//std::cout << "EXAMPLE MODEL ADDR: " << entities_model[0].getModel() << std::endl;
 		if (rightSide)
@@ -45,11 +54,11 @@ void Nexus::play(const bool& rightSide, const GLfloat& timeSinceStart)
 
 	cleanEntities();
 
-	if (timeSinceStart - lastWaveTime < 5) return;
+	if (timeSinceStart - lastWaveTime < spawnFrequency) return;
 
 	for (Entity* e : entities_loaded)
 	{
-		entities->push_back(e);
+		entities.push_back(e);
 	}
 	
 	entities_loaded.clear();
@@ -59,8 +68,8 @@ void Nexus::play(const bool& rightSide, const GLfloat& timeSinceStart)
 
 void Nexus::cleanEntities()
 {
-	entities->erase(
-		std::remove_if(entities->begin(), entities->end(), [](Entity* entity)
+	entities.erase(
+		std::remove_if(entities.begin(), entities.end(), [](Entity* entity)
 			{
 				if (entity && !entity->isAlive())
 				{
@@ -69,15 +78,33 @@ void Nexus::cleanEntities()
 				}
 				return entity == nullptr;
 			}),
-		entities->end()
+		entities.end()
 	);
 }
 
-void Nexus::start(bool rightSide, const GLboolean & run)
+void Nexus::render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc, const float& timeSinceStart, const GLfloat& deltaTime)
 {
+	Element::render(modelLoc, bonesTransformsLoc, timeSinceStart);
 
+	for (Entity* e : entities)
+	{
+		if (!moveEntity(e, deltaTime)) continue; //pas vraiment sa place ici mais ça évite de refaire un parcours d'entities dans moveEntity
+		e->render(modelLoc, bonesTransformsLoc, timeSinceStart);
+	}
+}
 
-	//int x = getCellCenter(1052), z = getCellCenter(930);
-	//for (unsigned short i = 0; i < nbPerWave - 1; ++i) entities->push_back(new Character(0, glm::vec3(x, 0.0f, z - i * 5)));
-	
+bool Nexus::moveEntity(Entity* e, const GLfloat& deltaTime)
+{
+	if (!e || !e->isAlive()) return false;
+
+	if (rightSide)
+	{
+		if (e->getPosition().z < getCellCenter(1091)) e->move(deltaTime); 
+	}
+	else
+	{
+		if (e->getPosition().z > getCellCenter(957)) e->move(-deltaTime);
+	}
+
+	return true;
 }

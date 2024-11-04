@@ -130,6 +130,11 @@ enum DirectionValue
 	ALL = 15
 };
 
+enum HumanTowers
+{
+	ArcherTower = 1
+};
+
 int getCellCenter(GLfloat xOrZ, int cellWidth = 8);
 
 //--- Mutex ---//
