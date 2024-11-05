@@ -10,6 +10,8 @@ Element::Element(short id, glm::vec3 position, const std::string& filePath)
 	translate(position);
 	
 	updatePosition();
+
+	startTime = std::chrono::high_resolution_clock::now();
 }
 
 Element::Element(short id, glm::mat4 modelMtx, const std::string& filePath)
@@ -20,6 +22,8 @@ Element::Element(short id, glm::mat4 modelMtx, const std::string& filePath)
 	this->modelMatrix = glm::mat4(modelMtx);
 
 	updatePosition();
+
+	startTime = std::chrono::high_resolution_clock::now();
 }
 
 Element::Element(short id, glm::vec3 position, Model* model)
@@ -35,6 +39,7 @@ Element::Element(short id, glm::vec3 position, Model* model)
 	updatePosition();
 
 	//std::cout << "COPIE" << std::endl;
+	startTime = std::chrono::high_resolution_clock::now();
 }
 
 Element::~Element()
@@ -217,7 +222,7 @@ void Element::clear()
 	}
 }
 
-void Element::render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc, const float& timeSinceStart)
+void Element::render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc)
 {
 	float ticksPerSecond = 0, duration = 0 , animationTime = 0;
 	glm::mat4 bonesTransform[NUM_BONES] = {};
@@ -227,6 +232,10 @@ void Element::render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc, c
 		//printf("AnimationID: %d ... Duration: %f\n", animationID, model->getAnimation(animationID)->getDuration());
 		ticksPerSecond = model->getAnimation(animationID)->getTicksPerSecond();
 		duration = model->getAnimation(animationID)->getDuration() / ticksPerSecond;
+
+		auto currentTime = std::chrono::high_resolution_clock::now();
+		float timeSinceStart = std::chrono::duration<float>(currentTime - startTime).count();
+
 		animationTime = fmod(timeSinceStart * ticksPerSecond, duration);
 
 		glm::mat4 rootMatrix = glm::mat4(1.0f);

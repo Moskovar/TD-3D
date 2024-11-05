@@ -15,7 +15,7 @@ class Nexus : public Element
 		void play(const bool& rightSide, const GLfloat& timeSinceStart);
 		void cleanEntities();
 		
-		void render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc, const float& timeSinceStart, const GLfloat& deltaTime);
+		void render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc, const GLfloat& deltaTime);
 
 	private:
 		bool rightSide = false;

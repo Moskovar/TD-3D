@@ -82,14 +82,14 @@ void Nexus::cleanEntities()
 	);
 }
 
-void Nexus::render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc, const float& timeSinceStart, const GLfloat& deltaTime)
+void Nexus::render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc, const GLfloat& deltaTime)
 {
-	Element::render(modelLoc, bonesTransformsLoc, timeSinceStart);
+	Element::render(modelLoc, bonesTransformsLoc);
 
 	for (Entity* e : entities)
 	{
 		if (!moveEntity(e, deltaTime)) continue; //pas vraiment sa place ici mais ça évite de refaire un parcours d'entities dans moveEntity
-		e->render(modelLoc, bonesTransformsLoc, timeSinceStart);
+		e->render(modelLoc, bonesTransformsLoc);
 	}
 }
 

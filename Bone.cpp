@@ -37,7 +37,6 @@ void Bone::interpolateTransform(unsigned short animationID, double animationTime
         return;
     }
 
-
     // Si aucune keyframe n'est disponible, retourner une matrice identité
     if (keyFrames[animationID].empty())
     {
@@ -52,6 +51,7 @@ void Bone::interpolateTransform(unsigned short animationID, double animationTime
 
     if (nextKeyFrame == keyFrames[animationID].end()) // Si aucune keyframe suivante n'est trouvée, utiliser la dernière keyframe
     {
+        std::cout << "LASLAST" << std::endl;
         res *= glm::translate(keyFrames[animationID].rbegin()->second.position) * glm::mat4_cast(keyFrames[animationID].rbegin()->second.rotation) * glm::scale(keyFrames[animationID].rbegin()->second.scale);
         bonesTransform[id] = res * offsetMatrix;
         for(Bone* child : children)

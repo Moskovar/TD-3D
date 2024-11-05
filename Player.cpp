@@ -70,13 +70,13 @@ void Player::render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc, co
 	if (!character) { std::cout << "Character nullptr!" << std::endl; return; }
 	if (!nexus)		{ std::cout << "nexus nullptr!"		<< std::endl; return; }
 
-	character->render(modelLoc, bonesTransformsLoc, timeSinceStart);
-	nexus->render(modelLoc, bonesTransformsLoc, timeSinceStart, deltaTime);
+	character->render(modelLoc, bonesTransformsLoc);
+	nexus->render(modelLoc, bonesTransformsLoc, deltaTime);
 
 	for (Tower* t : towers)
 	{
-		t->attack(enemy->getEntities(), timeSinceStart);
-		t->render(modelLoc, bonesTransformsLoc, timeSinceStart);
+		t->attack(enemy->getEntities());
+		t->render(modelLoc, bonesTransformsLoc);
 	}
 
 	//std::cout << entities.size() << std::endl;

@@ -53,7 +53,7 @@ class Element
 
 		void clear();
 		
-		void render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc, const float& timeSinceStart);
+		void render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc);
 
 	protected:
 		uint8_t id = -1, animationID = 0, movingValue = 0;//entier non signé de 0 à 255 -> à mettre dans une autre classe qui gère les entrées claviers ?
@@ -65,6 +65,7 @@ class Element
 		GLfloat yaw = -90;//à descendre dans entity ? avec render en méthode abstraite ?
 		GLfloat moveSpeed = 10.0f;
 		bool moving = false, falling = false;
+		std::chrono::high_resolution_clock::time_point startTime;//pour l'animation de l'élément (chaque élément a son start time (quand il est créée et reset quand il change d'animation))
 
 		OBB hitbox;
 
