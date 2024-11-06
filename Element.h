@@ -56,7 +56,7 @@ class Element
 		void render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc);
 
 	protected:
-		uint8_t id = -1, animationID = 0, movingValue = 0;//entier non signé de 0 à 255 -> à mettre dans une autre classe qui gère les entrées claviers ?
+		uint8_t id = -1, animationID = 1, movingValue = 0;//entier non signé de 0 à 255 -> à mettre dans une autre classe qui gère les entrées claviers ?
 
 		//--- POSITION ---//
 		Model*    model       = nullptr;

@@ -18,6 +18,8 @@ int getCellCenter(GLfloat xOrZ, int cellWidth)
 	return (int)xOrZ / 8 * 8 + 4;
 }
 
-//--- Mutex ---//
-std::mutex r_entities_mutex;//right player entities mutex
-std::mutex l_entities_mutex;//left  player entities mutex
+std::map<std::string, int> animationIDs =
+{
+	{ "Armature|Run"	, 1 },
+	{ "Armature|Attack"	, 2}
+};

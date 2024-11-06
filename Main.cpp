@@ -238,6 +238,7 @@ int main()
 
     rPlayer = new Player(true , lPlayer);
     lPlayer = new Player(false, rPlayer);
+    rPlayer->setEnemy(lPlayer);
 
     GLfloat yaw = -90.0f;
     glm::vec3 target = glm::vec3(1024.0f, 0.0f, 1024.0f);

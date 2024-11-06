@@ -5,15 +5,18 @@ class Tower : public Element
 {
 	public:
 		Tower() {}
-		Tower(short id, glm::vec3 position, const std::string& filePath);
-		Tower(short id, glm::vec3 position, Model* model);
+		Tower(short id, glm::vec3 position, GLfloat range, GLfloat damages, const std::string& filePath);
+		Tower(short id, glm::vec3 position, GLfloat range, GLfloat damages, Model* model);
 
+		//--- Getters ---//
 		GLfloat getRange()		{ return range;		}
 		GLfloat getDamages()	{ return damages;	}
 
+		//--- Setters ---//
+
 		virtual void attack(std::vector<Entity*>& entities);
 		
-	private:
+	protected:
 		GLfloat range				= 50;
 		GLfloat damages				= 10;
 		unsigned int attackSpeed	= 500;//ms

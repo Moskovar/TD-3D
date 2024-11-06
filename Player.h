@@ -14,6 +14,9 @@ class Player
 		//--- Getters ---//
 		std::vector<Entity*>& getEntities() { return nexus->getEntities(); }
 
+		//--- Setters ---//
+		void setEnemy(Player* enemy) { this->enemy = enemy; }
+
 		void addTower(int towerID, Cell& cell, const glm::vec3 worldPos);
 
 		void nexusSpawn(const GLfloat& timeSinceStart);

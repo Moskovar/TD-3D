@@ -99,11 +99,13 @@ bool Nexus::moveEntity(Entity* e, const GLfloat& deltaTime)
 
 	if (rightSide)
 	{
-		if (e->getPosition().z < getCellCenter(1091)) e->move(deltaTime); 
+		if (e->getPosition().z < getCellCenter(1091)) e->move(deltaTime);
+		else e->setAnimationID(2);
 	}
 	else
 	{
 		if (e->getPosition().z > getCellCenter(957)) e->move(-deltaTime);
+		else e->setAnimationID(2);
 	}
 
 	return true;

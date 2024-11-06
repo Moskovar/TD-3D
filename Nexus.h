@@ -19,8 +19,8 @@ class Nexus : public Element
 
 	private:
 		bool rightSide = false;
-		GLfloat			spawnFrequency	= 5.0f  , lastWaveTime = 0.0f;
-		unsigned short	nbSpawned		= 0      , nbPerWave = 5;
+		GLfloat			spawnFrequency	= 10.0f  , lastWaveTime = 0.0f;
+		unsigned short	nbSpawned		= 0      , nbPerWave	= 5;
 
 		std::vector<Entity*>	entities = {};
 		std::vector<Entity*>	entities_loaded = {};

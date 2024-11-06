@@ -132,11 +132,10 @@ enum DirectionValue
 
 enum HumanTowers
 {
-	ArcherTower = 1
+	HumanBaseTower,
+	ArcherTower
 };
 
 int getCellCenter(GLfloat xOrZ, int cellWidth = 8);
 
-//--- Mutex ---//
-extern std::mutex r_entities_mutex;//right player entities mutex
-extern std::mutex l_entities_mutex;//left  player entities mutex
+extern std::map<std::string, int> animationIDs;

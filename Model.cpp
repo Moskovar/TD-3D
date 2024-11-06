@@ -1,4 +1,5 @@
 #include "Model.h"
+#include "uti.hpp"
 
 Model::Model(const std::string& filePath)
 {
@@ -54,14 +55,19 @@ void Model::loadModel(const std::string& fileName)
 	printf("\n\n\n");
 	printf("Nombre d'animation pour: %s -> %d\n", fileName.c_str(), scene->mNumAnimations);
 	// Vérifiez si le modèle contient des animations
-	for(int animationID = 0; animationID < scene->mNumAnimations; ++animationID)
+	for(int animationNumber = 0; animationNumber < scene->mNumAnimations; ++animationNumber)
 	{
-		const aiAnimation* animation = scene->mAnimations[animationID]; // Récupère la première animation
+		const aiAnimation* animation = scene->mAnimations[animationNumber]; // Récupère la première animation
 		double ticksPerSecond = animation->mTicksPerSecond / ANIMATION_SPEED_RATE;
 		// Vous pouvez maintenant travailler avec l'animation
 		// Variables pour gérer le temps
 		printf("Animation name: %s\n", animation->mName.C_Str());
 		printf("Duree d'animation: %f\nNombre de tick par seconde: %f\n", animation->mDuration, animation->mTicksPerSecond);
+
+		std::string animationName = animation->mName.C_Str();
+		int animationID = animationIDs[animationName];
+
+		std::cout << "ANIMATION-NAME: " << animationName << std::endl;
 
 		for (unsigned int i = 0; i < animation->mNumChannels; i++)//on parcourt os de l'animation
 		{
