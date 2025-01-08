@@ -1,4 +1,5 @@
 #pragma once
+#include "Character.h"
 #include "Unit.h"
 #include "Nexus.h"
 #include "Tower.h"
@@ -19,13 +20,15 @@ class Player
 
 		void addTower(int towerID, Cell& cell, const glm::vec3 worldPos);
 
+		void useSpell(int spellID);
+
 		void nexusSpawn(const GLfloat& timeSinceStart);
 		void render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc, const float& timeSinceStart, const float& deltaTime);
 
 	private:
 		bool rightSide						 = true;
 
-		Unit*				character	 = nullptr;
+		Character*				character	 = nullptr;
 		Nexus*					nexus		 = nullptr;
 
 		std::vector<Tower*>		towers 		 = {};

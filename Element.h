@@ -53,7 +53,7 @@ class Element
 
 		void clear();
 		
-		void render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc);
+		virtual void render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc);
 
 	protected:
 		uint8_t id = -1, animationID = 1, movingValue = 0;//entier non signé de 0 à 255 -> à mettre dans une autre classe qui gère les entrées claviers ?

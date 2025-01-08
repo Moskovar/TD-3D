@@ -11,7 +11,7 @@ Player::Player(bool rightSide, Player* enemy)
 
 	if (rightSide)
 	{
-		character = new Unit(0, glm::vec3(getCellCenter(996), 0.0f, getCellCenter(930)));
+		character = new Character(0, glm::vec3(getCellCenter(996), 0.0f, getCellCenter(930)));
 
 		nexus = new Nexus(0, glm::vec3(getCellCenter(1050), 0.0f, getCellCenter(930)), rightSide, "models/obj/r5.obj");
 		nexus->turn(90.0f);
@@ -21,7 +21,7 @@ Player::Player(bool rightSide, Player* enemy)
 	}
 	else
 	{
-		character = new Unit(0, glm::vec3(getCellCenter(1052), 0.0f, getCellCenter(1118)));
+		character = new Character(0, glm::vec3(getCellCenter(1052), 0.0f, getCellCenter(1118)));
 
 		nexus = new Nexus(0, glm::vec3(getCellCenter(998), 0.0f, getCellCenter(1118)), rightSide, "models/obj/r5.obj");
 		nexus->turn(-90.0f);
@@ -67,6 +67,11 @@ void Player::addTower(int towerID, Cell& cell, const glm::vec3 worldPos)
 	cell.setTower(tower);
 }
 
+void Player::useSpell(int spellID)
+{
+	character->addSpell(Spells::FireBall);
+}
+
 void Player::nexusSpawn(const GLfloat& timeSinceStart)
 {
 	nexus->play(rightSide, timeSinceStart);
@@ -77,7 +82,7 @@ void Player::render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc, co
 	if (!character) { std::cout << "Character nullptr!" << std::endl; return; }
 	if (!nexus)		{ std::cout << "nexus nullptr!"		<< std::endl; return; }
 
-	character->render(modelLoc, bonesTransformsLoc);
+	character->render(modelLoc, bonesTransformsLoc, deltaTime);
 	nexus->render(modelLoc, bonesTransformsLoc, deltaTime);
 
 	for (Tower* t : towers)

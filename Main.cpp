@@ -125,7 +125,8 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         switch (key) 
         {
             case GLFW_KEY_ESCAPE: glfwSetWindowShouldClose(window, true);   break;
-            case GLFW_KEY_Q: entities.push_back(new Unit(0, glm::vec3(getCellCenter(1052), 0.0f, getCellCenter(930)))); break;
+            //case GLFW_KEY_Q: entities.push_back(new Unit(0, glm::vec3(getCellCenter(1052), 0.0f, getCellCenter(930)))); break;
+            case GLFW_KEY_Q: lPlayer->useSpell(Spells::FireBall); break;
         }      
     }
     else if (action == GLFW_RELEASE)
