@@ -11,7 +11,7 @@ Player::Player(bool rightSide, Player* enemy)
 
 	if (rightSide)
 	{
-		character = new Character(0, glm::vec3(getCellCenter(996), 0.0f, getCellCenter(930)));
+		character = new Unit(0, glm::vec3(getCellCenter(996), 0.0f, getCellCenter(930)));
 
 		nexus = new Nexus(0, glm::vec3(getCellCenter(1050), 0.0f, getCellCenter(930)), rightSide, "models/obj/r5.obj");
 		nexus->turn(90.0f);
@@ -21,7 +21,7 @@ Player::Player(bool rightSide, Player* enemy)
 	}
 	else
 	{
-		character = new Character(0, glm::vec3(getCellCenter(1052), 0.0f, getCellCenter(1118)));
+		character = new Unit(0, glm::vec3(getCellCenter(1052), 0.0f, getCellCenter(1118)));
 
 		nexus = new Nexus(0, glm::vec3(getCellCenter(998), 0.0f, getCellCenter(1118)), rightSide, "models/obj/r5.obj");
 		nexus->turn(-90.0f);

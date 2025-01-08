@@ -1,5 +1,5 @@
 #pragma once
-#include "Character.h"
+#include "Unit.h"
 #include "Nexus.h"
 #include "Tower.h"
 #include "Cell.h"
@@ -25,7 +25,7 @@ class Player
 	private:
 		bool rightSide						 = true;
 
-		Character*				character	 = nullptr;
+		Unit*				character	 = nullptr;
 		Nexus*					nexus		 = nullptr;
 
 		std::vector<Tower*>		towers 		 = {};

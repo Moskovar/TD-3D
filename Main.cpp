@@ -7,7 +7,7 @@
 #include "Entity.h"
 #include "Nexus.h"
 #include "Tower.h"
-#include "Character.h"
+#include "Unit.h"
 #include "Camera.h"
 #include "Shader.h"
 
@@ -125,7 +125,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         switch (key) 
         {
             case GLFW_KEY_ESCAPE: glfwSetWindowShouldClose(window, true);   break;
-            case GLFW_KEY_Q: entities.push_back(new Character(0, glm::vec3(getCellCenter(1052), 0.0f, getCellCenter(930)))); break;
+            case GLFW_KEY_Q: entities.push_back(new Unit(0, glm::vec3(getCellCenter(1052), 0.0f, getCellCenter(930)))); break;
         }      
     }
     else if (action == GLFW_RELEASE)

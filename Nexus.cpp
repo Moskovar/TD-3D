@@ -9,12 +9,12 @@ Nexus::Nexus(short id, glm::vec3 position, const bool& rightSide, const std::str
 	if (rightSide)
 	{
 		int x = getCellCenter(1052);
-		entities_model.push_back(Character(0, glm::vec3(x, 0.0f, 0)));
+		entities_model.push_back(Unit(0, glm::vec3(x, 0.0f, 0)));
 	}
 	else
 	{
 		int x = getCellCenter(996);
-		entities_model.push_back(Character(0, glm::vec3(x, 0.0f, 0)));
+		entities_model.push_back(Unit(0, glm::vec3(x, 0.0f, 0)));
 	}
 }
 
@@ -29,7 +29,7 @@ Nexus::~Nexus()
 		}
 	}
 
-	for (Character c : entities_model)
+	for (Unit c : entities_model)
 		c.clear();
 }
 
@@ -42,13 +42,13 @@ void Nexus::play(const bool& rightSide, const GLfloat& timeSinceStart)
 		if (rightSide)
 		{
 			int x = getCellCenter(1052), z = getCellCenter(930);
-			entities_loaded.push_back(new Character(0, glm::vec3(x, 0.0f, z - entities_loaded.size() * 5), entities_model[0].getModel()));
+			entities_loaded.push_back(new Unit(0, glm::vec3(x, 0.0f, z - entities_loaded.size() * 5), entities_model[0].getModel()));
 
 		}
 		else
 		{
 			int x = getCellCenter(996), z = getCellCenter(1118);
-			entities_loaded.push_back(new Character(0, glm::vec3(x, 0.0f, z + (nbPerWave - 1 - entities_loaded.size()) * 5), entities_model[0].getModel()));
+			entities_loaded.push_back(new Unit(0, glm::vec3(x, 0.0f, z + (nbPerWave - 1 - entities_loaded.size()) * 5), entities_model[0].getModel()));
 		}
 	}
 
