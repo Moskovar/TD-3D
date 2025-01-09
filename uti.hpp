@@ -136,6 +136,11 @@ enum HumanTowers
 	ArcherTower
 };
 
+enum Spells
+{
+	FireBall
+};
+
 int getCellCenter(GLfloat xOrZ, int cellWidth = 8);
 
 extern std::map<std::string, int> animationIDs;

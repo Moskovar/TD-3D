@@ -12,6 +12,7 @@
 #include "Shader.h"
 
 #include "MapManager.h"
+#include "GameManager.h"
 #include "PhysicsEngine.h"
 #include "Map.h"
 #include "Cell.h"
@@ -25,6 +26,7 @@ GLfloat width = 1920.0f, height = 1080.0f;
 Window*         window  = nullptr;
 Camera*         camera  = nullptr;
 Game::Map*      world   = nullptr;
+GameManager*    gm      = nullptr;
 Player*         rPlayer = nullptr;
 Player*         lPlayer = nullptr;
 glm::mat4* view         = nullptr;
@@ -287,6 +289,9 @@ int main()
     auto  startTime    = std::chrono::high_resolution_clock::now();
     float currentFrame = 0, animationTime = 0, timeSinceStart = 0,
           lastFrame    = glfwGetTime(), deltaTime = 0, now = 0;
+
+    gm = new GameManager(rPlayer, lPlayer, &deltaTime);
+
     GLboolean run = true;
 
     Texture textureTemp("textures/basic_texture_1.png");//??
@@ -341,6 +346,9 @@ int main()
         rPlayer->nexusSpawn(timeSinceStart);
         lPlayer->nexusSpawn(timeSinceStart);
 
+        //--- GameManager ---//
+        gm->manage();
+
         rPlayer->render(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart, deltaTime);
         lPlayer->render(shaders["AnimatedObject"].modelLoc, shaders["AnimatedObject"].bonesTransformsLoc, timeSinceStart, deltaTime);
 
@@ -368,6 +376,12 @@ int main()
     {
         delete camera;
         camera = nullptr;
+    }
+
+    if (gm)
+    {
+        delete gm;
+        gm = nullptr;
     }
     
     for(Entity* e : entities)

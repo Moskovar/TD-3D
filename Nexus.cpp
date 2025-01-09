@@ -88,25 +88,7 @@ void Nexus::render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc, con
 
 	for (Entity* e : entities)
 	{
-		if (!moveEntity(e, deltaTime)) continue; //pas vraiment sa place ici mais ça évite de refaire un parcours d'entities dans moveEntity
+		//if (!moveEntity(e, deltaTime)) continue; //pas vraiment sa place ici mais ça évite de refaire un parcours d'entities dans moveEntity
 		e->render(modelLoc, bonesTransformsLoc);
 	}
-}
-
-bool Nexus::moveEntity(Entity* e, const GLfloat& deltaTime)
-{
-	if (!e || !e->isAlive()) return false;
-
-	if (rightSide)
-	{
-		if (e->getPosition().z < getCellCenter(1091)) e->move(deltaTime);
-		else e->setAnimationID(2);
-	}
-	else
-	{
-		if (e->getPosition().z > getCellCenter(957)) e->move(-deltaTime);
-		else e->setAnimationID(2);
-	}
-
-	return true;
 }

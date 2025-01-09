@@ -25,7 +25,5 @@ class Nexus : public Element
 		std::vector<Entity*>	entities = {};
 		std::vector<Entity*>	entities_loaded = {};
 		std::vector<Unit>	entities_model = {};
-
-		bool moveEntity(Entity* e, const GLfloat& deltaTime);//return false si l'entité est morte ou nullptr
 };
 
