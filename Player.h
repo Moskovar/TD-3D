@@ -13,8 +13,9 @@ class Player
 		~Player();
 
 		//--- Getters ---//
-		std::vector<Entity*>& getEntities() { return nexus->getEntities();	}
-		std::vector<Tower*>&  getTowers()	{ return towers;				}
+		std::vector<Entity*>& getEntities() { return nexus->getEntities();		}
+		std::vector<Tower*>&  getTowers()	{ return towers;					}
+		std::vector<Spell*>&  getSpells()	{ return character->getSpells();	}
 
 		//--- Setters ---//
 		void setEnemy(Player* enemy) { this->enemy = enemy; }

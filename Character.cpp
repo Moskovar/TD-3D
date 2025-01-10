@@ -24,9 +24,21 @@ Character::~Character()
 	}
 }
 
-void Character::addSpell(int spellID)
+short Character::addSpell(int spellID)
 {
-	spells.push_back(new Spell(0, position + glm::vec3(0.0f, 2.0f, -2.0f), spells_model[spellID].getModel()));
+	if (resources < spellsCost[spellID]) return SpellsError::OOM;//
+
+	Spell* spell = new Spell(0, position + glm::vec3(0.0f, 2.0f, -2.0f), spells_model[spellID].getModel());
+
+	//on donne les caractéristiques du spell
+	switch (spellID)
+	{
+		case Spells::FireBall: spell->setMoveSpeed(50); break;
+	}
+
+	spells.push_back(spell);
+
+	return SpellsError::Success;//success
 }
 
 void Character::render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc, const float& deltaTime)
@@ -35,8 +47,7 @@ void Character::render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc,
 
 	for (Spell* spell : spells)
 	{
-		spell->run(deltaTime);
-		if (spell) spell->render(modelLoc, bonesTransformsLoc);
+		if (spell && !spell->isOver()) spell->render(modelLoc, bonesTransformsLoc);
 	}
 }
 

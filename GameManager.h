@@ -16,5 +16,6 @@ class GameManager
 
 		void manageTowers();
 		void manageUnits();
+		void manageSpells();
 };
 

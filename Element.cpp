@@ -49,6 +49,7 @@ Element::~Element()
 	//	delete model;
 	//	model = nullptr;
 	//}
+	//clear();
 	printf("||--- Element is cleared ---||\n");
 }
 

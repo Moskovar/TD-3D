@@ -8,14 +8,30 @@ std::map <int, std::string> gl_textures_string =
 	{ GL_TEXTURE3, "texture3" }
 };
 
-std::map<int, AABB> obj_hitboxes =
+std::map<int, AABB> obj_hitboxes =//??
 {
 	{}
+};
+
+std::map<int, short> spellsCost =
+{
+	{ Spells::FireBall, 75 }
 };
 
 int getCellCenter(GLfloat xOrZ, int cellWidth)
 {
 	return (int)xOrZ / 8 * 8 + 4;
+}
+
+bool isPointInsideOBB(const glm::vec3& point, const OBB& obb)
+{
+	// Convertir le point dans le repère local de l'OBB
+	glm::vec3 localPoint = glm::transpose(obb.orientation) * (point - obb.center);
+
+	// Vérifier si le point local est dans les limites de l'OBB
+	return (std::abs(localPoint.x) <= obb.halfSize.x &&
+			std::abs(localPoint.y) <= obb.halfSize.y &&
+			std::abs(localPoint.z) <= obb.halfSize.z);
 }
 
 std::map<std::string, int> animationIDs =

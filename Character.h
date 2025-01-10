@@ -10,17 +10,22 @@ class Character : public Entity
 		Character(short id, glm::vec3 position, Model* model);
 		~Character();
 
-		short getResources()	{ return resources;		}
-		short getMaxResources()	{ return maxResources;	}
+		//--- Getters ---//
+		short					getResources()		{ return resources;		}
+		short					getMaxResources()	{ return maxResources;	}
+		std::vector<Spell*>&	getSpells()			{ return spells;		}
 
-		void addSpell(int spellID);
+
+		void addRessources(short amount) { resources += amount; }
+
+		short addSpell(int spellID);
 		void render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc, const float& deltaTime);
 
 	private:
 		std::map<int, Spell>	spells_model = {};
 		std::vector<Spell*>		spells;
 
-		short resources = 0, maxResources = 100;
+		short resources = 100, maxResources = 100;
 
 		void createSpellsModel();
 };

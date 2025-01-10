@@ -141,6 +141,18 @@ enum Spells
 	FireBall
 };
 
+enum SpellsError
+{
+	Success,
+	OOM
+};
+
+extern std::map<int, short> spellsCost;
+
+
 int getCellCenter(GLfloat xOrZ, int cellWidth = 8);
+
+// Fonction pour vérifier si un point est à l'intérieur d'un OBB
+bool isPointInsideOBB(const glm::vec3& point, const OBB& obb);//merci le chat^^
 
 extern std::map<std::string, int> animationIDs;

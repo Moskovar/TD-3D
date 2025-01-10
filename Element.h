@@ -30,14 +30,15 @@ class Element
 		uint8_t		getDirectionValue() { return movingValue;			}
 
 		glm::mat4	getAnticipatedMove(GLfloat deltaTime);
-		glm::mat4   getAnticipatedFall(GLfloat deltaTime);
+		glm::mat4   getAnticipatedFall(GLfloat deltaTime);//??
 		OBB		getAnticipatedMoveHitbox(GLfloat deltaTime);
 		OBB		getAnticipatedFallHitbox(GLfloat deltaTime);
 		
 		
 		//--- Setters ---//
-		void setAnimationID(uint8_t id)			{ animationID = id;					}
-		void setPosition(glm::vec3 position)	{ this->position	= position;		}
+		void setAnimationID(uint8_t id)			{ animationID = id;				}
+		void setPosition(glm::vec3 position)	{ this->position	= position;	}
+		void setMoveSpeed(GLfloat moveSpeed)	{ this->moveSpeed = moveSpeed;	}
 		void setYaw(GLfloat yaw);
 		void setMove(bool state);
 		void setFall(bool state);

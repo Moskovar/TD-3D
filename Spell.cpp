@@ -14,5 +14,6 @@ Spell::~Spell()
 
 void Spell::run(const float& deltaTime)
 {
+	if (over) return;
 	move(-deltaTime);
 }
