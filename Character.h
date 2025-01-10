@@ -1,6 +1,9 @@
 #pragma once
 #include "Entity.h"
 #include "Spell.h"
+#include <thread>
+#include <fmod.hpp>
+#include <fmod_errors.h>
 
 class Character : public Entity
 {
@@ -16,7 +19,8 @@ class Character : public Entity
 		std::vector<Spell*>&	getSpells()			{ return spells;		}
 
 
-		void addRessources(short amount) { resources += amount; }
+		void addRessources(short amount)	{ resources		+= amount;	}
+		void setTalk(bool state)			{ this->talking	= state;	}
 
 		short addSpell(int spellID);
 		void render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc, const float& deltaTime);
@@ -26,6 +30,9 @@ class Character : public Entity
 		std::vector<Spell*>		spells;
 
 		short resources = 100, maxResources = 100;
+
+		std::unique_ptr<std::thread> t_talk;
+		bool talking = false;
 
 		void createSpellsModel();
 };

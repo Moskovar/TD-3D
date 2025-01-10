@@ -15,7 +15,7 @@ std::map<int, AABB> obj_hitboxes =//??
 
 std::map<int, short> spellsCost =
 {
-	{ Spells::FireBall, 75 }
+	{ Spells::FireBall, 30 }
 };
 
 int getCellCenter(GLfloat xOrZ, int cellWidth)

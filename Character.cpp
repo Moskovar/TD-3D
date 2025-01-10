@@ -22,11 +22,84 @@ Character::~Character()
 			spell = nullptr;
 		}
 	}
+
+    //if(t_talk)
+    //{
+    //    if (t_talk->joinable()) t_talk->join();
+    //    delete t_talk;
+    //    t_talk = nullptr;
+    //}
+
+    
+}
+
+void talk(Character* character)
+{
+    FMOD::System* system = nullptr;
+    FMOD::Sound* sound = nullptr;
+    FMOD::Channel* channel = nullptr;
+    FMOD_RESULT result;
+
+    // Initialisation du système FMOD
+    result = FMOD::System_Create(&system);
+    if (result != FMOD_OK) {
+        std::cerr << "FMOD System Create Failed: " << FMOD_ErrorString(result) << std::endl;
+        return;
+    }
+
+    result = system->init(512, FMOD_INIT_NORMAL, nullptr);
+    if (result != FMOD_OK) {
+        std::cerr << "FMOD Init Failed: " << FMOD_ErrorString(result) << std::endl;
+        return;
+    }
+
+    // Charger le fichier WAV sans boucle (FMOD_LOOP_OFF)
+    result = system->createSound("sounds/voix1.wav", FMOD_DEFAULT, nullptr, &sound);
+    if (result != FMOD_OK) {
+        std::cerr << "FMOD Create Sound Failed: " << FMOD_ErrorString(result) << std::endl;
+        return;
+    }
+
+    // Empêcher la boucle du son
+    result = sound->setMode(FMOD_LOOP_OFF);
+    if (result != FMOD_OK) {
+        std::cerr << "FMOD Set Mode Failed: " << FMOD_ErrorString(result) << std::endl;
+        return;
+    }
+
+    // Jouer le son
+    result = system->playSound(sound, nullptr, false, &channel);
+    if (result != FMOD_OK) {
+        std::cerr << "FMOD Play Sound Failed: " << FMOD_ErrorString(result) << std::endl;
+        return;
+    }
+
+    character->setTalk(true);
+
+    // Attendre que le son se termine
+    bool isPlaying = true;
+    while (isPlaying)
+    {
+        system->update();
+        channel->isPlaying(&isPlaying);
+    }
+
+    // Libérer les ressources !!! ON LIBERE PAS SI ERREUR AVANT !!!
+    sound->release();
+    system->close();
+    system->release();
+
+    character->setTalk(false);
 }
 
 short Character::addSpell(int spellID)
 {
-	if (resources < spellsCost[spellID]) return SpellsError::OOM;//
+    if (resources < spellsCost[spellID])
+    {
+        if (t_talk && !talking) t_talk->join();
+        if (!talking)            t_talk = std::make_unique<std::thread>(talk, this);
+        return SpellsError::OOM;//
+    }
 
 	Spell* spell = new Spell(0, position + glm::vec3(0.0f, 2.0f, -2.0f), spells_model[spellID].getModel());
 
@@ -37,6 +110,8 @@ short Character::addSpell(int spellID)
 	}
 
 	spells.push_back(spell);
+
+	resources -= spellsCost[spellID];
 
 	return SpellsError::Success;//success
 }
