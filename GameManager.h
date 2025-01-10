@@ -14,7 +14,7 @@ class GameManager
 		Player* rPlayer  = nullptr, * lPlayer = nullptr;
 		float* deltaTime = nullptr;
 
-		void manageTower();
+		void manageTowers();
 		void manageUnits();
 };
 

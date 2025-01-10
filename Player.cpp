@@ -84,12 +84,10 @@ void Player::render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc, co
 
 	character->render(modelLoc, bonesTransformsLoc, deltaTime);
 	nexus->render(modelLoc, bonesTransformsLoc, deltaTime);
-
 	for (Tower* t : towers)
 	{
-		t->attack(enemy->getEntities());
+		//t->attack(enemy->getEntities());
 		t->render(modelLoc, bonesTransformsLoc);
 	}
-
 	//std::cout << entities.size() << std::endl;
 }
