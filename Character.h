@@ -5,12 +5,14 @@
 #include <fmod.hpp>
 #include <fmod_errors.h>
 
+#include "Voice.h"
+
 class Character : public Entity
 {
 	public:
 		Character() {}
-		Character(short id, glm::vec3 position);
-		Character(short id, glm::vec3 position, Model* model);
+		Character(short id, glm::vec3 position, FMOD::System* system);
+		Character(short id, glm::vec3 position, Model* model, FMOD::System* system);
 		~Character();
 
 		//--- Getters ---//
@@ -21,6 +23,7 @@ class Character : public Entity
 
 		void addRessources(short amount)	{ resources		+= amount;	}
 		void setTalk(bool state)			{ this->talking	= state;	}
+		void useVoice(int soundsID);
 
 		short addSpell(int spellID);
 		void render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc, const float& deltaTime);
@@ -34,6 +37,10 @@ class Character : public Entity
 		std::unique_ptr<std::thread> t_talk;
 		bool talking = false;
 
+		Voice* voice = nullptr;
+		FMOD::System* system = nullptr;
+
 		void createSpellsModel();
+		bool loadVoices(FMOD::System* system);
 };
 

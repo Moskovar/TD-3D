@@ -13,9 +13,26 @@ std::map<int, AABB> obj_hitboxes =//??
 	{}
 };
 
+std::map<int, std::string> str_heros =
+{
+	{ Heros::TitusMage, "TitusMage" }
+};
+
+std::map<int, std::string> str_sounds =
+{
+	{ SoundsID::OOM, "OOM" },
+	{ SoundsID::CD,  "CD"  }
+};
+
 std::map<int, short> spellsCost =
 {
 	{ Spells::FireBall, 30 }
+};
+
+std::map<std::string, int> animationIDs =
+{
+	{ "Armature|Run"	, 1 },
+	{ "Armature|Attack"	, 2}
 };
 
 int getCellCenter(GLfloat xOrZ, int cellWidth)
@@ -34,8 +51,10 @@ bool isPointInsideOBB(const glm::vec3& point, const OBB& obb)
 			std::abs(localPoint.z) <= obb.halfSize.z);
 }
 
-std::map<std::string, int> animationIDs =
+int getNow()
 {
-	{ "Armature|Run"	, 1 },
-	{ "Armature|Attack"	, 2}
-};
+	auto now = std::chrono::system_clock::now();
+	auto timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+
+	return timestamp;
+}

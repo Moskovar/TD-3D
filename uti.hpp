@@ -144,10 +144,25 @@ enum Spells
 enum SpellsError
 {
 	Success,
-	OOM
+	E_OOM,
+	E_CD
 };
 
+enum SoundsID
+{
+	OOM,
+	CD
+};
+
+enum Heros
+{
+	TitusMage
+};
+
+extern std::map<int, std::string> str_heros;
+extern std::map<int, std::string> str_sounds;
 extern std::map<int, short> spellsCost;
+extern std::map<std::string, int> animationIDs;
 
 
 int getCellCenter(GLfloat xOrZ, int cellWidth = 8);
@@ -155,4 +170,4 @@ int getCellCenter(GLfloat xOrZ, int cellWidth = 8);
 // Fonction pour vérifier si un point est à l'intérieur d'un OBB
 bool isPointInsideOBB(const glm::vec3& point, const OBB& obb);//merci le chat^^
 
-extern std::map<std::string, int> animationIDs;
+int getNow();

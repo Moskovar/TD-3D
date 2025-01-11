@@ -1,12 +1,14 @@
 #include "Character.h"
 
-Character::Character(short id, glm::vec3 position) : Entity(id, position, "models/fbx/doublecube.fbx")
+Character::Character(short id, glm::vec3 position, FMOD::System* system) : Entity(id, position, "models/fbx/doublecube.fbx")
 {
-	createSpellsModel();
+    loadVoices(system);
+    createSpellsModel();
 }
 
-Character::Character(short id, glm::vec3 position, Model* model) : Entity(id, position, model)
+Character::Character(short id, glm::vec3 position, Model* model, FMOD::System* system) : Entity(id, position, model)
 {
+	loadVoices(system);
 	createSpellsModel();
 	//std::cout << "Character should be created at: " << position.x << " ... " << position.y << " ... " << position.z << std::endl;
 	//std::cout << "Character created at: " << this->position.x << " ... " << this->position.y << " ... " << this->position.z << std::endl;
@@ -22,83 +24,38 @@ Character::~Character()
 			spell = nullptr;
 		}
 	}
-
-    //if(t_talk)
-    //{
-    //    if (t_talk->joinable()) t_talk->join();
-    //    delete t_talk;
-    //    t_talk = nullptr;
-    //}
-
-    
 }
 
-void talk(Character* character)
+void Character::useVoice(int soundID)
 {
-    FMOD::System* system = nullptr;
-    FMOD::Sound* sound = nullptr;
-    FMOD::Channel* channel = nullptr;
-    FMOD_RESULT result;
+    voice->use(soundID);
+}
 
-    // Initialisation du système FMOD
-    result = FMOD::System_Create(&system);
-    if (result != FMOD_OK) {
-        std::cerr << "FMOD System Create Failed: " << FMOD_ErrorString(result) << std::endl;
-        return;
-    }
-
-    result = system->init(512, FMOD_INIT_NORMAL, nullptr);
-    if (result != FMOD_OK) {
-        std::cerr << "FMOD Init Failed: " << FMOD_ErrorString(result) << std::endl;
-        return;
-    }
-
-    // Charger le fichier WAV sans boucle (FMOD_LOOP_OFF)
-    result = system->createSound("sounds/voix1.wav", FMOD_DEFAULT, nullptr, &sound);
-    if (result != FMOD_OK) {
-        std::cerr << "FMOD Create Sound Failed: " << FMOD_ErrorString(result) << std::endl;
-        return;
-    }
-
-    // Empêcher la boucle du son
-    result = sound->setMode(FMOD_LOOP_OFF);
-    if (result != FMOD_OK) {
-        std::cerr << "FMOD Set Mode Failed: " << FMOD_ErrorString(result) << std::endl;
-        return;
-    }
-
-    // Jouer le son
-    result = system->playSound(sound, nullptr, false, &channel);
-    if (result != FMOD_OK) {
-        std::cerr << "FMOD Play Sound Failed: " << FMOD_ErrorString(result) << std::endl;
-        return;
-    }
-
+void talk(Character* character, int soundID)
+{
     character->setTalk(true);
 
-    // Attendre que le son se termine
-    bool isPlaying = true;
-    while (isPlaying)
-    {
-        system->update();
-        channel->isPlaying(&isPlaying);
-    }
-
-    // Libérer les ressources !!! ON LIBERE PAS SI ERREUR AVANT !!!
-    sound->release();
-    system->close();
-    system->release();
+    character->useVoice(soundID);
 
     character->setTalk(false);
 }
 
 short Character::addSpell(int spellID)
 {
-    if (resources < spellsCost[spellID])
+	//check cd
+	if (!spells_model[spellID].isAvailable())
+	{
+		if (t_talk && !talking) t_talk->join();
+		if (!talking)           t_talk = std::make_unique<std::thread>(talk, this, SoundsID::CD);
+		return SpellsError::E_CD;//
+	}
+
+	//check mana
+    if (resources < spellsCost[spellID])//si pas assez de mana, on joue la voice OOM puis on retourne l'erreur OOM
     {
         if (t_talk && !talking) t_talk->join();
-        if (!talking)            t_talk = std::make_unique<std::thread>(talk, this);
-        return SpellsError::OOM;//
+        if (!talking)           t_talk = std::make_unique<std::thread>(talk, this, SoundsID::OOM);
+        return SpellsError::E_OOM;//
     }
 
 	Spell* spell = new Spell(0, position + glm::vec3(0.0f, 2.0f, -2.0f), spells_model[spellID].getModel());
@@ -110,6 +67,9 @@ short Character::addSpell(int spellID)
 	}
 
 	spells.push_back(spell);
+	spells_model[spellID].use(getNow());
+	//std::cout << "TIMESTAMP: " << getNow() << std::endl;
+
 
 	resources -= spellsCost[spellID];
 
@@ -129,4 +89,11 @@ void Character::render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc,
 void Character::createSpellsModel()
 {
 	spells_model[Spells::FireBall] = Spell(0, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/fireball.fbx");
+}
+
+bool Character::loadVoices(FMOD::System* system)
+{
+    if (!system) return false;
+
+    voice = new Voice(Heros::TitusMage, system);
 }

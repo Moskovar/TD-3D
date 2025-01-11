@@ -227,6 +227,23 @@ void checkWorldInteractions()
 
 int main()
 {
+    // Initialisation du système FMOD (pour les sons)
+    FMOD::System* system = nullptr;
+
+    FMOD_RESULT result = FMOD::System_Create(&system);
+    if (result != FMOD_OK)
+    {
+        std::cerr << "FMOD System Create Failed: " << FMOD_ErrorString(result) << std::endl;
+        return false;
+    }
+
+    result = system->init(512, FMOD_INIT_NORMAL, nullptr);
+    if (result != FMOD_OK)
+    {
+        std::cerr << "FMOD Init Failed: " << FMOD_ErrorString(result) << std::endl;
+        return false;
+    }
+
     //--- Chargement du contexte OpenGL ---//
     window = new Window(width, height);
     window->fullScreen();
@@ -239,8 +256,8 @@ int main()
     glfwSetKeyCallback(glfwWindow, keyCallback);
     glfwSetMouseButtonCallback(glfwWindow, mouse_button_callback);  // Clics de souris
 
-    rPlayer = new Player(true , lPlayer);
-    lPlayer = new Player(false, rPlayer);
+    rPlayer = new Player(true , lPlayer, system);
+    lPlayer = new Player(false, rPlayer, system);
     rPlayer->setEnemy(lPlayer);
 
     GLfloat yaw = -90.0f;
@@ -366,6 +383,9 @@ int main()
     run = false;
 
     // Nettoyer et quitter
+    system->close();
+    system->release();
+
     if (window)
     {
         delete window;

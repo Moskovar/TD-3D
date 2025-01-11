@@ -12,6 +12,11 @@ Spell::~Spell()
 {
 }
 
+bool Spell::isAvailable()
+{
+	return (getNow() - lastTimeUsed) >= 3500;
+}
+
 void Spell::run(const float& deltaTime)
 {
 	if (over) return;

@@ -9,7 +9,7 @@ class Player
 {
 	public:
 		Player() {}
-		Player(bool rightSide, Player* enemy);//z le plus petit = true
+		Player(bool rightSide, Player* enemy, FMOD::System* system);//z le plus petit = true
 		~Player();
 
 		//--- Getters ---//
