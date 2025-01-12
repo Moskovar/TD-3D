@@ -10,6 +10,8 @@ class Texture
 		Texture(std::string filePath);
 		~Texture();
 
+		GLuint getTextureID() { return textureID; }
+
 		void useTexture();
 		void useTexture(GLenum textureUnit);
 

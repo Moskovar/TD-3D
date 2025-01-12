@@ -1,13 +1,15 @@
 #include "Character.h"
 
-Character::Character(short id, glm::vec3 position, FMOD::System* system) : Entity(id, position, "models/fbx/doublecube.fbx")
+Character::Character(short id, short herosID, glm::vec3 position, FMOD::System* system) : Entity(id, position, "models/fbx/doublecube.fbx")
 {
+	this->herosID = herosID;
     loadVoices(system);
     createSpellsModel();
 }
 
-Character::Character(short id, glm::vec3 position, Model* model, FMOD::System* system) : Entity(id, position, model)
+Character::Character(short id, short herosID, glm::vec3 position, Model* model, FMOD::System* system) : Entity(id, position, model)
 {
+	this->herosID = herosID;
 	loadVoices(system);
 	createSpellsModel();
 	//std::cout << "Character should be created at: " << position.x << " ... " << position.y << " ... " << position.z << std::endl;
@@ -88,7 +90,7 @@ void Character::render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc,
 
 void Character::createSpellsModel()
 {
-	spells_model[Spells::FireBall] = Spell(0, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/fireball.fbx");
+	spells_model[Spells::FireBall] = Spell(0, Spells::FireBall, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/fireball.fbx");
 }
 
 bool Character::loadVoices(FMOD::System* system)

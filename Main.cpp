@@ -17,6 +17,8 @@
 #include "Map.h"
 #include "Cell.h"
 
+#include "UI.h"
+
 #include "stb_image.h"
 
 #include <tinyexr.h>
@@ -303,6 +305,18 @@ int main()
         }
     }
 
+
+    // Initialiser ImGui
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+    // Initialiser les backends pour GLFW et OpenGL
+    ImGui_ImplGlfw_InitForOpenGL(glfwWindow, true);
+    ImGui_ImplOpenGL3_Init("#version 330");
+
+    UI ui;
+
     auto  startTime    = std::chrono::high_resolution_clock::now();
     float currentFrame = 0, animationTime = 0, timeSinceStart = 0,
           lastFrame    = glfwGetTime(), deltaTime = 0, now = 0;
@@ -372,6 +386,9 @@ int main()
         //--- Render terrain ---//
         world->render();
 
+        ui.render();
+
+
         //--- Reset des mouvements souris dans la fenêtre pour traiter les prochains ---//
         window->resetXYChange();
 
@@ -381,6 +398,13 @@ int main()
     }
 
     run = false;
+
+
+    // Cleanup
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
 
     // Nettoyer et quitter
     system->close();

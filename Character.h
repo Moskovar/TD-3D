@@ -11,8 +11,8 @@ class Character : public Entity
 {
 	public:
 		Character() {}
-		Character(short id, glm::vec3 position, FMOD::System* system);
-		Character(short id, glm::vec3 position, Model* model, FMOD::System* system);
+		Character(short id, short herosID, glm::vec3 position, FMOD::System* system);
+		Character(short id, short herosID, glm::vec3 position, Model* model, FMOD::System* system);
 		~Character();
 
 		//--- Getters ---//
@@ -29,6 +29,7 @@ class Character : public Entity
 		void render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc, const float& deltaTime);
 
 	private:
+		short herosID = -1;
 		std::map<int, Spell>	spells_model = {};
 		std::vector<Spell*>		spells;
 
