@@ -13,9 +13,12 @@ class Player
 		~Player();
 
 		//--- Getters ---//
-		std::vector<Entity*>& getEntities() { return nexus->getEntities();		}
-		std::vector<Tower*>&  getTowers()	{ return towers;					}
-		std::vector<Spell*>&  getSpells()	{ return character->getSpells();	}
+		std::vector<Entity*>&	getEntities()	{ return nexus->getEntities();			}
+		std::vector<Tower*>&	getTowers()		{ return towers;						}
+		std::vector<Spell*>&	getSpells()		{ return character->getSpells();		}
+		std::map<int, Spell*>&	getSpellsModel(){ return character->getSpellsModel();	}
+		std::map<int, Tower*>&	getTowersModel(){ return towers_model;					}
+		Character*				getCharacter()	{ return character;						}
 
 		//--- Setters ---//
 		void setEnemy(Player* enemy) { this->enemy = enemy; }
@@ -34,7 +37,7 @@ class Player
 		Nexus*					nexus		 = nullptr;
 
 		std::vector<Tower*>		towers 		 = {};
-		std::map<int, Tower>	towers_model = {};
+		std::map<int, Tower*>	towers_model = {};
 
 		Player*					enemy		 = nullptr;//faire un tower manager qui gère les attaques des tourelles pour ne pas favoriser le joueur dont l'attaque des tours est appelée en première
 };													   //Avec le GameManager, cette variable est elle encore utile ?

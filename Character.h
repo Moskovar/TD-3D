@@ -19,7 +19,7 @@ class Character : public Entity
 		short					getResources()		{ return resources;		}
 		short					getMaxResources()	{ return maxResources;	}
 		std::vector<Spell*>&	getSpells()			{ return spells;		}
-
+		std::map<int, Spell*>&	getSpellsModel()	{ return spells_model; }
 
 		void addRessources(short amount)	{ resources		+= amount;	}
 		void setTalk(bool state)			{ this->talking	= state;	}
@@ -30,7 +30,7 @@ class Character : public Entity
 
 	private:
 		short herosID = -1;
-		std::map<int, Spell>	spells_model = {};
+		std::map<int, Spell*>	spells_model = {};
 		std::vector<Spell*>		spells;
 
 		short resources = 100, maxResources = 100;

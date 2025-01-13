@@ -16,6 +16,7 @@ class Element
 
 		//--- Getters ---//
 		Model*		getModel()			{ return model;					}
+		Texture*	getTexture()		{ return texture;				}
 		glm::vec3	getPosition()		{ return position;				}
 		glm::vec3*	getPositionP()		{ return &position;				}
 		GLfloat		getY()				{ return position.y;			}
@@ -57,6 +58,8 @@ class Element
 		virtual void render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc);
 
 	protected:
+		Texture* texture = nullptr;
+
 		uint8_t id = -1, animationID = 1, movingValue = 0;//entier non signé de 0 à 255 -> à mettre dans une autre classe qui gère les entrées claviers ?
 
 		//--- POSITION ---//

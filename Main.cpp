@@ -13,6 +13,7 @@
 
 #include "MapManager.h"
 #include "GameManager.h"
+#include "UIManager.h"
 #include "PhysicsEngine.h"
 #include "Map.h"
 #include "Cell.h"
@@ -110,7 +111,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
                     if(cell.isBuildable())
                     {
                         //std::cout << "BUIDL !!" << std::endl;
-                        lPlayer->addTower(HumanTowers::ArcherTower, cell, worldPos);
+                        lPlayer->addTower(Towers::ArcherTower, cell, worldPos);
                     }
                     break;
                 }
@@ -305,6 +306,7 @@ int main()
         }
     }
 
+    //--- Interface utilisateur ---//
 
     // Initialiser ImGui
     IMGUI_CHECKVERSION();
@@ -315,7 +317,9 @@ int main()
     ImGui_ImplGlfw_InitForOpenGL(glfwWindow, true);
     ImGui_ImplOpenGL3_Init("#version 330");
 
-    UI ui;
+    UIManager uim(lPlayer);
+
+    //------------------------------//
 
     auto  startTime    = std::chrono::high_resolution_clock::now();
     float currentFrame = 0, animationTime = 0, timeSinceStart = 0,
@@ -325,7 +329,7 @@ int main()
 
     GLboolean run = true;
 
-    Texture textureTemp("textures/basic_texture_1.png");//??
+    //Texture textureTemp("textures/basic_texture_1.png");//??
     
     //Boucle de rendu
     while (!glfwWindowShouldClose(glfwWindow) && run)
@@ -368,7 +372,7 @@ int main()
         // Effacer le buffer de couleur et de profondeur
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        textureTemp.useTexture();//??
+        //textureTemp.useTexture();//??
 
         // Utiliser le programme de shaders
         shaders["AnimatedObject"].use();
@@ -386,8 +390,7 @@ int main()
         //--- Render terrain ---//
         world->render();
 
-        ui.render();
-
+        uim.renderUI();
 
         //--- Reset des mouvements souris dans la fenêtre pour traiter les prochains ---//
         window->resetXYChange();

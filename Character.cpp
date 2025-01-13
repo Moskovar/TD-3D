@@ -18,6 +18,13 @@ Character::Character(short id, short herosID, glm::vec3 position, Model* model, 
 
 Character::~Character()
 {
+	for(auto it = spells_model.begin(); it != spells_model.end(); ++it)
+		if (it->second)
+		{
+			delete it->second;
+			it->second = nullptr;
+		}
+
 	for(Spell* spell : spells)
 	{
 		if (spell)
@@ -45,7 +52,7 @@ void talk(Character* character, int soundID)
 short Character::addSpell(int spellID)
 {
 	//check cd
-	if (!spells_model[spellID].isAvailable())
+	if (spells_model[spellID]->isCd())
 	{
 		if (t_talk && !talking) t_talk->join();
 		if (!talking)           t_talk = std::make_unique<std::thread>(talk, this, SoundsID::CD);
@@ -60,16 +67,10 @@ short Character::addSpell(int spellID)
         return SpellsError::E_OOM;//
     }
 
-	Spell* spell = new Spell(0, position + glm::vec3(0.0f, 2.0f, -2.0f), spells_model[spellID].getModel());
-
-	//on donne les caractéristiques du spell
-	switch (spellID)
-	{
-		case Spells::FireBall: spell->setMoveSpeed(50); break;
-	}
+	Spell* spell = new Spell(0, spellID, position + glm::vec3(0.0f, 2.0f, -2.0f), spells_model[spellID]->getModel());
 
 	spells.push_back(spell);
-	spells_model[spellID].use(getNow());
+	spells_model[spellID]->use(getNow());
 	//std::cout << "TIMESTAMP: " << getNow() << std::endl;
 
 
@@ -90,7 +91,7 @@ void Character::render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc,
 
 void Character::createSpellsModel()
 {
-	spells_model[Spells::FireBall] = Spell(0, Spells::FireBall, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/fireball.fbx");
+	spells_model[Spells::FireBall] = new Spell(0, Spells::FireBall, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/fireball.fbx");
 }
 
 bool Character::loadVoices(FMOD::System* system)

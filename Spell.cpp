@@ -2,26 +2,45 @@
 
 Spell::Spell(short id, short spellID, glm::vec3 position, const std::string& filePath) : Element(id, position, filePath)
 {
-	texture = new Texture("textures/spells/fireball.jpg");
+	texture = new Texture(spells_texturesPath[spellID]);
+
+	std::cout << "--------------- " << texture << std::endl;
+
+	switch (spellID)
+	{
+		case Spells::FireBall: moveSpeed = 50; break;
+	}
 }
 
 Spell::Spell(short id, short spellID, glm::vec3 position, Model* model) : Element(id, position, model)
 {
-	texture = new Texture("textures/spells/fireball.jpg");
+	texture = new Texture(spells_texturesPath[spellID]);
+
+	switch (spellID)
+	{
+		case Spells::FireBall: moveSpeed = 50; break;
+	}
 }
 
 Spell::~Spell()
 {
-	if (texture)
-	{
-		delete texture;
-		texture = nullptr;
-	}
+
 }
 
-bool Spell::isAvailable()
+bool Spell::isCd()
 {
-	return (getNow() - lastTimeUsed) >= 3500;
+	return !((getNow() - lastTimeUsed) >= 3500);
+}
+
+int Spell::getCdLeft()
+{
+	int cdLeft = cd - (getNow() - lastTimeUsed);//temps restant avant disponible
+
+	//std::cout << cd << " : " << getNow() << " : " << lastTimeUsed << std::endl;
+
+	//std::cout << "CDLEFT: " << cdLeft << std::endl;
+
+	return (cdLeft < cd && cdLeft >= 0) ? cdLeft : 0;
 }
 
 void Spell::run(const float& deltaTime)

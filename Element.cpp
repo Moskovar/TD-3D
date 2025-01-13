@@ -44,6 +44,11 @@ Element::Element(short id, glm::vec3 position, Model* model)
 
 Element::~Element()
 {
+	if (texture)
+	{
+		delete texture;
+		texture = nullptr;
+	}
 	//if (model)
 	//{
 	//	delete model;

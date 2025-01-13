@@ -24,6 +24,17 @@ std::map<int, std::string> str_sounds =
 	{ SoundsID::CD,  "CD"  }
 };
 
+std::map<int, std::string> spells_texturesPath =//image
+{
+	{ Spells::FireBall, "textures/spells/fireball.jpg" }
+};
+
+std::map<int, std::string> towers_texturesPath =//image 
+{
+	{ Towers::ArcherTower, "textures/towers/humans/archer.jpg" }
+};
+
+
 std::map<int, short> spellsCost =
 {
 	{ Spells::FireBall, 30 }

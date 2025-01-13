@@ -10,9 +10,13 @@ class UI
 		UI();
         ~UI();
 
+		SpellBar* getBar(int i);
+
+		void setSpellButton(int i, short button, Element* element);
+
 		void render();
 
 	private:
-        SpellBar* spellBar = nullptr;
+		std::vector<SpellBar*> bars;
+        //SpellBar* spellBar = nullptr, *buildBar = nullptr;
 };
-

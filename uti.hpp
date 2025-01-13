@@ -130,7 +130,7 @@ enum DirectionValue
 	ALL = 15
 };
 
-enum HumanTowers
+enum Towers
 {
 	HumanBaseTower,
 	ArcherTower
@@ -159,10 +159,12 @@ enum Heros
 	TitusMage
 };
 
-extern std::map<int, std::string> str_heros;
-extern std::map<int, std::string> str_sounds;
-extern std::map<int, short> spellsCost;
-extern std::map<std::string, int> animationIDs;
+extern std::map<int, std::string>	str_heros;
+extern std::map<int, std::string>	str_sounds;
+extern std::map<int, std::string>	spells_texturesPath;
+extern std::map<int, std::string>	towers_texturesPath;
+extern std::map<int, short>			spellsCost;
+extern std::map<std::string, int>	animationIDs;
 
 
 int getCellCenter(GLfloat xOrZ, int cellWidth = 8);

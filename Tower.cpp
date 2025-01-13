@@ -1,17 +1,25 @@
 #include "Tower.h"
 
-Tower::Tower(short id, glm::vec3 position, GLfloat range, GLfloat damages, const std::string& filePath) : Element(id, position, filePath)
+Tower::Tower(short id, short towerID, glm::vec3 position, GLfloat range, GLfloat damages, const std::string& filePath) : Element(id, position, filePath)
 {
+	this->towerID = towerID;
+
 	this->range   = range;
 	this->damages = damages;
+
+	this->texture = new Texture(towers_texturesPath[towerID]);
 
 	lastAttackTime = std::chrono::high_resolution_clock::now() - std::chrono::milliseconds(attackSpeed);
 }
 
-Tower::Tower(short id, glm::vec3 position, GLfloat range, GLfloat damages, Model* model) : Element(id, position, model)
+Tower::Tower(short id, short towerID, glm::vec3 position, GLfloat range, GLfloat damages, Model* model) : Element(id, position, model)
 {
+	this->towerID = towerID;
+
 	this->range = range;
 	this->damages = damages;
+
+	this->texture = new Texture(towers_texturesPath[towerID]);
 
 	lastAttackTime = std::chrono::high_resolution_clock::now() - std::chrono::milliseconds(attackSpeed);
 }

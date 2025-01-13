@@ -9,9 +9,12 @@ class Spell : public Element
 		Spell(short id, short spellID, glm::vec3 position, Model* model);
 		~Spell();
 
-		bool  isOver()		{ return over;							}
-		short getCost()		{ return cost;							}
-		bool  isAvailable();
+		//--- Getters ---//
+		bool		isOver()		{ return over;							}
+		short		getCost()		{ return cost;							}
+		bool		isCd();
+		int			getCdLeft();
+
 
 		void terminate()	{ over = true;							}
 		void use(int now)	{ lastTimeUsed = now;					}
@@ -19,7 +22,6 @@ class Spell : public Element
 		void run(const float& deltaTime);
 
 	private:
-		Texture* texture = nullptr;
 
 		bool    over	= false;//si le spell est terminé et est prêt à être supprimé (comme alive pour une entity)
 		short   cost	= 75;
