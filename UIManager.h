@@ -10,7 +10,7 @@ class UIManager
 		void setSpellButton(int i, short button, Spell* spell);
 
 		void renderUI();
-		void renderSpellBar();
+		void renderSpellBar(SpellBar* bar);
 
 	private:
 		UI		ui;

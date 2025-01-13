@@ -39,43 +39,67 @@ void UIManager::renderUI()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    renderSpellBar();
+    // Démarrer une nouvelle fenêtre ImGui
+    ImGui::Begin("UI", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove);
 
-    // Créer une fenêtre invisible pour éviter que la progress bar ne soit dans la fenêtre débogage
-    ImGui::SetNextWindowSize(ImVec2(0, 0));  // Taille zéro pour rendre la fenêtre invisible
-    ImGui::SetNextWindowPos(ImVec2(100, 50)); // Position où vous voulez dessiner la progress bar
-    ImGui::Begin("InvisibleWindow", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoInputs);
+    // Positionner la fenêtre (par exemple, en bas au centre de la fenêtre principale)
+    ImGui::SetWindowPos(ImVec2(0, 0));  // Ajuste selon la résolution de ta fenêtre
+    ImGui::SetWindowSize(ImVec2(1920, 1080)); // Largeur de la barre et hauteur minimale //moche le + 10
 
-    // Dessiner la progress bar
-    float progress = 0.75f; // Progression (0.0 à 1.0)
-    ImVec2 progressBarSize = ImVec2(200, 20); // Taille de la barre
-    ImGui::ProgressBar(progress, progressBarSize, nullptr); // Dessiner la barre sans texte
+    renderSpellBar(ui.getBar(0));
 
-    ImGui::End(); // Terminer la fenêtre
+    // Fenêtre pour la barre de progression
+    float progress = (float) player->getCharacter()->getResources() / (float) player->getCharacter()->getMaxResources(); // Progression en pourcentage
+
+    //std::cout << mana << " / " << player->getCharacter()->getMaxResources() << " * " << 100 << " = " << progress << std::endl;
+
+    ImVec2 progressBarPos   = ImVec2(100, 50);  // Position de la barre
+    ImVec2 progressBarSize  = ImVec2(200, 20); // Taille de la barre
+    ImGui::SetCursorScreenPos(progressBarPos); // Positionner la barre
+
+    std::string mana = std::to_string(player->getCharacter()->getResources()) + " / " + std::to_string(player->getCharacter()->getMaxResources());
+
+    // Calculer la taille du texte pour centrer correctement
+    ImVec2 textSize = ImGui::CalcTextSize(mana.c_str());
+
+    // Calculer la position pour centrer le texte
+    ImVec2 textPos = ImVec2(progressBarPos.x + (progressBarSize.x - textSize.x) * 0.5f, progressBarPos.y + (progressBarSize.y - textSize.y) * 0.5f);
+
+    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.2f, 0.2f, 1.0f, 1.0f));
+    ImGui::ProgressBar(progress, progressBarSize, ""); // Dessiner la barre sans texte
+
+    // Restaure la position du curseur à la position du texte
+    ImGui::SetCursorScreenPos(textPos);
+
+    // Dessiner le texte centré sur la barre
+    ImGui::Text("%s", mana.c_str());
+
+    // Restaure la couleur originale
+    ImGui::PopStyleColor();
+
+
+
+    // Fin de la fenêtre
+    ImGui::End();
+
 
     // Fin du rendu ImGui
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void UIManager::renderSpellBar()
+void UIManager::renderSpellBar(SpellBar* bar)
 {
-    SpellBar* bar = ui.getBar(0);
     if (!bar) return;
+
+    ImGui::SetCursorScreenPos(ImVec2(bar->x, bar->y)); // Déplacer le curseur
 
     std::vector<Button> buttons = bar->getButtons();
     size_t size = buttons.size();
     if (size == 0) return;
 
     std::string name = bar->getName();
-    short x = bar->x, y = bar->y, buttons_width = bar->buttons_width, buttons_height = bar->buttons_height, offsetX = bar->offsetX, offsetY = bar->buttons_height;
-
-    // Démarrer une nouvelle fenêtre ImGui
-    ImGui::Begin(name.data(), nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove);
-
-    // Positionner la fenêtre (par exemple, en bas au centre de la fenêtre principale)
-    ImGui::SetWindowPos(ImVec2(x, y));  // Ajuste selon la résolution de ta fenêtre
-    ImGui::SetWindowSize(ImVec2(size * (buttons_width + offsetX) + 10, buttons_height + offsetY)); // Largeur de la barre et hauteur minimale //moche le + 10
+    short buttons_width = bar->buttons_width, buttons_height = bar->buttons_height, offsetX = bar->offsetX, offsetY = bar->buttons_height;
 
     ImGui::PushStyleColor(ImGuiCol_Button       , ImVec4(0.3f, 0.3f, 0.3f, 0.3f)); // Couleur normale
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.6f)); // Au survol
@@ -125,9 +149,6 @@ void UIManager::renderSpellBar()
 
     // Rétablir la couleur par défaut
     ImGui::PopStyleColor(3); // Retire les trois couleurs ajoutées
-
-    // Fin de la fenêtre
-    ImGui::End();
 }
 
 void UIManager::drawShortcut(char key)
