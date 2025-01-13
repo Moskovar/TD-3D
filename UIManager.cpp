@@ -41,6 +41,18 @@ void UIManager::renderUI()
 
     renderSpellBar();
 
+    // Créer une fenêtre invisible pour éviter que la progress bar ne soit dans la fenêtre débogage
+    ImGui::SetNextWindowSize(ImVec2(0, 0));  // Taille zéro pour rendre la fenêtre invisible
+    ImGui::SetNextWindowPos(ImVec2(100, 50)); // Position où vous voulez dessiner la progress bar
+    ImGui::Begin("InvisibleWindow", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoInputs);
+
+    // Dessiner la progress bar
+    float progress = 0.75f; // Progression (0.0 à 1.0)
+    ImVec2 progressBarSize = ImVec2(200, 20); // Taille de la barre
+    ImGui::ProgressBar(progress, progressBarSize, nullptr); // Dessiner la barre sans texte
+
+    ImGui::End(); // Terminer la fenêtre
+
     // Fin du rendu ImGui
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -54,8 +66,6 @@ void UIManager::renderSpellBar()
     std::vector<Button> buttons = bar->getButtons();
     size_t size = buttons.size();
     if (size == 0) return;
-
-
 
     std::string name = bar->getName();
     short x = bar->x, y = bar->y, buttons_width = bar->buttons_width, buttons_height = bar->buttons_height, offsetX = bar->offsetX, offsetY = bar->buttons_height;
@@ -85,57 +95,27 @@ void UIManager::renderSpellBar()
             Spell* spell = dynamic_cast<Spell*>(element);
 
             if(!spell) continue;
-
-            if (!spell->isCd())//si sort pas en CD
+            
+            if (!spell->isCd() && spell->getCost() < player->getCharacter()->getResources())//si sort pas en CD et assez de mana
             {
-                if (ImGui::ImageButton("Slot", (ImTextureID)(intptr_t)texture->getTextureID(), ImVec2(buttons_width, buttons_height)))
-                {
-                    // Action déclenchée en cliquant sur le bouton
-                    std::cout << "Slot " << (i + 1) << " clicked!" << std::endl;
-                }
+                drawTextureButton(texture, buttons_width, buttons_height);
             }
-            else//si CD
+            else//si CD ou oom
             {
-                // Couleur de fond (si besoin) et de teinte
-                ImVec4 backgroundColor = ImVec4(0.0f, 0.0f, 0.0f, 0.0f); // Transparent
-                ImVec4 tintColor = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // Couleur blanche avec opacité
+                drawTextureButton(texture, buttons_width, buttons_height, 0.5);
 
-                if (ImGui::ImageButton("Slot", (ImTextureID)(intptr_t)texture->getTextureID(), ImVec2(buttons_width, buttons_height), ImVec2(0, 0), ImVec2(1, 1), backgroundColor, tintColor))
-                {
-                    // Action déclenchée en cliquant sur le bouton
-                    std::cout << "Slot " << (i + 1) << " clicked!" << std::endl;
-                }
-
-                std::string cdLeft = std::to_string((dynamic_cast<Spell*>(spell)->getCdLeft() / 1000) + 1);
-
-                // Dessiner le texte (par exemple, le raccourci clavier) par-dessus la texture
-                ImVec2 buttonPos = ImGui::GetItemRectMin();
-                ImVec2 buttonSize = ImGui::GetItemRectSize();
-                ImVec2 textPos = ImVec2(buttonPos.x + buttonSize.x / 2.2, buttonPos.y + buttonSize.y / 2.5);  // Centrer le texte
-
-                std::string shortcut = std::string(1, buttons[i].shortcut);
-
-                // Utiliser la fonction de dessin d'ImGui pour ajouter du texte par-dessus le bouton
-                ImGui::GetWindowDrawList()->AddText(textPos, IM_COL32(255, 255, 255, 255), cdLeft.data());  // Affiche raccourci en blanc
+                //si cd on écrit le timer
+                if (spell->isCd())   drawTimer(spell->getCdLeft());
             }
         }
-        else if (ImGui::Button(("##Slot " + std::to_string(i + 1)).c_str(), ImVec2(buttons_width, buttons_height)))
+        else 
         {
-            // Action déclenchée en cliquant sur le bouton
-            std::cout << "Slot " << (i + 1) << " clicked!" << std::endl;
+            drawEmptyButton("Slot " + std::to_string(i + 1), buttons_width, buttons_height);
         }
 
         if (buttons[i].showShortcut && buttons[i].shortcut != 0)
         {
-            // Dessiner le texte (par exemple, le raccourci clavier) par-dessus la texture
-            ImVec2 buttonPos = ImGui::GetItemRectMin();
-            ImVec2 buttonSize = ImGui::GetItemRectSize();
-            ImVec2 textPos = ImVec2(buttonPos.x + buttonSize.x - 15.0f, buttonPos.y + 2);  // Centrer le texte
-
-            std::string shortcut = std::string(1, buttons[i].shortcut);
-
-            // Utiliser la fonction de dessin d'ImGui pour ajouter du texte par-dessus le bouton
-            ImGui::GetWindowDrawList()->AddText(textPos, IM_COL32(255, 255, 255, 255), shortcut.data());  // Affiche raccourci en blanc
+            drawShortcut(buttons[i].shortcut);
         }
 
         // Ajouter un espace entre les boutons sauf après le dernier
@@ -148,4 +128,54 @@ void UIManager::renderSpellBar()
 
     // Fin de la fenêtre
     ImGui::End();
+}
+
+void UIManager::drawShortcut(char key)
+{
+    // Dessiner le texte (par exemple, le raccourci clavier) par-dessus la texture
+    ImVec2 buttonPos = ImGui::GetItemRectMin();
+    ImVec2 buttonSize = ImGui::GetItemRectSize();
+    ImVec2 textPos = ImVec2(buttonPos.x + buttonSize.x - 15.0f, buttonPos.y + 2);  // Centrer le texte
+
+    std::string shortcut = std::string(1, key);
+
+    // Utiliser la fonction de dessin d'ImGui pour ajouter du texte par-dessus le bouton
+    ImGui::GetWindowDrawList()->AddText(textPos, IM_COL32(255, 255, 255, 255), shortcut.data());  // Affiche raccourci en blanc
+}
+
+void UIManager::drawEmptyButton(std::string name, short buttons_width, short buttons_height)
+{
+    if (ImGui::Button(name.c_str(), ImVec2(buttons_width, buttons_height)))
+    {
+        // Action déclenchée en cliquant sur le bouton
+        std::cout << name << " clicked!" << std::endl;
+    }
+}
+
+void UIManager::drawTimer(short timeLeft)
+{
+    // Dessiner le texte (par exemple, le raccourci clavier) par-dessus la texture
+    ImVec2 buttonPos = ImGui::GetItemRectMin();
+    ImVec2 buttonSize = ImGui::GetItemRectSize();
+    ImVec2 textPos = ImVec2(buttonPos.x + buttonSize.x / 2.2, buttonPos.y + buttonSize.y / 2.5);  // Centrer le texte
+
+    std::string cdLeft = std::to_string((timeLeft / 1000) + 1);
+
+    // Utiliser la fonction de dessin d'ImGui pour ajouter du texte par-dessus le bouton
+    ImGui::GetWindowDrawList()->AddText(textPos, IM_COL32(255, 255, 255, 255), cdLeft.data());  // Affiche raccourci en blanc
+}
+
+void UIManager::drawTextureButton(Texture* texture, short buttons_width, short buttons_height, GLfloat opacity)
+{
+    if (!texture) return;
+
+    // Couleur de fond (si besoin) et de teinte
+    ImVec4 backgroundColor = ImVec4(0.0f, 0.0f, 0.0f, 0.0f); // Transparent
+    ImVec4 tintColor = ImVec4(1.0f, 1.0f, 1.0f, opacity); // Couleur blanche avec opacité
+
+    if (ImGui::ImageButton("Slot", (ImTextureID)(intptr_t)texture->getTextureID(), ImVec2(buttons_width, buttons_height), ImVec2(0, 0), ImVec2(1, 1), backgroundColor, tintColor))
+    {
+        // Action déclenchée en cliquant sur le bouton
+        std::cout << "Slot" << " clicked!" << std::endl;
+    }
 }

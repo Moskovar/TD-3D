@@ -8,7 +8,9 @@ Spell::Spell(short id, short spellID, glm::vec3 position, const std::string& fil
 
 	switch (spellID)
 	{
-		case Spells::FireBall: moveSpeed = 50; break;
+		case Spells::FireBall: 
+			moveSpeed = 50; 
+			cost = spellsCost[spellID]; break;
 	}
 }
 
