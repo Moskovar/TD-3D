@@ -26,18 +26,18 @@ std::map<int, std::string> str_sounds =
 
 std::map<int, std::string> spells_texturesPath =//image
 {
-	{ Spells::FireBall, "textures/spells/fireball.jpg" }
+	{ ElementsID::FireBall, "textures/spells/fireball.jpg" }
 };
 
 std::map<int, std::string> towers_texturesPath =//image 
 {
-	{ Towers::ArcherTower, "textures/towers/humans/archer.jpg" }
+	{ ElementsID::ArcherTower, "textures/towers/humans/archer.jpg" }
 };
 
 
 std::map<int, short> spellsCost =
 {
-	{ Spells::FireBall, 30 }
+	{ ElementsID::FireBall, 30 }
 };
 
 std::map<std::string, int> animationIDs =

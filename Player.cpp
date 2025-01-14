@@ -6,8 +6,8 @@ Player::Player(bool rightSide, Player* enemy, FMOD::System* system)
 	this->enemy		= enemy;
 
 	//--- Chargement des modèles de tours ---//
-	towers_model[Towers::HumanBaseTower]	= new Tower(0, Towers::HumanBaseTower, glm::vec3(0.0f, 0.0f, 0.0f), 50, 10, "models/fbx/HumanBaseTower.fbx");
-	towers_model[Towers::ArcherTower]		= new Tower(0, Towers::ArcherTower   , glm::vec3(0.0f ,0.0f, 0.0f), 50, 10, "models/fbx/doublecube.fbx");
+	towers_model[ElementsID::HumanBaseTower]	= new Tower(0, ElementsID::HumanBaseTower, glm::vec3(0.0f, 0.0f, 0.0f), 50, 10, "models/fbx/HumanBaseTower.fbx");
+	towers_model[ElementsID::ArcherTower]		= new Tower(0, ElementsID::ArcherTower   , glm::vec3(0.0f ,0.0f, 0.0f), 50, 10, "models/fbx/doublecube.fbx");
 
 	if (rightSide)
 	{
@@ -16,8 +16,8 @@ Player::Player(bool rightSide, Player* enemy, FMOD::System* system)
 		nexus = new Nexus(0, glm::vec3(getCellCenter(1050), 0.0f, getCellCenter(930)), rightSide, "models/obj/r5.obj");
 		nexus->turn(90.0f);
 
-		towers.push_back(new Tower(0, Towers::HumanBaseTower, glm::vec3(getCellCenter(1004), 0.0f , getCellCenter(952)), 15, 35, towers_model[Towers::HumanBaseTower]->getModel()));
-		towers.push_back(new Tower(0, Towers::HumanBaseTower, glm::vec3(getCellCenter(988) , 0.0f , getCellCenter(952)), 15, 35, towers_model[Towers::HumanBaseTower]->getModel()));
+		towers.push_back(new Tower(0, ElementsID::HumanBaseTower, glm::vec3(getCellCenter(1004), 0.0f , getCellCenter(952)), 15, 35, towers_model[ElementsID::HumanBaseTower]->getModel()));
+		towers.push_back(new Tower(0, ElementsID::HumanBaseTower, glm::vec3(getCellCenter(988) , 0.0f , getCellCenter(952)), 15, 35, towers_model[ElementsID::HumanBaseTower]->getModel()));
 	}
 	else
 	{
@@ -26,8 +26,8 @@ Player::Player(bool rightSide, Player* enemy, FMOD::System* system)
 		nexus = new Nexus(0, glm::vec3(getCellCenter(998), 0.0f, getCellCenter(1118)), rightSide, "models/obj/r5.obj");
 		nexus->turn(-90.0f);
 
-		towers.push_back(new Tower(0, Towers::HumanBaseTower, glm::vec3(getCellCenter(1060), 0.0f, getCellCenter(1088)), 15, 35, towers_model[Towers::HumanBaseTower]->getModel()));
-		towers.push_back(new Tower(0, Towers::HumanBaseTower, glm::vec3(getCellCenter(1044), 0.0f, getCellCenter(1088)), 15, 35, towers_model[Towers::HumanBaseTower]->getModel()));
+		towers.push_back(new Tower(0, ElementsID::HumanBaseTower, glm::vec3(getCellCenter(1060), 0.0f, getCellCenter(1088)), 15, 35, towers_model[ElementsID::HumanBaseTower]->getModel()));
+		towers.push_back(new Tower(0, ElementsID::HumanBaseTower, glm::vec3(getCellCenter(1044), 0.0f, getCellCenter(1088)), 15, 35, towers_model[ElementsID::HumanBaseTower]->getModel()));
 	}
 }
 
@@ -71,7 +71,7 @@ void Player::addTower(int towerID, Cell& cell, const glm::vec3 worldPos)
 
 void Player::useSpell(int spellID)
 {
-	character->addSpell(Spells::FireBall);
+	character->addSpell(ElementsID::FireBall);
 }
 
 void Player::nexusSpawn(const GLfloat& timeSinceStart)

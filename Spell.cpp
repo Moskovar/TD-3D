@@ -2,13 +2,15 @@
 
 Spell::Spell(short id, short spellID, glm::vec3 position, const std::string& filePath) : Element(id, position, filePath)
 {
+	this->elementID = spellID;
+
 	texture = new Texture(spells_texturesPath[spellID]);
 
 	std::cout << "--------------- " << texture << std::endl;
 
 	switch (spellID)
 	{
-		case Spells::FireBall: 
+		case ElementsID::FireBall: 
 			moveSpeed = 50; 
 			cost = spellsCost[spellID]; break;
 	}
@@ -16,11 +18,13 @@ Spell::Spell(short id, short spellID, glm::vec3 position, const std::string& fil
 
 Spell::Spell(short id, short spellID, glm::vec3 position, Model* model) : Element(id, position, model)
 {
+	this->elementID = spellID;
+
 	texture = new Texture(spells_texturesPath[spellID]);
 
 	switch (spellID)
 	{
-		case Spells::FireBall: moveSpeed = 50; break;
+		case ElementsID::FireBall: moveSpeed = 50; break;
 	}
 }
 

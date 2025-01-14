@@ -111,7 +111,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
                     if(cell.isBuildable())
                     {
                         //std::cout << "BUIDL !!" << std::endl;
-                        lPlayer->addTower(Towers::ArcherTower, cell, worldPos);
+                        lPlayer->addTower(ElementsID::ArcherTower, cell, worldPos);
                     }
                     break;
                 }
@@ -131,7 +131,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         {
             case GLFW_KEY_ESCAPE: glfwSetWindowShouldClose(window, true);   break;
             //case GLFW_KEY_Q: entities.push_back(new Unit(0, glm::vec3(getCellCenter(1052), 0.0f, getCellCenter(930)))); break;
-            case GLFW_KEY_Q: lPlayer->useSpell(Spells::FireBall); break;
+            //case GLFW_KEY_Q: lPlayer->useSpell(ElementsID::FireBall); break;
         }      
     }
     else if (action == GLFW_RELEASE)
@@ -142,6 +142,8 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 void processKeyPressed(GLFWwindow* window, float deltaTime)
 {
+
+
     //if(keyPressed[GLFW_KEY_W] || keyPressed[GLFW_KEY_S])
     //{
     //    player->setMove(true);
@@ -317,7 +319,7 @@ int main()
     ImGui_ImplGlfw_InitForOpenGL(glfwWindow, true);
     ImGui_ImplOpenGL3_Init("#version 330");
 
-    UIManager uim(lPlayer);
+    UIManager uim(lPlayer, &keyPressed);
 
     //------------------------------//
 
@@ -391,6 +393,7 @@ int main()
         world->render();
 
         uim.renderUI();
+        uim.processKeyboard();
 
         //--- Reset des mouvements souris dans la fenêtre pour traiter les prochains ---//
         window->resetXYChange();

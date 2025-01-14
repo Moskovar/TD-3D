@@ -130,14 +130,10 @@ enum DirectionValue
 	ALL = 15
 };
 
-enum Towers
+enum ElementsID
 {
 	HumanBaseTower,
-	ArcherTower
-};
-
-enum Spells
-{
+	ArcherTower,
 	FireBall
 };
 

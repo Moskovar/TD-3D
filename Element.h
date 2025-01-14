@@ -40,6 +40,7 @@ class Element
 		void setAnimationID(uint8_t id)			{ animationID = id;				}
 		void setPosition(glm::vec3 position)	{ this->position	= position;	}
 		void setMoveSpeed(GLfloat moveSpeed)	{ this->moveSpeed = moveSpeed;	}
+		int	 getElementID()						{ return elementID;				}
 		void setYaw(GLfloat yaw);
 		void setMove(bool state);
 		void setFall(bool state);
@@ -59,6 +60,7 @@ class Element
 
 	protected:
 		Texture* texture = nullptr;
+		int    elementID = -1;//-1 par défaut car enum ElementsID commence à 0
 
 		uint8_t id = -1, animationID = 1, movingValue = 0;//entier non signé de 0 à 255 -> à mettre dans une autre classe qui gère les entrées claviers ?
 

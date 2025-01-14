@@ -11,8 +11,10 @@ class UI
         ~UI();
 
 		SpellBar* getBar(int i);
+		std::vector<SpellBar*>& getBars() { return bars; }
 
-		void setSpellButton(int i, short button, Element* element);
+		char* setSpellButton(int i, short button, Element* element);//retourne le raccouci du bouton qu'on a set
+		void setShortcut(short i_bar, short i, char shortcut);
 
 		void render();
 

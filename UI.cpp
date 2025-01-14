@@ -2,24 +2,16 @@
 
 UI::UI()
 {
-	bars.push_back(new SpellBar("Spellbar", 50, 50));
-	bars.push_back(new SpellBar("BuildBar", 50, 50, 25));
+	//--- SpellBar 1 ---//
+	bars.push_back(new SpellBar("Spellbar", 50, 50, 800, 925));
+	bars[0]->setShortcut(0, GLFW_KEY_Q);
+
+	//--- BuildBar 1 ---//
+	bars.push_back(new SpellBar("BuildBar", 50, 50, 800, 1000));
 }
 
 UI::~UI()
 {
-	//if (spellBar)
-	//{
-	//	delete spellBar;
-	//	spellBar = nullptr;
-	//}
-
-	//if (buildBar)
-	//{
-	//	delete buildBar;
-	//	buildBar = nullptr;
-	//}
-
 	for (SpellBar* sp : bars)
 	{
 		if (sp)
@@ -38,12 +30,19 @@ SpellBar* UI::getBar(int i)
 	return bars[i];
 }
 
-void UI::setSpellButton(int i, short button, Element* element)
+char* UI::setSpellButton(int i, short button, Element* element)
 {
-	if (i < 0 || i >= bars.size()) return;
-	if (!bars[i]) return;
+	if (i < 0 || i >= bars.size()) return nullptr;
+	if (!bars[i]) return nullptr;
 
-	bars[i]->setElement(button, element);
+	return bars[i]->setElement(button, element);
+}
+
+void UI::setShortcut(short i_bar, short i, char shortcut)
+{
+	if (i_bar < 0 || i_bar >= bars.size()) return;
+
+	bars[i_bar]->setShortcut(i, shortcut);
 }
 
 void UI::render()

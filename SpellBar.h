@@ -1,5 +1,5 @@
 #pragma once
-#include "imgui.h"
+#include "UIElement.h"
 
 #include <iostream>
 #include <string>
@@ -7,24 +7,25 @@
 
 #include "Button.h"
 
-class SpellBar
+class SpellBar : public UIElement
 {
 
-public:
-    SpellBar() {}
-    SpellBar(std::string name, short buttons_width, short buttons_height, int x = 800, int y = 1000);
+    public:
+        SpellBar() {}
+        SpellBar(std::string name, short buttons_width, short buttons_height, int x, int y);
 
-    std::string& getName() { return name; }
-    std::vector<Button>& getButtons();
+        std::string& getName() { return name; }
+        std::vector<Button>& getButtons();
 
-    void setElement(short button, Element* element);
+        char* setElement(short i, Element* element);//retourne le raccourci du bouton auquel on a changé son spell
+        void setShortcut(short i, char shortcut);
 
-    void render();
+        void render();
 
-    short   x = 800, y = 1000, buttons_width = 50, buttons_height = 50, offsetX = 5, offsetY = 10;
+        short buttons_width = 50, buttons_height = 50, offsetX = 5, offsetY = 10;
 
-private:
-    std::string name = "";
-    std::vector<Button> buttons;
+    private:
+        std::string name = "";
+        std::vector<Button> buttons;
 };
 

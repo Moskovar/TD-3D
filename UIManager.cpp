@@ -1,9 +1,10 @@
 #include "UIManager.h"
 
-UIManager::UIManager(Player* player)
+UIManager::UIManager(Player* player, std::map<char, bool>* keyPressed)
 {
-	this->ui		= ui;
-	this->player	= player;
+	this->ui		 = ui;
+	this->player	 = player;
+    this->keyPressed = keyPressed;
 
 	//std::map<int, Spell*> spells_model = player->getSpellsModel();
 
@@ -26,11 +27,29 @@ UIManager::UIManager(Player* player)
 		ui.setSpellButton(1, i, it->second);
 		++i;
 	}
+
+
+    //--- Récupération des raccourcis ---//
+    for (SpellBar* bar : ui.getBars())
+    {
+        for (Button& button : bar->getButtons())
+        {
+            if (button.shortcut == 0) continue;
+
+            shortcuts[&button.shortcut] = button.getElement();
+        }
+    }
 }
 
 void UIManager::setSpellButton(int i, short button, Spell* spell)
 {
-	ui.setSpellButton(i, button, spell);
+    char* shortcut = ui.setSpellButton(i, button, spell);//si l'attribution échoue on récupère nullptr
+
+    std::cout << "SHORTCUT: " << shortcut << " : " << *shortcut << std::endl;
+
+    if (!shortcut) return;//si on a récupéré nullptr c'est que l'attribution a échoué
+
+    shortcuts[shortcut] = spell;
 }
 
 void UIManager::renderUI()
@@ -48,36 +67,10 @@ void UIManager::renderUI()
 
     renderSpellBar(ui.getBar(0));
 
-    // Fenêtre pour la barre de progression
-    float progress = (float) player->getCharacter()->getResources() / (float) player->getCharacter()->getMaxResources(); // Progression en pourcentage
+    float progress = (float)player->getCharacter()->getResources() / (float)player->getCharacter()->getMaxResources(); // Progression en pourcentage
+    std::string overlay = std::to_string(player->getCharacter()->getResources()) + " / " + std::to_string(player->getCharacter()->getMaxResources());
 
-    //std::cout << mana << " / " << player->getCharacter()->getMaxResources() << " * " << 100 << " = " << progress << std::endl;
-
-    ImVec2 progressBarPos   = ImVec2(100, 50);  // Position de la barre
-    ImVec2 progressBarSize  = ImVec2(200, 20); // Taille de la barre
-    ImGui::SetCursorScreenPos(progressBarPos); // Positionner la barre
-
-    std::string mana = std::to_string(player->getCharacter()->getResources()) + " / " + std::to_string(player->getCharacter()->getMaxResources());
-
-    // Calculer la taille du texte pour centrer correctement
-    ImVec2 textSize = ImGui::CalcTextSize(mana.c_str());
-
-    // Calculer la position pour centrer le texte
-    ImVec2 textPos = ImVec2(progressBarPos.x + (progressBarSize.x - textSize.x) * 0.5f, progressBarPos.y + (progressBarSize.y - textSize.y) * 0.5f);
-
-    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.2f, 0.2f, 1.0f, 1.0f));
-    ImGui::ProgressBar(progress, progressBarSize, ""); // Dessiner la barre sans texte
-
-    // Restaure la position du curseur à la position du texte
-    ImGui::SetCursorScreenPos(textPos);
-
-    // Dessiner le texte centré sur la barre
-    ImGui::Text("%s", mana.c_str());
-
-    // Restaure la couleur originale
-    ImGui::PopStyleColor();
-
-
+    drawProgressBar(100, 50, progress, ImVec4(0.2f, 0.2f, 1.0f, 1.0f), overlay);
 
     // Fin de la fenêtre
     ImGui::End();
@@ -92,7 +85,7 @@ void UIManager::renderSpellBar(SpellBar* bar)
 {
     if (!bar) return;
 
-    ImGui::SetCursorScreenPos(ImVec2(bar->x, bar->y)); // Déplacer le curseur
+    ImGui::SetCursorScreenPos(ImVec2(*(bar->x), *(bar->y))); // Déplacer le curseur
 
     std::vector<Button> buttons = bar->getButtons();
     size_t size = buttons.size();
@@ -122,11 +115,11 @@ void UIManager::renderSpellBar(SpellBar* bar)
             
             if (!spell->isCd() && spell->getCost() < player->getCharacter()->getResources())//si sort pas en CD et assez de mana
             {
-                drawTextureButton(texture, buttons_width, buttons_height);
+                drawTextureButton(spell, buttons_width, buttons_height);
             }
             else//si CD ou oom
             {
-                drawTextureButton(texture, buttons_width, buttons_height, 0.5);
+                drawTextureButton(spell, buttons_width, buttons_height, 0.5);
 
                 //si cd on écrit le timer
                 if (spell->isCd())   drawTimer(spell->getCdLeft());
@@ -149,6 +142,21 @@ void UIManager::renderSpellBar(SpellBar* bar)
 
     // Rétablir la couleur par défaut
     ImGui::PopStyleColor(3); // Retire les trois couleurs ajoutées
+}
+
+//Fait la liaison entre les raccourcis des barres de sorts et les entrées utilisateur dans la fonction main
+void UIManager::processKeyboard()
+{
+    for (auto it = shortcuts.begin(); it != shortcuts.end(); ++it)
+    {
+        char shortcut = *(it->first);
+        //std::cout << "SHORTCUT: " << shortcut << " : " << (*keyPressed)[shortcut] << std::endl;
+        if ((*keyPressed)[shortcut])
+        {
+            player->useSpell(it->second->getElementID());
+            (*keyPressed)[shortcut] = false;//on met à false pour pas faire plusieurs fois (car dans la boucle main)
+        }
+    }
 }
 
 void UIManager::drawShortcut(char key)
@@ -186,17 +194,43 @@ void UIManager::drawTimer(short timeLeft)
     ImGui::GetWindowDrawList()->AddText(textPos, IM_COL32(255, 255, 255, 255), cdLeft.data());  // Affiche raccourci en blanc
 }
 
-void UIManager::drawTextureButton(Texture* texture, short buttons_width, short buttons_height, GLfloat opacity)
+void UIManager::drawProgressBar(int x, int y, GLfloat progress, ImVec4 color, std::string overlay)
 {
-    if (!texture) return;
+    ImVec2 progressBarPos = ImVec2(100, 50);  // Position de la barre
+    ImVec2 progressBarSize = ImVec2(200, 20); // Taille de la barre
+    ImGui::SetCursorScreenPos(progressBarPos); // Positionner la barre
+
+    // Calculer la taille du texte pour centrer correctement
+    ImVec2 textSize = ImGui::CalcTextSize(overlay.c_str());
+
+    // Calculer la position pour centrer le texte
+    ImVec2 textPos = ImVec2(progressBarPos.x + (progressBarSize.x - textSize.x) * 0.5f, progressBarPos.y + (progressBarSize.y - textSize.y) * 0.5f);
+
+    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, color);
+    ImGui::ProgressBar(progress, progressBarSize, ""); // Dessiner la barre sans texte
+
+    // Restaure la position du curseur à la position du texte
+    ImGui::SetCursorScreenPos(textPos);
+
+    // Dessiner le texte centré sur la barre
+    ImGui::Text("%s", overlay.c_str());
+
+    // Restaure la couleur originale
+    ImGui::PopStyleColor();
+}
+
+void UIManager::drawTextureButton(Element* element, short buttons_width, short buttons_height, GLfloat opacity)
+{
+    if (!element || !element->getTexture()) return;
 
     // Couleur de fond (si besoin) et de teinte
     ImVec4 backgroundColor = ImVec4(0.0f, 0.0f, 0.0f, 0.0f); // Transparent
     ImVec4 tintColor = ImVec4(1.0f, 1.0f, 1.0f, opacity); // Couleur blanche avec opacité
 
-    if (ImGui::ImageButton("Slot", (ImTextureID)(intptr_t)texture->getTextureID(), ImVec2(buttons_width, buttons_height), ImVec2(0, 0), ImVec2(1, 1), backgroundColor, tintColor))
+    if (ImGui::ImageButton("Slot", (ImTextureID)(intptr_t)element->getTexture()->getTextureID(), ImVec2(buttons_width, buttons_height), ImVec2(0, 0), ImVec2(1, 1), backgroundColor, tintColor))
     {
         // Action déclenchée en cliquant sur le bouton
+        player->useSpell(element->getElementID());
         std::cout << "Slot" << " clicked!" << std::endl;
     }
 }

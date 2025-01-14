@@ -91,7 +91,7 @@ void Character::render(const GLuint& modelLoc, const GLuint& bonesTransformsLoc,
 
 void Character::createSpellsModel()
 {
-	spells_model[Spells::FireBall] = new Spell(0, Spells::FireBall, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/fireball.fbx");
+	spells_model[ElementsID::FireBall] = new Spell(0, ElementsID::FireBall, glm::vec3(0.0f, 0.0f, 0.0f), "models/fbx/fireball.fbx");
 }
 
 bool Character::loadVoices(FMOD::System* system)

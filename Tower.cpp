@@ -2,7 +2,7 @@
 
 Tower::Tower(short id, short towerID, glm::vec3 position, GLfloat range, GLfloat damages, const std::string& filePath) : Element(id, position, filePath)
 {
-	this->towerID = towerID;
+	this->elementID = towerID;
 
 	this->range   = range;
 	this->damages = damages;
@@ -14,7 +14,7 @@ Tower::Tower(short id, short towerID, glm::vec3 position, GLfloat range, GLfloat
 
 Tower::Tower(short id, short towerID, glm::vec3 position, GLfloat range, GLfloat damages, Model* model) : Element(id, position, model)
 {
-	this->towerID = towerID;
+	this->elementID = towerID;
 
 	this->range = range;
 	this->damages = damages;

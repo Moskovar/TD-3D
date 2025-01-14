@@ -1,18 +1,15 @@
 #include "SpellBar.h"
 
-SpellBar::SpellBar(std::string name, short buttons_width, short buttons_height, int x, int y)
+SpellBar::SpellBar(std::string name, short buttons_width, short buttons_height, int x, int y) : UIElement(x, y)
 {
     this->name              = name;
     this->buttons_width     = buttons_width;
     this->buttons_height    = buttons_height;
 
-    this->x = x;
-    this->y = y;
-
 	for (short x = 0; x < 5; x++)
 	{
 		buttons.push_back(Button(0, true));
-        buttons[x].shortcut = 'A';
+        //buttons[x].shortcut = 'A';
 	}
 }
 
@@ -21,13 +18,24 @@ std::vector<Button>& SpellBar::getButtons()
     return buttons;
 }
 
-void SpellBar::setElement(short button, Element* element)
+char* SpellBar::setElement(short i, Element* element)
 {
-    if (button < 0 || button >= buttons.size()) return;
+    if (i < 0 || i >= buttons.size()) return nullptr;
 
     std::cout << "SpelBarr::setSpell -> OK" << std::endl;
 
-    buttons[button].setElement(element);
+    buttons[i].setElement(element);
+
+    if (buttons[i].shortcut == 0) return nullptr;//si pas de raccourci attribué, on retourne nullptr;
+
+    return &buttons[i].shortcut;
+}
+
+void SpellBar::setShortcut(short i, char shortcut)
+{
+    if (i < 0 || i >= buttons.size()) return;
+
+    buttons[i].shortcut = shortcut;
 }
 
 void SpellBar::render()
